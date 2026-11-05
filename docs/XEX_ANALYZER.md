@@ -23,7 +23,7 @@ NTSC-U habilitado não prova edição exclusiva NTSC-U. A versão usa a disposi�
 bits observada em Xenia: major bits 0–3, minor 4–7, build 8–23, QFE 24–31.
 
 Valida limites, contagens, duplicações e sobreposição dos cabeçalhos. Limite de leitura:
-512 MiB. Rejeita estruturas truncadas, nomes sem terminador e ranges fora dos 32 bits.
+512 MiB e 4096 headers opcionais. Rejeita estruturas truncadas, nomes sem terminador e ranges fora dos 32 bits.
 Não valida assinatura RSA, hashes internos, autenticidade nem todos os invariantes
 XEX/PE. Não imprime campos de chave, assinaturas ou bytes do jogo. Funciona em XEX2;
 XEX1 e patches requerem implementação adicional.

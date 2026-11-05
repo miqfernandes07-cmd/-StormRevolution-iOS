@@ -1,0 +1,35 @@
+name: Host tests
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  tests:
+    runs-on: ubuntu-24.04
+    strategy:
+      matrix:
+        compiler: [g++, clang++]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Configure
+        env:
+          CXX: ${{ matrix.compiler }}
+        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug -DSTORM_SANITIZERS=ON
+      - name: Build
+        run: cmake --build build --parallel 2
+      - name: Test synthetic inputs only
+        run: ctest --test-dir build --output-on-failure --output-junit results.xml
+      - name: Verify public source hygiene
+        run: python3 scripts/check_public_tree.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: host-test-logs-${{ matrix.compiler }}
+          path: |
+            build/results.xml
+            build/Testing/Temporary/LastTest.log
