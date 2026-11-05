@@ -23,14 +23,14 @@ medido. `Validado` será usado somente com escopo e evidência explícitos.
 | XMA, reprodução de áudio/voz/vídeo | Não implementado | Sem decodificador/saída Apple integrada |
 | Touch/GameController no iOS | Implementado sem teste | Necessita build Apple e controles/aparelho |
 | Aplicativo/importação iOS | Implementado sem teste | Fonte e workflow; sem resultado Xcode |
-| Build/IPA em CI | Implementado sem teste | Workflow não executado nesta sessão |
+| Build/IPA iOS em CI | Implementado sem teste Apple | Workflow iniciado, aguardando runner macOS |
 
 ## Estados de entrega independentes
 
 | Etapa | Resultado comprovado |
 | --- | --- |
 | Compilação local | CMake Debug/UBSan e Release aprovados, biblioteca e testes x86_64; AOT sintético executado |
-| Compilação em CI | Iniciada: primeiro job GCC passou; Clang exigiu correção de libatomic. Build Apple ainda sem confirmação |
+| Compilação em CI | GCC e Clang aprovados no GitHub Actions; workflow Apple aguardando runner macOS |
 | IPA produzido | Não |
 | IPA instalado | Não |
 | Aplicativo iniciado no simulador | Não |

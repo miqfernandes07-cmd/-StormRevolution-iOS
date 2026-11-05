@@ -123,3 +123,16 @@ passaram após a correção; resultado da nova CI ainda pendente neste registro.
 
 Workflow iOS iniciado: https://github.com/miqfernandes07-cmd/-StormRevolution-iOS/actions/runs/42083707503 .
 Nenhum resultado de build Apple, IPA, simulador ou dispositivo foi confirmado ainda.
+
+## Resultado da correção na CI
+
+Execução [42083949244](https://github.com/miqfernandes07-cmd/-StormRevolution-iOS/actions/runs/42083949244):
+GCC e Clang concluíram build, os três grupos CTest e higiene dos arquivos com sucesso.
+No Clang 18.1.3, a detecção encontrou a necessidade de libatomic e o teste de link
+com essa biblioteca passou. A falha inicial está corrigida por evidência da CI.
+
+Workflow iOS atual: [42083949119](https://github.com/miqfernandes07-cmd/-StormRevolution-iOS/actions/runs/42083949119).
+Estado observado no momento do registro: queued, aguardando runner macOS, sem
+steps executados. A execução iOS anterior foi substituída automaticamente pelo
+commit de correção via concurrency; não houve falha Apple nela. Ainda não há IPA
+produzido, app Apple iniciado ou jogo executado.
