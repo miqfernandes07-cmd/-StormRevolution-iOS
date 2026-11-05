@@ -148,6 +148,20 @@ class XexTests(unittest.TestCase):
             self.assertEqual(bad.returncode, 1)
             self.assertIn(b'XEX_BOUNDS', bad.stderr)
 
+    def test_cli_cannot_overwrite_input(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / 'input.xex'
+            original = bytes(fixture())
+            path.write_bytes(original)
+            alias = Path(tmp) / 'alias.xex'
+            alias.hardlink_to(path)
+            for output in (path, alias):
+                run = subprocess.run([sys.executable, str(ROOT / 'tools/xex_analysis/xex.py'),
+                                      str(path), '--output', str(output)], capture_output=True)
+                self.assertEqual(run.returncode, 1)
+                self.assertIn(b'XEX_OUTPUT_OVERWRITES_INPUT', run.stderr)
+                self.assertEqual(path.read_bytes(), original)
+
     def test_seeded_mutations_never_escape_as_struct_errors(self):
         rng = random.Random(360)
         for _ in range(500):

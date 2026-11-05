@@ -102,6 +102,20 @@ int main() {
         with self.assertRaises(AOT.TranslationError):
             AOT.translate(words(BLR), function="foo;system(0)")
 
+    def test_cli_cannot_overwrite_input(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / 'input.ppc'
+            original = words(BLR)
+            path.write_bytes(original)
+            alias = Path(directory) / 'alias.ppc'
+            alias.hardlink_to(path)
+            for output in (path, alias):
+                run = subprocess.run([os.sys.executable, str(ROOT / 'tools/recompilation/ppc_aot.py'),
+                                      str(path), str(output)], capture_output=True, text=True)
+                self.assertEqual(run.returncode, 2)
+                self.assertEqual(json.loads(run.stderr)['code'], 'AOT_PATH_COLLISION')
+                self.assertEqual(path.read_bytes(), original)
+
     def test_cli_failure_no_output(self):
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory)

@@ -107,6 +107,11 @@ def main() -> int:
     parser.add_argument("--report", type=Path)
     args = parser.parse_args()
     try:
+        paths = [args.input, args.output] + ([args.report] if args.report else [])
+        for index, left in enumerate(paths):
+            for right in paths[index + 1:]:
+                if left.resolve() == right.resolve() or (left.exists() and right.exists() and left.samefile(right)):
+                    raise TranslationError('AOT_PATH_COLLISION', 'Input, C++ output and report must be different files')
         # Bound the read before parsing: a malformed or unexpectedly large input
         # must not allocate the entire file. Existing output is left untouched on
         # failure; callers must check the exit status and never reuse it as proof.

@@ -211,6 +211,11 @@ def main(argv=None) -> int:
     parser.add_argument('--output', type=Path, help='Keep original-game reports under private/.')
     args = parser.parse_args(argv)
     try:
+        if args.output:
+            for source in (args.xex, args.reference):
+                if source and (args.output.resolve() == source.resolve() or
+                               (args.output.exists() and source.exists() and args.output.samefile(source))):
+                    raise XexError('XEX_OUTPUT_OVERWRITES_INPUT: report must differ from source/reference')
         # Read at most limit+1 even if the file changes after stat.
         with args.xex.open('rb') as stream:
             report = inspect(stream.read(MAX_FILE_SIZE + 1))
