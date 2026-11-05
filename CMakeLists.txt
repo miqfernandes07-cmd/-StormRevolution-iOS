@@ -7,6 +7,7 @@ option(STORM_SANITIZERS "Enable undefined behavior sanitizer for host tests" OFF
 add_library(storm_runtime STATIC
   runtime/storm_runtime.cpp
   runtime/cpu/context.cpp
+  runtime/audio/pcm_ring.cpp
   runtime/memory/guest_memory.cpp
   runtime/kernel/imports.cpp
   runtime/filesystem/content_root.cpp)
@@ -28,6 +29,9 @@ else()
     add_executable(storm_runtime_tests tests/test_runtime.cpp)
     target_link_libraries(storm_runtime_tests PRIVATE storm_runtime Threads::Threads)
     add_test(NAME runtime COMMAND storm_runtime_tests)
+    add_executable(storm_audio_tests tests/test_audio.cpp)
+    target_link_libraries(storm_audio_tests PRIVATE storm_runtime Threads::Threads)
+    add_test(NAME audio_pcm COMMAND storm_audio_tests)
     add_test(NAME python_tools COMMAND "${Python3_EXECUTABLE}" -m unittest discover -s tests -p "test_*.py" -v)
     set_tests_properties(python_tools PROPERTIES WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
       ENVIRONMENT "CXX=${CMAKE_CXX_COMPILER}")
