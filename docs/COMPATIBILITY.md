@@ -30,7 +30,7 @@ medido. `Validado` será usado somente com escopo e evidência explícitos.
 | Etapa | Resultado comprovado |
 | --- | --- |
 | Compilação local | CMake Debug/UBSan e Release aprovados, biblioteca e testes x86_64; AOT sintético executado |
-| Compilação em CI | Não realizada |
+| Compilação em CI | Iniciada: primeiro job GCC passou; Clang exigiu correção de libatomic. Build Apple ainda sem confirmação |
 | IPA produzido | Não |
 | IPA instalado | Não |
 | Aplicativo iniciado no simulador | Não |

@@ -105,3 +105,21 @@ para o comando de archive documentado. Compilação Apple continua não realizad
 
 Commits adicionais: `f540fe2` (scheme Xcode), `bfcde40` (proteção das entradas),
 `c4078fc` (fila PCM) e `3b60788` (inventário PPC). Todos são locais.
+
+## Integração GitHub e primeira execução de CI
+
+Destino configurado: https://github.com/miqfernandes07-cmd/-StormRevolution-iOS .
+Os 58 arquivos foram transferidos, mantendo o commit inicial remoto e a sequência
+original de nove alterações. Cada commit remoto registra o SHA local de origem.
+A árvore final foi conferida pelo hash Git `7313942db6b740a05897652601cfa2aed42caf9c`,
+idêntico ao snapshot local. Nenhum arquivo de private/ ou recurso comercial foi enviado.
+
+Primeira execução host: https://github.com/miqfernandes07-cmd/-StormRevolution-iOS/actions/runs/42083707473 .
+GCC passou build/testes; Clang 18.1.3 em Ubuntu 24.04 falhou no link de
+`__atomic_is_lock_free`. CMake agora testa o link e acrescenta libatomic somente
+quando necessário em Linux. Essa biblioteca do toolchain GCC tem GPL com GCC Runtime
+Library Exception; não é acrescentada ao IPA Apple. Build e três grupos CTest locais
+passaram após a correção; resultado da nova CI ainda pendente neste registro.
+
+Workflow iOS iniciado: https://github.com/miqfernandes07-cmd/-StormRevolution-iOS/actions/runs/42083707503 .
+Nenhum resultado de build Apple, IPA, simulador ou dispositivo foi confirmado ainda.
