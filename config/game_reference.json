@@ -1,0 +1,11 @@
+{
+  "title": "Naruto Shippuden: Ultimate Ninja Storm Revolution",
+  "title_id": "4E4D0868",
+  "media_id": "29E320A9",
+  "version": "0.0.0.4",
+  "region_label": "NTSC-U (reference; verify eligibility mask)",
+  "size_bytes": 11776000,
+  "sha1": "c9c1cf1fc4d7a535542edb1aae19751d4ed7e090",
+  "source": "https://github.com/Masterllgod/naruto-storm-revolution-port-nativo/tree/e80494bcd46adfca9e4efd08eff04a5f4f93e406",
+  "verification": "Documentation reference only; no commercial executable inspected"
+}
