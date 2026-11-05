@@ -11,7 +11,7 @@ ctest --test-dir build --output-on-failure --output-junit results.xml
 python3 scripts/check_public_tree.py
 ```
 
-`ctest` reúne o executável `storm_runtime_tests` e a descoberta de testes Python.
+`ctest` reúne `storm_runtime_tests`, `storm_audio_tests` e a descoberta de testes Python.
 O teste AOT invoca o compilador host, gera um binário nativo e o executa com UBSan.
 Não roda um interpretador PPC no lugar do resultado recompilado. GCC/Clang precisam
 estar instalados; ausência do compilador é falha, não teste silenciosamente pulado.
@@ -50,7 +50,7 @@ Não há resultados de benchmark nesta iteração.
 ## Execução registrada em 2026-11-05
 
 Linux x86_64, GCC 14.2.0, Python 3.12.14, CMake 3.31.6. Build Debug com
-`-DSTORM_SANITIZERS=ON` e build Release aprovados. Execução integrada final Debug:
+`-DSTORM_SANITIZERS=ON` e build Release aprovados. Execução integrada inicial Debug:
 2/2 grupos CTest, 1038 verificações C++ e 29 testes Python (14 XEX, 8 AOT,
 7 adaptador XenonRecomp). [Log real](validation/host-debug-2026-11-05.log).
 As 1038 verificações incluem 1000 snapshots no teste concorrente; não são 1038
@@ -61,3 +61,17 @@ Release foi testado antes da inclusão dos sete casos do adaptador: 2/2 grupos,
 1038 verificações C++ e 22 testes Python. Os binários C++ não mudaram depois.
 A leitura de Info.plist e YAML é verificação de formato, não compilação Xcode.
 Nenhum teste ocorreu no simulador, iPhone, ARM64 ou GitHub Actions nesta sessão.
+
+## Suíte ampliada após continuação
+
+Mesmo ambiente Linux: Debug/UBSan e Release aprovados em **3/3 grupos CTest**.
+Total: **47 testes Python** (15 XEX, 9 AOT, 7 adaptador e 16 inventário),
+**1038 verificações do runtime** e **33 verificações PCM**. O teste de fila
+transferiu 100.000 frames numéricos ordenados entre duas threads. Sem áudio
+reproduzido e sem certificação de latência de callback. O inventário testa formato
+raw explícito, branches/AA/LK e candidatos, sem execução comercial.
+[Log atualizado](validation/host-expanded-2026-11-05.log).
+
+Os testes novos de colisão de caminhos preservam a entrada, inclusive hardlinks.
+A suíte inicial de 29 testes permanece registrada no log anterior como marco
+histórico. A ampliação não altera nenhum estado de execução Apple ou do jogo.

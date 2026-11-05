@@ -24,11 +24,11 @@ Storm já ocorreu. Não há configuração de funções ou executável real disp
 
 | Módulo | Implementação inicial | Contrato e próximo trabalho |
 | --- | --- | --- |
-| A — análise | Python, stdlib, JSON, limites e identidade | Metadados de XEX2; reconstruir PE, imports/exports, funções, tabelas de salto |
+| A — análise | Python, stdlib, JSON, limites e identidade | Metadados XEX2 e inventário PPC raw separado; reconstruir PE, imports/exports, funções completas, tabelas de salto |
 | B — CPU/AOT | Tradutor sintético → C++ e contexto pequeno | Integrar XenonRecomp fixado; ABI guest, FPR/FPSCR/CR/XER, VMX128, indirect calls e atomics |
 | C — runtime | C++17, API C estável, memória BE, allocator, imports, relógio, conteúdo local e input | Implementar serviços xboxkrnl/XAM reais somente após inventário; threads/TLS/eventos/save e proteção virtual pendentes |
 | D — gráficos | MetalKit e shader MSL de diagnóstico no app | Parser/interceptação Xenos, tradução shaders, texturas tiled, EDRAM, depth/stencil e resolve pendentes |
-| E — áudio | Fronteira arquitetural reservada | XMA → PCM → Core Audio/AVAudioEngine; formato, sincronização e interrupções pendentes |
+| E — áudio | Fila PCM SPSC limitada com overflow/underrun e testes | Decodificador XMA e saída Core Audio/AVAudioEngine, sincronização e interrupções pendentes |
 | F — controles | Estado host normalizado + GameController/touch no app | Validar mapeamento específico e combinação de comandos em gameplay |
 | G — aplicativo | UIKit, Objective-C++, Files, validação, configurações e logs | Testar Xcode/simulador/aparelho; iniciar runtime retorna falta de imagem AOT |
 

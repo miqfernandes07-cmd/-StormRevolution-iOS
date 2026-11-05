@@ -9,7 +9,8 @@ recompilado, chaves, APKs ou assets. Forneça localmente os arquivos da sua cóp
 em `private/game/`; esse diretório é ignorado pelo Git.
 
 Implementado: analisador de metadados XEX2 com validação de identidade, tradutor
-AOT de um subconjunto PPC sintético, memória big-endian e serviços básicos C++,
+AOT de um subconjunto PPC sintético, inventário de branches/candidatos a funções,
+memória big-endian, fila PCM e serviços básicos C++,
 app UIKit/Objective-C++ com diagnóstico Metal e workflows de host/macOS.
 XenonRecomp é o candidato para o executável completo; o tradutor sintético é
 somente um teste independente. Não há JIT nem emulador completo no runtime.
@@ -34,7 +35,8 @@ do app é iOS 17; iOS 27 e iPhone 15 Pro são alvos solicitados, ainda sem valid
 - [Auditoria das seis referências e licenças](docs/REFERENCES.md)
 - [Engenharia reversa](docs/REVERSE_ENGINEERING.md)
 - [Analisador XEX](docs/XEX_ANALYZER.md)
-- [AOT sintético](docs/AOT.md) e [integração iOS](docs/IOS.md)
+- [AOT sintético](docs/AOT.md) e [inventário PPC](docs/PPC_ANALYSIS.md)
+- [Fila PCM](docs/AUDIO.md) e [integração iOS](docs/IOS.md)
 
 Prioridade seguinte: validar o XEX real, recuperar imagem/funções/imports e
 configurar o XenonRecomp para esse executável. O primeiro frame do título depende

@@ -7,10 +7,10 @@ Git local, sem remoto; nenhum histórico existente foi removido.
 ## Resultado comprovado
 
 Compilação host Linux x86_64 com GCC 14.2.0, Python 3.12.14 e CMake 3.31.6.
-Build Debug com UBSan e build Release aprovados. CTest passou nos dois grupos
-(runtime C++ e ferramentas Python). Os testes sintéticos não executam o jogo.
-Total final Debug: 1038 verificações C++ e 29 testes Python. Detalhes em
-[TESTING.md](TESTING.md) e [log de validação](validation/host-debug-2026-11-05.log).
+Build Debug com UBSan e build Release aprovados. CTest passou nos três grupos
+(runtime C++, fila PCM e ferramentas Python). Os testes sintéticos não executam o jogo.
+Total mais recente: 1038 verificações do runtime, 33 da fila PCM e 47 testes Python. Detalhes em
+[TESTING.md](TESTING.md) e [log de validação atualizado](validation/host-expanded-2026-11-05.log).
 
 Não houve build CI, produção/assinatura de IPA, instalação, inicialização do app
 Apple ou execução comercial. O iPhone 15 Pro/iOS 27 continua sem qualificação.
@@ -82,3 +82,26 @@ nos controles. Isso ainda exige verificação física. `OBJCXX_STANDARD=17` foi
 explicitado. Bash, plist e YAML passaram em verificação de sintaxe no Linux.
 Nenhum commit foi enviado a GitHub e nenhuma execução de CI foi solicitada, pois
 este repositório local não tem remoto configurado.
+
+## Marco adicional após continuação
+
+Implementado inventário estático de regiões PPC raw, com referências diretas,
+AA/LK, deslocamentos com sinal, candidatos a funções e diagnósticos por PC. Os
+16 testes passaram; isso não recupera funções completas, jump tables nem imagem
+XEX/PE. A cobertura do tradutor sintético aparece separada da classificação de
+instruções e da cobertura desconhecida do XenonRecomp.
+
+Implementada fila PCM `float` intercalado, limitada, com um produtor/consumidor,
+sem alocação em read/write, contadores e preenchimento com silêncio no underrun.
+33 verificações passaram, incluindo 100.000 frames concorrentes ordenados; não há
+Core Audio/XMA nem reprodução real. Builds CMake Debug/UBSan e Release passaram
+nos três grupos; suíte Python atual tem 47 testes.
+
+A revisão adicional encontrou possibilidade de um CLI sobrescrever seu arquivo de
+entrada. O teste reproduziu o problema; XEX, AOT e inventário agora recusam colisão
+de caminhos, symlinks resolvidos e hardlinks. As regressões passaram, preservando
+os bytes de entrada. O projeto Xcode também passou a gerar scheme explicitamente
+para o comando de archive documentado. Compilação Apple continua não realizada.
+
+Commits adicionais: `f540fe2` (scheme Xcode), `bfcde40` (proteção das entradas),
+`c4078fc` (fila PCM) e `3b60788` (inventário PPC). Todos são locais.
