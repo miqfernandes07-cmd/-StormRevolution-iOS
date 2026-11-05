@@ -1,0 +1,68 @@
+Start testing: Nov 05 13:08 UTC
+----------------------------------------------------------
+1/2 Testing: runtime
+1/2 Test: runtime
+Command: "/workspace/StormRevolution-iOS/build/storm_runtime_tests"
+Directory: /workspace/StormRevolution-iOS/build
+"runtime" start time: Nov 05 13:08 UTC
+Output:
+----------------------------------------------------------
+runtime: 1038 checks passed (infrastructure, no game execution)
+<end of output>
+Test time =   0.00 sec
+----------------------------------------------------------
+Test Passed.
+"runtime" end time: Nov 05 13:08 UTC
+"runtime" time elapsed: 00:00:00
+----------------------------------------------------------
+
+2/2 Testing: python_tools
+2/2 Test: python_tools
+Command: "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3.12" "-m" "unittest" "discover" "-s" "tests" "-p" "test_*.py" "-v"
+Directory: /workspace/StormRevolution-iOS
+"python_tools" start time: Nov 05 13:08 UTC
+Output:
+----------------------------------------------------------
+test_branch_limits (test_aot.TestAOT.test_branch_limits) ... ok
+test_cli_failure_no_output (test_aot.TestAOT.test_cli_failure_no_output) ... ok
+test_invalid_symbol (test_aot.TestAOT.test_invalid_symbol) ... ok
+test_missing_return_and_bad_ranges (test_aot.TestAOT.test_missing_return_and_bad_ranges) ... ok
+test_native_execution (test_aot.TestAOT.test_native_execution) ... ok
+test_unknown_word_has_address (test_aot.TestAOT.test_unknown_word_has_address) ... ok
+test_unreachable_unknown_rejected (test_aot.TestAOT.test_unreachable_unknown_rejected) ... ok
+test_variant_flags_rejected (test_aot.TestAOT.test_variant_flags_rejected) ... ok
+test_analyse_plan_exact_argv_no_execution (test_xenon_pipeline.XenonPipelineTests.test_analyse_plan_exact_argv_no_execution) ... ok
+test_execution_rejects_unverified_xex_without_invoking_tool (test_xenon_pipeline.XenonPipelineTests.test_execution_rejects_unverified_xex_without_invoking_tool) ... ok
+test_invalid_manifest_and_main_schema (test_xenon_pipeline.XenonPipelineTests.test_invalid_manifest_and_main_schema) ... ok
+test_manifest_checks_pin_and_binary_digest (test_xenon_pipeline.XenonPipelineTests.test_manifest_checks_pin_and_binary_digest) ... ok
+test_outside_private_rejected (test_xenon_pipeline.XenonPipelineTests.test_outside_private_rejected) ... ok
+test_recompile_digest_and_paths (test_xenon_pipeline.XenonPipelineTests.test_recompile_digest_and_paths) ... ok
+test_symlink_output_escape_rejected (test_xenon_pipeline.XenonPipelineTests.test_symlink_output_escape_rejected) ... ok
+test_bad_magic (test_xex.XexTests.test_bad_magic) ... ok
+test_cli_exit_codes (test_xex.XexTests.test_cli_exit_codes) ... ok
+test_duplicate (test_xex.XexTests.test_duplicate) ... ok
+test_encoded_image_not_reported_as_analyzed (test_xex.XexTests.test_encoded_image_not_reported_as_analyzed) ... ok
+test_every_truncation (test_xex.XexTests.test_every_truncation) ... ok
+test_invalid_offsets_and_counts (test_xex.XexTests.test_invalid_offsets_and_counts) ... ok
+test_invalid_reference_schema (test_xex.XexTests.test_invalid_reference_schema) ... ok
+test_malformed_import_name (test_xex.XexTests.test_malformed_import_name) ... ok
+test_metadata (test_xex.XexTests.test_metadata) ... ok
+test_overlap (test_xex.XexTests.test_overlap) ... ok
+test_reference_rejects_synthetic_hash (test_xex.XexTests.test_reference_rejects_synthetic_hash) ... ok
+test_region_is_mask (test_xex.XexTests.test_region_is_mask) ... ok
+test_seeded_mutations_never_escape_as_struct_errors (test_xex.XexTests.test_seeded_mutations_never_escape_as_struct_errors) ... ok
+test_version_bits (test_xex.XexTests.test_version_bits) ... ok
+
+----------------------------------------------------------------------
+Ran 29 tests in 0.351s
+
+OK
+<end of output>
+Test time =   0.48 sec
+----------------------------------------------------------
+Test Passed.
+"python_tools" end time: Nov 05 13:08 UTC
+"python_tools" time elapsed: 00:00:00
+----------------------------------------------------------
+
+End testing: Nov 05 13:08 UTC
