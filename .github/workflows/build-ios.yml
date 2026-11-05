@@ -1,0 +1,70 @@
+name: iOS infrastructure (unsigned)
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: ios-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  build:
+    runs-on: macos-15
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Record Apple toolchain
+        run: |
+          mkdir -p out
+          xcodebuild -version | tee out/xcode-version.txt
+          xcodebuild -showsdks | tee out/apple-sdks.txt
+          cmake --version
+          python3 --version
+      - name: Build and test host infrastructure
+        run: |
+          set -o pipefail
+          cmake -S . -B build-host -DCMAKE_BUILD_TYPE=Debug
+          cmake --build build-host --parallel 3
+          ctest --test-dir build-host --output-on-failure | tee out/host-tests.txt
+      - name: Build iPhone ARM64 application
+        run: |
+          set -o pipefail
+          cmake -S . -B build-ios -G Xcode \
+            -DCMAKE_SYSTEM_NAME=iOS -DCMAKE_OSX_SYSROOT=iphoneos \
+            -DCMAKE_OSX_ARCHITECTURES=arm64 -DCMAKE_OSX_DEPLOYMENT_TARGET=17.0
+          cmake --build build-ios --config Release --target StormRevolution \
+            -- CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO | tee out/iphone-build.txt
+      - name: Package explicitly unsigned IPA
+        run: |
+          mkdir -p out/package/Payload
+          test -d build-ios/ios/Release-iphoneos/StormRevolution.app
+          cp -R build-ios/ios/Release-iphoneos/StormRevolution.app out/package/Payload/
+          (cd out/package && zip -qry ../StormRevolution-UNSIGNED.ipa Payload)
+          shasum -a 256 out/StormRevolution-UNSIGNED.ipa > out/StormRevolution-UNSIGNED.ipa.sha256
+      - name: Build simulator application
+        run: |
+          set -o pipefail
+          cmake -S . -B build-sim -G Xcode \
+            -DCMAKE_SYSTEM_NAME=iOS -DCMAKE_OSX_SYSROOT=iphonesimulator \
+            -DCMAKE_OSX_ARCHITECTURES="$(uname -m)" -DCMAKE_OSX_DEPLOYMENT_TARGET=17.0
+          cmake --build build-sim --config Debug --target StormRevolution \
+            -- CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO | tee out/simulator-build.txt
+      - name: Smoke test runtime and Metal submission in simulator
+        run: bash ios/scripts/simulator-smoke.sh build-sim/ios/Debug-iphonesimulator/StormRevolution.app out/simulator-smoke.json
+      - name: Upload infrastructure IPA and logs only
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: storm-ios-infrastructure-unsigned
+          path: |
+            out/*.txt
+            out/*.json
+            out/*.ipa
+            out/*.sha256
+          if-no-files-found: warn
+          retention-days: 7
