@@ -18,7 +18,7 @@ streaming ou emulador. A interface deixa isso explícito.
   são recusados. A cópia usa staging e substitui o conteúdo anterior somente após
   validar `default.xex`; é necessário espaço para a nova cópia além da anterior.
 - SHA-1 calculado incrementalmente, tamanho de referência 11.776.000 bytes, magic
-  XEX2, Title ID `4E4D0868`, Media ID `29E320A9`, versão raw `04000000` (0.0.0.4) e máscara de região
+  XEX2, Title ID `4E4D0868`, Media ID `29E320A9`, versão raw `00000004` (0.0.0.4) e máscara de região
   incluindo NTSC-U. Isso verifica a revisão documentada, não a integridade dos demais
   recursos nem a possibilidade de boot. Headers maiores que 1 MiB não são aceitos
   pelo validador simplificado do app. O analisador host continua sendo a ferramenta

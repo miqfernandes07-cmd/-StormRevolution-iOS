@@ -66,7 +66,7 @@ static NSDictionary *ValidateXEX(NSURL *url, NSError **error) {
     region = ReadBE32(p + security + 0x178);
     hasRegion = YES;
   }
-  BOOL matches = hasExecution && hasRegion && title == 0x4E4D0868 && media == 0x29E320A9 && version == 0x04000000 &&
+  BOOL matches = hasExecution && hasRegion && title == 0x4E4D0868 && media == 0x29E320A9 && version == 0x00000004 &&
       (region & 0xff) != 0 && size.unsignedLongLongValue == 11776000 && [sha1 isEqualToString:ExpectedSHA1];
   return @{@"sha1":sha1, @"size":size, @"title_id":[NSString stringWithFormat:@"%08X", title],
     @"version_raw":[NSString stringWithFormat:@"%08X", version], @"media_id":[NSString stringWithFormat:@"%08X", media],

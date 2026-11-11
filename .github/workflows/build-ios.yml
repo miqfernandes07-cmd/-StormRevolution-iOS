@@ -11,7 +11,9 @@ concurrency:
   cancel-in-progress: true
 jobs:
   build:
-    runs-on: macos-15
+    # The macos-15 ARM pool failed to allocate a runner in run 42083949119.
+    # Intel Xcode still cross-compiles the device application for ARM64.
+    runs-on: macos-15-intel
     timeout-minutes: 40
     steps:
       - uses: actions/checkout@v4
@@ -23,6 +25,7 @@ jobs:
           mkdir -p out
           xcodebuild -version | tee out/xcode-version.txt
           xcodebuild -showsdks | tee out/apple-sdks.txt
+          uname -m | tee out/runner-architecture.txt
           cmake --version
           python3 --version
       - name: Build and test host infrastructure
