@@ -29,7 +29,7 @@ def fixture():
         word(24 + i * 8, k)
         word(28 + i * 8, v)
     word(0x60, 0x29e320a9)
-    word(0x64, 0x04000000)
+    word(0x64, 0x00000004)
     word(0x6c, 0x4e4d0868)
     data[0x70:0x74] = bytes([2, 0, 1, 1])
     word(0x78, 8)
@@ -76,7 +76,9 @@ class XexTests(unittest.TestCase):
             xex.inspect(b'NOPE' + bytes(64))
 
     def test_version_bits(self):
-        self.assertEqual(xex.version(0x12abcd43), '3.4.43981.18')
+        self.assertEqual(xex.version(0x12abcd43), '1.2.43981.67')
+        self.assertEqual(xex.version(4), '0.0.0.4')
+        self.assertEqual(xex.version(0x04000000), '0.4.0.0')
 
     def test_encoded_image_not_reported_as_analyzed(self):
         data = fixture()
@@ -90,6 +92,22 @@ class XexTests(unittest.TestCase):
         struct.pack_into('>I', data, 32, 0x40006)
         with self.assertRaisesRegex(xex.XexError, 'XEX_DUPLICATE'):
             xex.inspect(data)
+
+    def test_basic_compression_sizes(self):
+        data = fixture()
+        struct.pack_into('>I', data, 36, 0x100)
+        struct.pack_into('>IHHII', data, 0x100, 16, 0, 1, 4, 65532)
+        result = xex.inspect(data)['file_format']
+        self.assertEqual(result['stored_bytes'], 4)
+        self.assertEqual(result['zero_fill_bytes'], 65532)
+        self.assertEqual(result['expanded_bytes'], 65536)
+        for offset, value, code in ((0x100, 12, 'XEX_BASIC_BLOCKS'),
+                                    (0x108, 8, 'XEX_BASIC_PAYLOAD'),
+                                    (0x10c, 1, 'XEX_BASIC_IMAGE_SIZE')):
+            changed = bytearray(data)
+            struct.pack_into('>I', changed, offset, value)
+            with self.subTest(code=code), self.assertRaisesRegex(xex.XexError, code):
+                xex.inspect(changed)
 
     def test_invalid_offsets_and_counts(self):
         for off, value in [(8, 0), (8, 0xffffffff), (16, 0), (20, 0xffffffff),

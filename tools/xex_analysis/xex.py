@@ -36,8 +36,9 @@ class Reader:
 
 
 def version(value: int) -> str:
-    # Xenia xex2_version layout after converting the BE integer to host order.
-    return f'{value & 15}.{(value >> 4) & 15}.{(value >> 8) & 65535}.{value >> 24}'
+    # Packed version: major[31:28], minor[27:24], build[23:8], QFE[7:0].
+    # Do not infer on-disk bit order from host C++ bitfield declaration order.
+    return f'{value >> 28}.{(value >> 24) & 15}.{(value >> 8) & 65535}.{value & 255}'
 
 
 def imports(data: bytes) -> list[dict]:
@@ -169,6 +170,20 @@ def inspect(data: bytes) -> dict:
         fmt = Reader(entries[0x3ff][1])
         encryption, compression = fmt.u16(4), fmt.u16(6)
         report['file_format'] = {'encryption': encryption, 'compression': compression}
+        if compression == 1:
+            if len(fmt.data) < 16 or (len(fmt.data) - 8) % 8:
+                raise XexError('XEX_BASIC_BLOCKS: expected complete data/zero block pairs')
+            blocks = [{'data_size': fmt.u32(i), 'zero_size': fmt.u32(i + 4)}
+                      for i in range(8, len(fmt.data), 8)]
+            stored = sum(b['data_size'] for b in blocks)
+            expanded = sum(b['data_size'] + b['zero_size'] for b in blocks)
+            if stored > len(data) - payload:
+                raise XexError('XEX_BASIC_PAYLOAD: blocks exceed available payload')
+            if expanded != image_size:
+                raise XexError('XEX_BASIC_IMAGE_SIZE: expanded blocks differ from security image size')
+            report['file_format'].update(basic_blocks=blocks, stored_bytes=stored,
+                zero_fill_bytes=expanded - stored, expanded_bytes=expanded,
+                payload_trailing_bytes=len(data) - payload - stored)
         if encryption or compression:
             diagnostic('XEX_ENCODED_IMAGE', 'Metadata only: decryption/decompression not implemented; no keys are included.')
         else:

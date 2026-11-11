@@ -20,7 +20,7 @@ bibliotecas importadas com endereços de registros. Esses registros apontam para
 imagem carregada: os ordinais ainda não são resolvidos. Páginas executáveis não são
 confundidas com seções PE nem com funções. Região é uma máscara de elegibilidade;
 NTSC-U habilitado não prova edição exclusiva NTSC-U. A versão usa a disposição de
-bits observada em Xenia: major bits 0–3, minor 4–7, build 8–23, QFE 24–31.
+bits observada em Xenia: major bits 28–31, minor 24–27, build 8–23, QFE 0–7.
 
 Valida limites, contagens, duplicações e sobreposição dos cabeçalhos. Limite de leitura:
 512 MiB e 4096 headers opcionais. Rejeita estruturas truncadas, nomes sem terminador e ranges fora dos 32 bits.

@@ -5,6 +5,7 @@ import unittest
 from unittest.mock import patch
 import subprocess
 import json
+import sys
 
 ROOT = Path(__file__).resolve().parents[1]
 SPEC = importlib.util.spec_from_file_location("xenon_pipeline", ROOT / "tools/recompilation/xenon_pipeline.py")
@@ -89,6 +90,17 @@ class XenonPipelineTests(unittest.TestCase):
             invoke.assert_not_called()
         self.assertFalse((self.private/"run.log").exists())
         self.assertFalse((self.private/"new.toml").exists())
+
+    def test_zero_exit_with_error_diagnostic_is_rejected(self):
+        output = self.private / 'synthetic-output.toml'
+        plan = {'stage': 'analyse', 'output': str(output),
+                'command': [sys.executable, '-c',
+                    'import pathlib,sys; pathlib.Path(sys.argv[1]).write_text("# synthetic"); print("ERROR: missing function address")', str(output)]}
+        # This subprocess only tests the adapter's diagnostic contract.
+        with patch.object(XENON, 'validate_identity'):
+            with self.assertRaisesRegex(XENON.PipelineError, 'DIAGNOSTICS_REQUIRE_REVIEW'):
+                XENON.execute(plan, self.private / 'diagnostic.log', self.private)
+        self.assertTrue(output.exists())
 
 
 if __name__ == "__main__":

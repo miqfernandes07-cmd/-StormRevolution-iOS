@@ -150,7 +150,7 @@ def execute(plan: dict, log_path: Path, private: Path) -> int:
     if result.returncode:
         raise PipelineError(f"XENON_TOOL_FAILED:{result.returncode}; inspect private log")
     log = log_path.read_text(encoding="utf-8", errors="replace")
-    if re.search(r"warning|unsupported|unimplemented|not implemented", log, re.I):
+    if re.search(r"\b(error|fatal|warning|unsupported|unimplemented)\b|not implemented|unrecognized instruction", log, re.I):
         raise PipelineError("XENON_DIAGNOSTICS_REQUIRE_REVIEW; inspect private log")
     if plan["stage"] == "analyse" and not output.is_file():
         raise PipelineError("XENON_ANALYSIS_OUTPUT_MISSING")
