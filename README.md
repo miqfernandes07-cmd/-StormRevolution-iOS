@@ -1,6 +1,6 @@
 # Storm Revolution — pesquisa de port nativo para iOS
 
-Infraestrutura inicial de um port AOT PowerPC → C++ → ARM64 de Naruto Shippuden:
+Projeto de port AOT PowerPC → C++ → ARM64 de Naruto Shippuden:
 Ultimate Ninja Storm Revolution, versão Xbox 360. **O jogo ainda não executa.**
 Não há IPA produzido, teste em iPhone ou medição de FPS nesta iteração.
 
@@ -12,8 +12,18 @@ Implementado: analisador de metadados XEX2 com validação de identidade, tradut
 AOT de um subconjunto PPC sintético, inventário de branches/candidatos a funções,
 memória big-endian, fila PCM e serviços básicos C++,
 app UIKit/Objective-C++ com diagnóstico Metal e workflows de host/macOS.
-XenonRecomp é o candidato para o executável completo; o tradutor sintético é
-somente um teste independente. Não há JIT nem emulador completo no runtime.
+O XEX fornecido passou na validação de identidade; sua imagem foi reconstruída
+localmente e foram lidos 291 imports distintos por biblioteca/ordinal. O
+XenonAnalyse executou e recuperou zero tabelas de salto, o que exige investigação.
+O XenonRecomp gerou 242 arquivos C++ privados, mas a auditoria detectou 1.643
+ocorrências de 28 variantes rejeitadas. Essa saída ainda não foi compilada como
+código nativo do jogo. O tradutor sintético permanece um teste independente.
+
+Estado em 2026-11-11: 62 testes Python, 1.038 verificações do runtime e 33 de PCM
+passaram em 3/3 grupos CTest no Linux. GCC e Clang já passaram na CI host em um
+marco anterior. As duas tentativas do job iOS terminaram sem obter runner e sem
+executar etapas Apple; a troca para `macos-15-intel` está configurada. Não há
+JIT nem emulador completo no runtime.
 
 ```bash
 cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug -DSTORM_SANITIZERS=ON
@@ -34,10 +44,13 @@ do app é iOS 17; iOS 27 e iPhone 15 Pro são alvos solicitados, ainda sem valid
 - [Testes e suas limitações](docs/TESTING.md)
 - [Auditoria das seis referências e licenças](docs/REFERENCES.md)
 - [Engenharia reversa](docs/REVERSE_ENGINEERING.md)
-- [Analisador XEX](docs/XEX_ANALYZER.md)
+- [Analisador XEX](docs/XEX_ANALYZER.md) e [imagem PE/imports](docs/PE_ANALYSIS.md)
 - [AOT sintético](docs/AOT.md) e [inventário PPC](docs/PPC_ANALYSIS.md)
 - [Fila PCM](docs/AUDIO.md) e [integração iOS](docs/IOS.md)
 
-Prioridade seguinte: validar o XEX real, recuperar imagem/funções/imports e
-configurar o XenonRecomp para esse executável. O primeiro frame do título depende
-também de implementação Xenos/Metal; um triângulo de diagnóstico não é esse frame.
+Prioridade seguinte: corrigir as variantes rejeitadas, investigar o fluxo indireto
+e as tabelas de salto e validar funções geradas antes da compilação nativa do jogo.
+Também faltam serviços xboxkrnl/XAM, gráficos Xenos/Metal, áudio e os recursos.
+O ZIP de recursos disponibilizado no Drive tem cerca de 7,43 GB e excede o espaço
+livre deste ambiente; ainda não foi baixado. O executável e as saídas derivadas
+permanecem em `private/`.

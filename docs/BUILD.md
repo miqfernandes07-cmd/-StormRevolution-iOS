@@ -31,7 +31,14 @@ python3 tools/xex_analysis/xex.py private/game/default.xex \
 Uma correspondência de identidade não prova boot. Arquivos cifrados/comprimidos
 recebem relatório de metadados e limitação explícita. Preparar o XenonRecomp fora
 do app conforme [REFERENCES](REFERENCES.md), auditando dependências e mantendo
-saídas do executável comercial sob `private/`. Não há mapa de funções pronto.
+saídas do executável comercial sob `private/`. Não há mapa de funções validado.
+
+Nesta sessão o XenonRecomp fixado em REFERENCES foi compilado privadamente com
+Clang 19.1.7 no Linux. GCC 14 falhou nas extensões de agregados usadas pelo
+upstream. XenonAnalyse e XenonRecomp foram executados sobre o XEX validado;
+a geração exploratória foi rejeitada por instruções sem suporte. Não usar essa
+saída para construir um IPA. Ferramentas, configurações, logs e C++ comercial
+ficam em `private/`; não são dependências da suíte pública.
 
 ## iOS e GitHub Actions
 
@@ -42,7 +49,9 @@ Consulte [IOS.md](IOS.md) para comandos, saída exata e limites do smoke test.
 [42083949244](https://github.com/miqfernandes07-cmd/-StormRevolution-iOS/actions/runs/42083949244)
 passou com GCC e Clang. O workflow iOS
 [42083949119](https://github.com/miqfernandes07-cmd/-StormRevolution-iOS/actions/runs/42083949119)
-foi iniciado e aguarda runner macOS; ainda sem build Apple ou IPA confirmado.
+falhou nas duas tentativas antes de obter runner, sem executar passos de build.
+O workflow agora solicita `macos-15-intel`, mantendo o destino iPhone ARM64.
+Até haver resultado dessa execução, não há build Apple ou IPA confirmado.
 
 Abra o projeto gerado em um Mac com Xcode e SDK suportando o deployment escolhido.
 iOS 27 é alvo solicitado e não SDK detectado nesta sessão. A seleção de Xcode do

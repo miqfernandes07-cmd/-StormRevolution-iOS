@@ -4,7 +4,9 @@ Consulta: 2026-11-05, pelo conector GitHub, lendo árvore, README, licenças e o
 arquivos indicados abaixo. Os SHAs identificam o estado consultado; não foram
 executados os ports de terceiros. Declarações de execução feitas pelos autores
 não são medições deste projeto. Nenhum código desses projetos foi incorporado
-nesta primeira iteração.
+nesta primeira iteração. Atualização: o XenonRecomp fixado abaixo foi depois
+compilado e executado privadamente sobre o XEX fornecido; os ports de terceiros
+continuam sem execução nesta sessão.
 
 | Projeto | Commit consultado | Licença observada | Decisão inicial |
 | --- | --- | --- | --- |
@@ -63,6 +65,15 @@ uma. Em particular libmspack é LGPL; manter preparação offline separada evita
 adicioná-la desnecessariamente ao IPA. Qualquer futura integração do loader
 no app precisará revisar as obrigações de distribuição. Não copiar chaves
 embutidas de loaders de referência para este repositório.
+
+Auditoria adicional da cópia fixada, durante o build host: o disassembler
+`ppc-dis.c` declara GPL-2.0-or-later e `disasm.c` GPL-1.0-or-later. Portanto,
+o `LICENSE.md` MIT não descreve sozinho as obrigações dos binários das ferramentas.
+Também foram identificados libmspack (LGPL-2.1), TinySHA1 (ISC), fmt, SIMDe e
+toml++ (MIT), tiny-AES-c (Unlicense) e xxHash (BSD-2-Clause). Essas ferramentas
+foram mantidas privadas; nenhum desses componentes foi ligado ao app ou
+redistribuído aqui. Antes de distribuir ferramentas ou integrar seus headers,
+revisar o conjunto de fontes, notices e obrigações aplicáveis ao artefato.
 
 ## SpeedBreaker
 
@@ -130,7 +141,7 @@ Não foram baixados APKs, assets ou saves. O README afirma expressamente que
 o repositório é documental. O APK ARM64 usa ABI Android, serviços Android e
 Vulkan; não é fonte recompilável para iOS.
 
-Identidade publicada, ainda não confirmada com arquivo real:
+Identidade publicada, posteriormente confirmada com o XEX fornecido:
 
 | Campo | Referência publicada |
 | --- | --- |
@@ -166,8 +177,11 @@ para XenonRecomp/iOS.
 
 PPC → C++ → Clang ARM64 AOT é uma rota tecnicamente plausível com precedente
 de código público para iOS. A viabilidade do executável específico permanece
-**não demonstrada**: faltam XEX real, cobertura de instruções, funções e
-imports, shader corpus, modelo gráfico do engine e medições no aparelho.
+**não demonstrada**: o XEX real foi identificado e seus descritores de imports
+foram lidos, mas a geração exploratória encontrou 1643 diagnósticos de instrução
+sem suporte em 28 variantes. Faltam cobertura validada de instruções, funções,
+tabelas de salto, serviços nativos, shader corpus, modelo gráfico do engine e
+medições no aparelho.
 Os maiores riscos iniciais são descoberta de fluxo indireto, semântica de
 sincronização ARM64, exceções/MMIO, Xenos/EDRAM e integração de áudio XMA.
 

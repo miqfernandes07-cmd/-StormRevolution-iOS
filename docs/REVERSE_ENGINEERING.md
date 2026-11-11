@@ -1,9 +1,10 @@
 # Análise reproduzível do executável
 
-O `default.xex` comercial não foi fornecido nesta sessão. Não existem mapa de
-funções do Storm, contagem real de imports/instruções, shaders identificados
-ou prova de inicialização. Valores de identidade vêm da documentação Android;
-ver [REFERENCES.md](REFERENCES.md). Fixtures sintéticas não comprovam o jogo.
+O `default.xex` fornecido foi validado contra tamanho, SHA-1, Title ID, Media ID,
+versão e região do perfil. A imagem reconstruída em ambiente privado permitiu
+ler nove seções PE e 291 imports distintos por biblioteca/ordinal. Isso não
+resolve os serviços nativos nem comprova inicialização. Ver os resultados e
+limitações em [PROGRESS.md](PROGRESS.md) e [PE_ANALYSIS.md](PE_ANALYSIS.md).
 
 ## Entrada e isolamento
 
@@ -42,9 +43,9 @@ reconstruída. Ler nomes de bibliotecas não equivale a resolver funções.
 Exports também requerem resolução do endereço da tabela na imagem.
 
 Versões XEX devem ser conferidas contra o layout real, sem transformar a
-string `0.0.0.4` arbitrariamente em inteiro. A union consultada no Xenia expõe
-major nos 4 bits inferiores, minor nos próximos 4, build nos próximos 16 e
-qfe nos 8 superiores após leitura BE. Preservar o inteiro bruto no relatório
+string `0.0.0.4` arbitrariamente em inteiro. A primeira leitura da declaração de bitfields C++ levou a uma ordem incorreta.
+O XEX real de SHA-1 esperado contém versão raw `0x00000004`, confirmando
+major nos bits 28–31, minor 24–27, build 8–23 e QFE 0–7. Preservar o inteiro bruto no relatório
 e testar todos os campos com valores diferentes. Conferir bitfields de
 páginas com cuidado semelhante; não copiar representação C++ diretamente
 para estruturas portáveis.
@@ -52,8 +53,9 @@ para estruturas portáveis.
 Todo tamanho, multiplicação, offset e contagem deve ser limitado pelo arquivo
 e pelo container pai. Rejeitar truncamento, sobreposição inválida e tamanho
 impossível antes de alocar. Campos desconhecidos merecem diagnóstico, não
-sucesso fabricado. A iteração inicial não inclui chaves proprietárias nem
-descriptografia; imagem cifrada/comprimida deve produzir limitação explícita.
+sucesso fabricado. O parser público não inclui chaves nem descriptografia;
+imagem cifrada/comprimida recebe limitação explícita. A preparação privada
+offline é separada da análise dos metadados públicos.
 
 ## Sequência para o XEX real
 

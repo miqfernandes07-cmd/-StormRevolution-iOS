@@ -19,7 +19,8 @@ estar instalados; ausência do compilador é falha, não teste silenciosamente p
 
 | Área | Cobertura automática | Limite |
 | --- | --- | --- |
-| XEX2 | Identidade, versão, páginas, imports, truncamentos, limites, mutações determinísticas e CLI | Fixtures não são executáveis PE completos; sem XEX real, decriptação, exports ou funções |
+| XEX2 | Identidade, versão, blocos básicos, páginas, imports, truncamentos, limites, mutações determinísticas e CLI | Sem decriptação, exports ou funções no parser público |
+| PE32 | Layouts file/mapped, seções, RVA, limites e descritores BE de imports | Sem exports, recuperação de funções ou resolução de serviços |
 | PPC AOT | GPR64, overflow modular, imediatos negativos, RA=0, OR, branch adiante, diagnósticos | Sem FPU, VMX128, CR/XER, atomics, chamadas indiretas ou loops |
 | Vetor | Soma modular de lanes u32, XOR e ordem BE | Helpers portáveis, não conjunto VMX completo nem equivalência SIMD ARM |
 | Memória | Loads/stores BE, limites, alinhamento, allocator | Buffer de teste; sem proteção virtual/MMU ou comportamento Xbox completo |
@@ -30,9 +31,11 @@ estar instalados; ausência do compilador é falha, não teste silenciosamente p
 
 ## Dependências do executável original
 
-Permanecem bloqueados: confirmar identidade/edição; contar imports/opcodes; recuperar
-funções e tabelas de salto; reconstruir imagem; gerar C++ do Storm; testes de ABI e
-serviços usados; shaders/texturas/EDRAM; XMA/vozes; carregar arenas; saves e gameplay.
+O XEX fornecido já permitiu confirmar identidade, reconstruir a imagem, ler os
+imports e tentar geração C++ privada. A geração foi rejeitada por diagnósticos;
+não houve compilação ou execução desse C++. Permanecem pendentes: cobertura
+completa de instruções, funções e tabelas de salto validadas, testes de ABI e
+serviços usados, shaders/texturas/EDRAM, XMA/vozes, arenas, saves e gameplay.
 Relatórios comerciais e código derivado permanecem privados. Não enviar para CI
 pública. A suíte de CI só inclui fixtures próprias e o app de infraestrutura.
 
@@ -75,3 +78,18 @@ raw explícito, branches/AA/LK e candidatos, sem execução comercial.
 Os testes novos de colisão de caminhos preservam a entrada, inclusive hardlinks.
 A suíte inicial de 29 testes permanece registrada no log anterior como marco
 histórico. A ampliação não altera nenhum estado de execução Apple ou do jogo.
+
+## Análise do XEX real e PE — 2026-11-06
+
+Linux x86_64, GCC 14.2.0, Python 3.12.14, CMake 3.31.6: **3/3 grupos CTest**
+aprovados em Debug/UBSan, com **62 testes Python** (16 XEX, 13 PE, 9 AOT,
+8 adaptador e 16 inventário), 1038 verificações de runtime e 33 de PCM.
+O teste adicional do adaptador verifica rejeição de diagnóstico mesmo quando
+uma ferramenta retorna exit code zero. O subprocesso desse teste é sintético;
+a execução real de XenonRecomp é registrada separadamente em PROGRESS.
+
+Os relatórios reais foram produzidos localmente sobre dados privados. A suíte
+pública continua independente desses arquivos. O parser PE registrou a diferença
+entre `SizeOfImage` e o buffer reconstruído sem fabricar a cauda ausente.
+Nenhuma execução de código comercial, Apple ou ARM64 foi concluída neste marco.
+[Log completo da suíte pública](validation/host-pe-2026-11-06.log).
