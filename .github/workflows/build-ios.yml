@@ -49,6 +49,15 @@ jobs:
           cp -R build-ios/ios/Release-iphoneos/StormRevolution.app out/package/Payload/
           (cd out/package && zip -qry ../StormRevolution-UNSIGNED.ipa Payload)
           shasum -a 256 out/StormRevolution-UNSIGNED.ipa > out/StormRevolution-UNSIGNED.ipa.sha256
+      - name: Upload unsigned infrastructure IPA before simulator checks
+        uses: actions/upload-artifact@v4
+        with:
+          name: storm-ios-infrastructure-unsigned
+          path: |
+            out/*.ipa
+            out/*.sha256
+          if-no-files-found: error
+          retention-days: 7
       - name: Build simulator application
         run: |
           set -o pipefail
@@ -58,16 +67,15 @@ jobs:
           cmake --build build-sim --config Debug --target StormRevolution \
             -- CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO | tee out/simulator-build.txt
       - name: Smoke test runtime and Metal submission in simulator
+        timeout-minutes: 10
         run: bash ios/scripts/simulator-smoke.sh build-sim/ios/Debug-iphonesimulator/StormRevolution.app out/simulator-smoke.json
-      - name: Upload infrastructure IPA and logs only
+      - name: Upload infrastructure validation logs
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: storm-ios-infrastructure-unsigned
+          name: storm-ios-validation-logs
           path: |
             out/*.txt
             out/*.json
-            out/*.ipa
-            out/*.sha256
           if-no-files-found: warn
           retention-days: 7
