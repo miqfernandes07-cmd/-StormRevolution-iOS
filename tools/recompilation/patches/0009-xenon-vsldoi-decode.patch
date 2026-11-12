@@ -1,0 +1,43 @@
+--- a/XenonRecomp/recompiler.cpp
++++ b/XenonRecomp/recompiler.cpp
+@@ -1,6 +1,7 @@
+ #include "pch.h"
+ #include "recompiler.h"
+ #include <xex_patcher.h>
++#include <cstdio>
+
+ static uint64_t ComputeMask(uint32_t mstart, uint32_t mstop)
+ {
+@@ -263,6 +264,32 @@
+     RecompilerLocalVariables& localVariables,
+     CSRState& csrState)
+ {
++    // The generic disassembler can prefer BookE MAC mnemonics over Xenon VX128_5.
++    if (insn.opcode->id == PPC_INST_MACLHWU || insn.opcode->id == PPC_INST_MACCHWU)
++    {
++        const uint32_t word = ByteSwap(*data);
++        if ((word & 0xFC000010u) != 0x10000010u)
++            return false;
++        const uint32_t canonical = ByteSwap(uint32_t(0x10000210));
++        ppc::DisassemblerEngine engine(BFD_ENDIAN_BIG, "cell 64");
++        ppc_insn corrected{};
++        if (engine.Disassemble(&canonical, 4, base, corrected) != 4 ||
++            corrected.opcode == nullptr || corrected.opcode->id != PPC_INST_VSLDOI128)
++            return false;
++        auto field = [word](unsigned first, unsigned count)
++        {
++            return (word >> first) & ((1u << count) - 1);
++        };
++        corrected.instruction = insn.instruction;
++        corrected.operands[0] = field(21, 5) + 32 * field(2, 2);
++        corrected.operands[1] = field(16, 5) + 32 * field(5, 1) + 64 * field(10, 1);
++        corrected.operands[2] = field(11, 5) + 32 * field(0, 2);
++        corrected.operands[3] = field(6, 4);
++        std::snprintf(corrected.op_str, sizeof(corrected.op_str), "v%u,v%u,v%u,%u",
++            corrected.operands[0], corrected.operands[1], corrected.operands[2], corrected.operands[3]);
++        return Recompile(fn, base, corrected, data, switchTable, localVariables, csrState);
++    }
++
+     println("\t// {} {}", insn.opcode->name, insn.op_str);
+
+     // TODO: we could cache these formats in an array
