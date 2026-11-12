@@ -1,0 +1,16 @@
+--- a/XenonRecomp/recompiler.cpp
++++ b/XenonRecomp/recompiler.cpp
+@@ -2247,6 +2247,13 @@
+         else
+             println("simde_mm_setzero_si128());");
+
++        break;
++
++    case PPC_INST_EQV:
++        // Record variants require a separate CR0 policy audit.
++        if (strchr(insn.opcode->name, '.'))
++            return false;
++        println("\t{}.u64 = ~({}.u64 ^ {}.u64);", r(insn.operands[0]), r(insn.operands[1]), r(insn.operands[2]));
+         break;
+
+     case PPC_INST_XOR:
