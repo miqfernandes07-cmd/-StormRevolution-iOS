@@ -1,0 +1,127 @@
+--- a/XenonRecomp/recompiler.cpp
++++ b/XenonRecomp/recompiler.cpp
+@@ -1013,6 +1013,124 @@
+     case PPC_INST_FSUBS:
+         printSetFlushMode(false);
+         println("\t{}.f64 = double(float({}.f64 - {}.f64));", f(insn.operands[0]), f(insn.operands[1]), f(insn.operands[2]));
++        break;
++
++    case PPC_INST_LHZU:
++        if (insn.operands[2] == 0 || insn.operands[0] == insn.operands[2])
++            return false;
++        println("\t{} = {}.u32 + {}u;", ea(), r(insn.operands[2]), uint32_t(int32_t(insn.operands[1])));
++        println("\t{}.u64 = PPC_LOAD_U16({});", r(insn.operands[0]), ea());
++        println("\t{}.u64 = {};", r(insn.operands[2]), ea());
++        break;
++
++    case PPC_INST_LHAU:
++        if (insn.operands[2] == 0 || insn.operands[0] == insn.operands[2])
++            return false;
++        println("\t{} = {}.u32 + {}u;", ea(), r(insn.operands[2]), uint32_t(int32_t(insn.operands[1])));
++        println("\t{}.s64 = int64_t(int32_t(PPC_LOAD_U16({}) ^ 0x8000u) - 32768);", r(insn.operands[0]), ea());
++        println("\t{}.u64 = {};", r(insn.operands[2]), ea());
++        break;
++
++    case PPC_INST_STHU:
++        if (insn.operands[2] == 0 || mmioStore())
++            return false;
++        println("\t{} = {}.u32 + {}u;", ea(), r(insn.operands[2]), uint32_t(int32_t(insn.operands[1])));
++        println("\tPPC_STORE_U16({}, {}.u16);", ea(), r(insn.operands[0]));
++        println("\t{}.u64 = {};", r(insn.operands[2]), ea());
++        break;
++
++    case PPC_INST_LWZUX:
++        if (insn.operands[1] == 0 || insn.operands[0] == insn.operands[1])
++            return false;
++        println("\t{} = {}.u32 + {}.u32;", ea(), r(insn.operands[1]), r(insn.operands[2]));
++        println("\t{}.u64 = PPC_LOAD_U32({});", r(insn.operands[0]), ea());
++        println("\t{}.u64 = {};", r(insn.operands[1]), ea());
++        break;
++
++    case PPC_INST_LBZUX:
++        if (insn.operands[1] == 0 || insn.operands[0] == insn.operands[1])
++            return false;
++        println("\t{} = {}.u32 + {}.u32;", ea(), r(insn.operands[1]), r(insn.operands[2]));
++        println("\t{}.u64 = PPC_LOAD_U8({});", r(insn.operands[0]), ea());
++        println("\t{}.u64 = {};", r(insn.operands[1]), ea());
++        break;
++
++    case PPC_INST_STHUX:
++        if (insn.operands[1] == 0 || mmioStore())
++            return false;
++        println("\t{} = {}.u32 + {}.u32;", ea(), r(insn.operands[1]), r(insn.operands[2]));
++        println("\tPPC_STORE_U16({}, {}.u16);", ea(), r(insn.operands[0]));
++        println("\t{}.u64 = {};", r(insn.operands[1]), ea());
++        break;
++
++    case PPC_INST_LHZUX:
++        if (insn.operands[1] == 0 || insn.operands[0] == insn.operands[1])
++            return false;
++        println("\t{} = {}.u32 + {}.u32;", ea(), r(insn.operands[1]), r(insn.operands[2]));
++        println("\t{}.u64 = PPC_LOAD_U16({});", r(insn.operands[0]), ea());
++        println("\t{}.u64 = {};", r(insn.operands[1]), ea());
++        break;
++
++    case PPC_INST_LDUX:
++        if (insn.operands[1] == 0 || insn.operands[0] == insn.operands[1])
++            return false;
++        println("\t{} = {}.u32 + {}.u32;", ea(), r(insn.operands[1]), r(insn.operands[2]));
++        println("\t{}.u64 = PPC_LOAD_U64({});", r(insn.operands[0]), ea());
++        println("\t{}.u64 = {};", r(insn.operands[1]), ea());
++        break;
++
++    case PPC_INST_STDUX:
++        if (insn.operands[1] == 0 || mmioStore())
++            return false;
++        println("\t{} = {}.u32 + {}.u32;", ea(), r(insn.operands[1]), r(insn.operands[2]));
++        println("\tPPC_STORE_U64({}, {}.u64);", ea(), r(insn.operands[0]));
++        println("\t{}.u64 = {};", r(insn.operands[1]), ea());
++        break;
++
++    case PPC_INST_LFDU:
++        if (insn.operands[2] == 0)
++            return false;
++        printSetFlushMode(false);
++        println("\t{} = {}.u32 + {}u;", ea(), r(insn.operands[2]), uint32_t(int32_t(insn.operands[1])));
++        println("\t{}.u64 = PPC_LOAD_U64({});", f(insn.operands[0]), ea());
++        println("\t{}.u64 = {};", r(insn.operands[2]), ea());
++        break;
++
++    case PPC_INST_STFDU:
++        if (insn.operands[2] == 0 || mmioStore())
++            return false;
++        printSetFlushMode(false);
++        println("\t{} = {}.u32 + {}u;", ea(), r(insn.operands[2]), uint32_t(int32_t(insn.operands[1])));
++        println("\tPPC_STORE_U64({}, {}.u64);", ea(), f(insn.operands[0]));
++        println("\t{}.u64 = {};", r(insn.operands[2]), ea());
++        break;
++
++    case PPC_INST_LFSUX:
++        if (insn.operands[1] == 0)
++            return false;
++        printSetFlushMode(false);
++        println("\t{} = {}.u32 + {}.u32;", ea(), r(insn.operands[1]), r(insn.operands[2]));
++        println("\t{}.u32 = PPC_LOAD_U32({});", temp(), ea());
++        println("\t{}.f64 = double({}.f32);", f(insn.operands[0]), temp());
++        println("\t{}.u64 = {};", r(insn.operands[1]), ea());
++        break;
++
++    case PPC_INST_STFSUX:
++        if (insn.operands[1] == 0 || mmioStore())
++            return false;
++        printSetFlushMode(false);
++        println("\t{} = {}.u32 + {}.u32;", ea(), r(insn.operands[1]), r(insn.operands[2]));
++        println("\t{}.f32 = float({}.f64);", temp(), f(insn.operands[0]));
++        println("\tPPC_STORE_U32({}, {}.u32);", ea(), temp());
++        println("\t{}.u64 = {};", r(insn.operands[1]), ea());
++        break;
++
++    case PPC_INST_LHBRX:
++        if (insn.operands[1] == 0)
++            println("\t{} = {}.u32;", ea(), r(insn.operands[2]));
++        else
++            println("\t{} = {}.u32 + {}.u32;", ea(), r(insn.operands[1]), r(insn.operands[2]));
++        println("\t{}.u64 = __builtin_bswap16(PPC_LOAD_U16({}));", r(insn.operands[0]), ea());
+         break;
+
+     case PPC_INST_LBZ:

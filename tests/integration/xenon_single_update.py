@@ -17,7 +17,7 @@ def elf(code):
     header = struct.pack('>16sHHIIIIIHHHHHH', b'\x7fELF\x01\x02\x01' + bytes(9),
                          1, 20, 1, 0x1000, 0, table, 0, 52, 0, 0, 40, 3, 2)
     body = (header + code + names).ljust(table, b'\0')
-    return body + bytes(40) + struct.pack('>10I', 1, 1, 6, 0x1000, 52, len(code), 0, 0, 4, 0) + struct.pack('>10I', 7, 3, 0, 0x2000, 52+len(code), len(names), 0, 0, 1, 0)
+    return body + bytes(40) + struct.pack('>10I', 1, 1, 6, 0x1000, 52, len(code), 0, 0, 4, 0) + struct.pack('>10I', 7, 3, 0, 0x1000 + ((len(code) + 4095) & ~4095), 52+len(code), len(names), 0, 0, 1, 0)
 
 
 def main():

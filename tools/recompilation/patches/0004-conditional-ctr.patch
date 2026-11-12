@@ -1,0 +1,29 @@
+--- a/XenonRecomp/recompiler.cpp
++++ b/XenonRecomp/recompiler.cpp
+@@ -662,11 +662,23 @@
+         println("\tif ({}.u32 != 0) goto loc_{:X};", ctr(), insn.operands[0]);
+         break;
+
++    case PPC_INST_BDZF:
+     case PPC_INST_BDNZF:
+-        // NOTE: assuming eq here as a shortcut because all the instructions in the game do that
++    case PPC_INST_BDNZT:
++    {
++        const uint32_t instruction = ByteSwap(*data);
++        const uint32_t target = insn.operands[1];
++        if ((instruction >> 26) != 16 || (instruction & 3) != 0 ||
++            target < fn.base || target >= fn.base + fn.size)
++            return false;
++        static constexpr const char* bits[] = { "lt", "gt", "eq", "so" };
++        const uint32_t bi = (instruction >> 16) & 31;
+         println("\t--{}.u64;", ctr());
+-        println("\tif ({}.u32 != 0 && !{}.eq) goto loc_{:X};", ctr(), cr(insn.operands[0] / 4), insn.operands[1]);
+-        break;
++        println("\tif ({}.u32 {} 0 && {}{}.{}) goto loc_{:X};", ctr(),
++            id == PPC_INST_BDZF ? "==" : "!=", id == PPC_INST_BDNZT ? "" : "!",
++            cr(bi / 4), bits[bi % 4], target);
++        break;
++    }
+
+     case PPC_INST_BEQ:
+         printConditionalBranch(false, "eq");
