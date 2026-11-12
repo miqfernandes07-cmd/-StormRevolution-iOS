@@ -1,0 +1,57 @@
+#include "cpu/xenon_checked_memory.h"
+#include "memory/address_space.h"
+#include "kernel/executable_module.h"
+#include "kernel/virtual_memory.h"
+#include "ppc_recomp_shared.h"
+#include <cstdio>
+#include <fstream>
+#include <iterator>
+#include <vector>
+#include <string>
+static unsigned entered=0;
+static storm::kernel::ExecutableModule* module=nullptr;
+static storm::kernel::VirtualMemory* vm=nullptr;
+PPC_FUNC(__imp__RtlImageXexHeaderField){
+    if(!module)throw std::runtime_error("PROBE_MODULE_NOT_BOUND");
+    ctx.r3.u64=module->header_field(ctx.r3.u32,ctx.r4.u32);
+    std::printf("KERNEL_HEADER_FIELD key=%08X result=%08X\n",ctx.r4.u32,ctx.r3.u32);
+}
+PPC_FUNC(__imp__NtAllocateVirtualMemory){
+    if(!vm)throw std::runtime_error("PROBE_VM_NOT_BOUND");
+    ctx.r3.u64=vm->allocate_guest(ctx.r3.u32,ctx.r4.u32,ctx.r5.u32,ctx.r6.u32,ctx.r7.u32);
+    std::printf("KERNEL_VM_ALLOC status=%08X committed=%zu\n",ctx.r3.u32,vm->committed_bytes());
+}
+PPC_FUNC(__imp__NtFreeVirtualMemory){
+    if(!vm)throw std::runtime_error("PROBE_VM_NOT_BOUND");
+    ctx.r3.u64=vm->free_guest(ctx.r3.u32,ctx.r4.u32,ctx.r5.u32);
+}
+@GUARDS@
+@FUNCTIONS@
+int main(int argc,char** argv){
+    if(argc!=3)return 2;
+    std::ifstream image_file(argv[1],std::ios::binary);
+    std::vector<uint8_t> image(@IMAGE_SIZE@);
+    if(!image_file.read(reinterpret_cast<char*>(image.data()),image.size())||image_file.peek()!=std::char_traits<char>::eof())return 3;
+    storm::memory::AddressSpace space;
+    space.map(@IMAGE_BASE@,image.size(),storm::memory::Access::read_write,image.data(),image.size());
+    space.map(@STACK_BASE@,@STACK_SIZE@,storm::memory::Access::read_write);
+    std::ifstream xex(argv[2],std::ios::binary);
+    std::vector<uint8_t> header(@HEADER_SIZE@);
+    if(!xex.read(reinterpret_cast<char*>(header.data()),header.size()))return 4;
+    storm::kernel::XexHeader view(std::move(header));
+    storm::kernel::ExecutableModule executable(space,view,{
+        @MODULE_VARIABLE@,@MODULE_DESCRIPTOR@,@MODULE_HEADER@,@IMAGE_BASE@,uint32_t(image.size()),@ENTRY_ADDRESS@});
+    module=&executable;executable.bind_handle_slot(@HANDLE_SLOT@,@HANDLE_WORD@);
+    storm::kernel::VirtualMemory virtual_memory(space);vm=&virtual_memory;
+    PPCContext ctx{};ctx.r1.u64=@STACK_BASE@+@STACK_SIZE@-32;ctx.lr=0xdeadbee0;
+    alignas(32)uint8_t placeholder[32]{};
+    storm::cpu::AotFunctionTable table;
+@REGISTRATIONS@
+    table.seal();storm::cpu::AotBinding binding(table,ctx,placeholder,&space);
+    try{
+        storm::cpu::dispatch(ctx,placeholder,@ENTRY_ADDRESS@);
+        std::puts("PROBE_UNEXPECTED_ENTRY_RETURN");return 5;
+    }catch(const std::exception& error){
+        std::printf("PREFIX_STOP entered=%u LR=%08X reason=%s\n",entered,unsigned(ctx.lr),error.what());return 0;
+    }
+}
