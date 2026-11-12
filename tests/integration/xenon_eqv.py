@@ -101,7 +101,7 @@ int main() {
 }
 '''
     (work / 'native.cpp').write_text(harness)
-    run([args.clang.resolve(), '-std=c++20', '-O2', '-fsanitize=undefined',
+    run([args.clang.absolute(), '-std=c++20', '-O2', '-fsanitize=undefined',
          '-fno-sanitize-recover=all', '-I' + str(upstream / 'XenonUtils'),
          '-I' + str(upstream / 'thirdparty/simde'), work / 'native.cpp', '-o', work / 'native',
          *(['-fno-sanitize-link-runtime', '-lubsan'] if args.system_ubsan else [])])
@@ -109,7 +109,7 @@ int main() {
     report = {'scope': 'synthetic_eqv_upstream_generated_native_host_only',
               'vectors': 3264, 'eqv_record_rejected': True, 'game_executed': False,
               'host': platform.machine(), 'system': platform.system(),
-              'compiler': run([args.clang.resolve(), '--version']).splitlines()[0],
+              'compiler': run([args.clang.absolute(), '--version']).splitlines()[0],
               'upstream_commit': run(['git', '-C', upstream, 'rev-parse', 'HEAD']).strip(),
               'patch_sha256': hashlib.sha256((ROOT / 'tools/recompilation/patches/0001-eqv-nonrecord.patch').read_bytes()).hexdigest(),
               'context_sha256': hashlib.sha256((upstream / 'XenonUtils/ppc_context.h').read_bytes()).hexdigest(),

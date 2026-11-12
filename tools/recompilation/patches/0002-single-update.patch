@@ -1,0 +1,36 @@
+--- a/XenonRecomp/recompiler.cpp
++++ b/XenonRecomp/recompiler.cpp
+@@ -1088,6 +1088,16 @@
+         println("\t{}.f64 = double({}.f32);", f(insn.operands[0]), temp());
+         break;
+
++    case PPC_INST_LFSU:
++        if (insn.operands[2] == 0)
++            return false;
++        printSetFlushMode(false);
++        println("\t{} = {}.u32 + {}u;", ea(), r(insn.operands[2]), uint32_t(int32_t(insn.operands[1])));
++        println("\t{}.u32 = PPC_LOAD_U32({});", temp(), ea());
++        println("\t{}.f64 = double({}.f32);", f(insn.operands[0]), temp());
++        println("\t{}.u64 = {};", r(insn.operands[2]), ea());
++        break;
++
+     case PPC_INST_LFSX:
+         printSetFlushMode(false);
+         print("\t{}.u32 = PPC_LOAD_U32(", temp());
+@@ -1554,6 +1564,16 @@
+         if (insn.operands[2] != 0)
+             print("{}.u32 + ", r(insn.operands[2]));
+         println("{}, {}.u32);", int32_t(insn.operands[1]), temp());
++        break;
++
++    case PPC_INST_STFSU:
++        if (insn.operands[2] == 0 || mmioStore())
++            return false;
++        printSetFlushMode(false);
++        println("\t{} = {}.u32 + {}u;", ea(), r(insn.operands[2]), uint32_t(int32_t(insn.operands[1])));
++        println("\t{}.f32 = float({}.f64);", temp(), f(insn.operands[0]));
++        println("\tPPC_STORE_U32({}, {}.u32);", ea(), temp());
++        println("\t{}.u64 = {};", r(insn.operands[2]), ea());
+         break;
+
+     case PPC_INST_STFSX:
