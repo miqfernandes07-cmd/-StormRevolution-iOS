@@ -7,6 +7,7 @@ explicit. A reviewed config digest is required for the recompilation stage.
 from __future__ import annotations
 
 import argparse
+import bisect
 import hashlib
 import importlib.util
 import json
@@ -166,6 +167,45 @@ def validate_identity(plan: dict, private: Path) -> None:
         raise PipelineError("CONFIG_CHANGED_AFTER_REVIEW")
 
 
+def audit_generated(output: Path) -> dict:
+    """Conservative emitted-source gate, not a C++ parser or reachability proof."""
+    root = output.resolve()
+    literals = re.compile(r'//[^\n]*|/\*.*?\*/|"(?:\\.|[^"\\])*"|\'(?:\\.|[^\'\\])*\'', re.S)
+    unsafe = re.compile(r'\b(__builtin_debugtrap|__builtin_trap|__builtin_unreachable)\s*\(')
+    files, sites, indirect, total = 0, [], 0, 0
+    for path in sorted(output.rglob('*.cpp')):
+        if not path.resolve().is_relative_to(root):
+            raise PipelineError('XENON_GENERATED_SOURCE_ESCAPE')
+        with path.open('rb') as stream:
+            data = stream.read(16 * 1024 * 1024 + 1)
+        total += len(data)
+        if len(data) > 16 * 1024 * 1024 or total > 512 * 1024 * 1024:
+            raise PipelineError('XENON_GENERATED_AUDIT_SIZE_LIMIT')
+        source = data.decode('utf-8')
+        newlines = [index for index, char in enumerate(source) if char == '\n']
+        code = literals.sub(lambda match: ''.join('\n' if c == '\n' else ' ' for c in match[0]), source)
+        for match in unsafe.finditer(code):
+            sites.append({'file': path.relative_to(output).as_posix(),
+                          'line': bisect.bisect_right(newlines, match.start()) + 1, 'token': match[1]})
+        # The upstream emitter uses a comment instead of a call when a direct
+        # target has no symbol. Treat that exact marker as omitted behavior.
+        for match in re.finditer(r'(?m)^[ \t]*//[ \t]*ERROR\b(?:[ \t]+(?:0x)?([0-9A-Fa-f]+))?', source):
+            sites.append({'file': path.relative_to(output).as_posix(),
+                          'line': bisect.bisect_right(newlines, match.start()) + 1,
+                          'token': 'XENON_UNRESOLVED_STATIC_CALL',
+                          'target': int(match[1], 16) if match[1] else None})
+        # A .long emitted for an undecodable word, including zero, is not
+        # evidence of a harmless NOP. Padding must be excluded by reviewed ranges.
+        for match in re.finditer(r'(?m)^[ \t]*//[ \t]*\.long[ \t]+([^\n]*)', source):
+            sites.append({'file': path.relative_to(output).as_posix(),
+                          'line': bisect.bisect_right(newlines, match.start()) + 1,
+                          'token': 'XENON_UNDECODED_WORD'})
+        indirect += len(re.findall(r'\bPPC_CALL_INDIRECT_FUNC\s*\(', code))
+        files += 1
+    return {'cpp_files': files, 'blocked_sites': sites, 'indirect_call_sites': indirect,
+            'game_execution_approved': False, 'scope': 'emitted_cpp_lexical_gate_only'}
+
+
 def execute(plan: dict, log_path: Path, private: Path) -> int:
     log_path = private_path(log_path, private)
     output = Path(plan["output"])
@@ -188,12 +228,20 @@ def execute(plan: dict, log_path: Path, private: Path) -> int:
     if result.returncode:
         raise PipelineError(f"XENON_TOOL_FAILED:{result.returncode}; inspect private log")
     log = log_path.read_text(encoding="utf-8", errors="replace")
-    if re.search(r"\b(error|fatal|warning|unsupported|unimplemented)\b|not implemented|unrecognized instruction|unable to decode instruction|has RC bit enabled but no comparison", log, re.I):
+    if re.search(r"\b(error|fatal|warning|unsupported|unimplemented)\b|not implemented|unrecognized instruction|unable to decode instruction|has RC bit enabled but no comparison|unexpected .* instruction|ends prematurely", log, re.I):
         raise PipelineError("XENON_DIAGNOSTICS_REQUIRE_REVIEW; inspect private log")
     if plan["stage"] == "analyse" and not output.is_file():
         raise PipelineError("XENON_ANALYSIS_OUTPUT_MISSING")
-    if plan["stage"] == "recompile" and not any(output.rglob("*.cpp")):
-        raise PipelineError("XENON_GENERATED_CPP_MISSING")
+    if plan["stage"] == "recompile":
+        audit = audit_generated(output)
+        audit_path = private_path(log_path.with_suffix(log_path.suffix + '.audit.json'), private)
+        with audit_path.open('x', encoding='utf-8') as stream:
+            json.dump(audit, stream, indent=2)
+            stream.write('\n')
+        if not audit['cpp_files']:
+            raise PipelineError("XENON_GENERATED_CPP_MISSING")
+        if audit['blocked_sites']:
+            raise PipelineError('XENON_GENERATED_CODE_REQUIRES_REVIEW: trap/unreachable/omitted-call sites; inspect private audit')
     return 0
 
 
