@@ -1,9 +1,10 @@
 # Aplicação iOS: infraestrutura nativa
 
-Status: **Compila para iPhone ARM64 e simulador x86_64 em CI**. O run
+Status: **Compila para iPhone ARM64 e executa a infraestrutura no simulador x86_64**. O run
 [43162119044](https://github.com/miqfernandes07-cmd/-StormRevolution-iOS/actions/runs/43162119044)
 usou macOS Intel, Xcode 16.4 (16F6), AppleClang 17 e SDK 18.5, com deployment
-17.0. O IPA de infraestrutura foi empacotado sem assinatura. Instalação em
+17.0. O IPA de infraestrutura foi empacotado sem assinatura. O smoke test
+aprovou autoteste do runtime e conclusão de comando Metal; `game_executed=false`. Instalação em
 hardware e execução do jogo continuam pendentes. O ambiente local é Linux;
 os builds Apple foram realizados exclusivamente no GitHub Actions.
 
@@ -102,3 +103,24 @@ físico e inspeção Instruments são dependências exatas para os próximos mar
 Compilar, produzir IPA, assinar, instalar, iniciar a infraestrutura e executar o
 jogo são seis verificações independentes. Nenhuma aprovação do smoke test equivale
 a boot ou gameplay de Naruto Storm Revolution.
+
+## Artefato e evidência — 2026-11-12
+
+[Baixar artefato da CI](https://github.com/miqfernandes07-cmd/-StormRevolution-iOS/actions/runs/43162119044/artifacts/13918423298)
+(disponibilidade original até 2026-11-19). Inclui `StormRevolution-UNSIGNED.ipa`
+e logs. O ZIP foi baixado e inspecionado no Linux: IPA contém somente o executável
+Mach-O ARM64, Info.plist, PkgInfo e default.metallib. Não há recursos do jogo,
+perfil de provisionamento ou comando Mach-O de assinatura embutida.
+
+SHA-256 do IPA: `264e0994fc01c74fc9be45eef445c6a7ca25467909b369026681a035c97bd1a2`.
+
+[JSON real do smoke test](validation/ios-2026-11-12-simulator-smoke.json),
+[toolchain](validation/ios-2026-11-12-xcode-version.txt) e
+[testes host Apple](validation/ios-2026-11-12-host-tests.txt).
+O teste não compara pixels, não exercita importação/controles e não executa o jogo.
+
+Todos os passos de build, empacotamento, smoke e upload desse run passaram.
+O estado global terminou `cancelled` durante a finalização, após um novo push
+que separou o upload do IPA dos testes e limitou o smoke a dez minutos.
+Esse novo workflow está no run 43163104401; não se atribui a ele o resultado
+já medido no run anterior. Assinatura, instalação e teste em iPhone não ocorreram.

@@ -104,3 +104,10 @@ passaram localmente também com TMPDIR apontando a um symlink. No run
 os três grupos CTest passaram no macOS Intel, incluindo os 62 testes Python.
 O link do app ARM64 revelou ausência de CoreGraphics; a dependência foi adicionada
 explicitamente ao target CMake. O resultado da nova CI está em PROGRESS/IOS.
+
+O run 43162119044 passou também nos builds ARM64/simulador, empacotamento,
+smoke e upload. O JSON real registra runtime_self_test=true,
+metal_command_completed=true, game_executed=false e pixel_comparison_performed=false.
+O IPA baixado teve seu hash conferido e o cabeçalho Mach-O confirmou ARM64;
+sem LC_CODE_SIGNATURE. O run foi cancelado durante a finalização após novo push,
+portanto não é apresentado como sucesso global. Evidências e limites em IOS.md.

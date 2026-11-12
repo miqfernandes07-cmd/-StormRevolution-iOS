@@ -23,7 +23,8 @@ código nativo do jogo. O tradutor sintético permanece um teste independente.
 Estado em 2026-11-12: 62 testes Python, 1.038 verificações do runtime e 33 de PCM
 passaram em 3/3 grupos CTest no Linux. GCC e Clang já passaram na CI host em um
 marco anterior. A CI macOS agora compilou o app para iPhone ARM64 e simulador
-x86_64, gerando o IPA não assinado. Ver [integração iOS](docs/IOS.md) para evidências.
+x86_64, gerando o IPA não assinado. O aplicativo iniciou no simulador e passou
+no autoteste do runtime e na conclusão de um comando Metal. Ver [integração iOS](docs/IOS.md) para evidências.
 Não há JIT nem emulador completo no runtime.
 
 ```bash

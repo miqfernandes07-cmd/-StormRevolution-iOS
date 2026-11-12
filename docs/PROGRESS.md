@@ -37,6 +37,10 @@ O primeiro link ARM64 revelou falta de CoreGraphics, corrigida no CMake.
 O run [43162119044](https://github.com/miqfernandes07-cmd/-StormRevolution-iOS/actions/runs/43162119044)
 compilou o aplicativo para iPhone ARM64 e simulador x86_64 e empacotou o primeiro
 IPA não assinado de infraestrutura. Xcode 16.4/SDK iOS 18.5, deployment 17.0.
+O app iniciou no simulador e o smoke test aprovou runtime e comando Metal.
+O artefato foi baixado: Mach-O ARM64, sem assinatura embutida ou dados do jogo.
+Todos esses passos passaram; o run terminou globalmente cancelled na finalização
+após outro push. Evidências, hash e download em [IOS.md](IOS.md).
 Ainda não há instalação no iPhone nem execução do jogo. Não há medição de FPS,
 gameplay ou qualificação de iPhone 15 Pro/iOS 27.
 

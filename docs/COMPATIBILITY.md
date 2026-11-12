@@ -20,7 +20,7 @@ ou SDK Apple local. Nenhum FPS, compatibilidade iOS 27 ou boot foi medido.
 | Runtime C++, memória, vetor, imports, input e arquivos | Teste automatizado aprovado | 1.038 verificações em Linux x86_64; ainda sem contratos suficientes para executar o título |
 | VMX128, FPU e atomics guest completos | Não implementado | Helpers e testes limitados não equivalem à ISA completa; variantes rejeitadas e sincronização exigem revisão |
 | Serviços xboxkrnl/XAM do jogo | Não implementado | Imports identificados; o resolver genérico não implementa os contratos do título |
-| Metal de diagnóstico | Compila | MSL/MetalKit compilados em CI Apple; renderer Xenos pendente |
+| Metal de diagnóstico | Executa no simulador | Comando Metal concluído no smoke test; sem comparação de pixels ou tradução Xenos |
 | Shaders Xenos/EDRAM/texturas do jogo | Não implementado | Nenhum caminho gráfico do título validado |
 | Fila de frames PCM | Teste automatizado aprovado | 33 verificações, incluindo transferência SPSC de 100.000 frames no host |
 | XMA, reprodução de áudio/voz/vídeo | Não implementado | Sem decodificador/saída Apple integrada |
@@ -43,7 +43,7 @@ artificialmente. Isso exige atenção em qualquer futuro acesso fora das seçõe
 | Compilação em CI iOS | Aprovada para app de infraestrutura ARM64 e simulador x86_64 |
 | IPA produzido | Sim, infraestrutura sem jogo e sem assinatura; exige assinatura posterior |
 | IPA instalado | Não |
-| Aplicativo iniciado no simulador | Não |
+| Aplicativo iniciado no simulador | Sim; autoteste runtime e conclusão de comando Metal aprovados, sem execução do jogo |
 | Aplicativo iniciado no iPhone | Não |
 | Jogo efetivamente executado | Não |
 
