@@ -27,7 +27,7 @@ target_include_directories(StormRevolution PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}"
 target_link_libraries(StormRevolution PRIVATE storm_runtime
   "-framework Foundation" "-framework UIKit" "-framework UniformTypeIdentifiers"
   "-framework GameController" "-framework Metal" "-framework MetalKit"
-  "-framework QuartzCore")
+  "-framework QuartzCore" "-framework CoreGraphics")
 set_target_properties(StormRevolution PROPERTIES
   OBJCXX_STANDARD 17
   OBJCXX_STANDARD_REQUIRED YES
