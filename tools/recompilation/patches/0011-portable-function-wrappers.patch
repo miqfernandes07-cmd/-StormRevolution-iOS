@@ -1,0 +1,28 @@
+--- a/XenonRecomp/recompiler.cpp
++++ b/XenonRecomp/recompiler.cpp
+@@ -2650,9 +2650,9 @@
+         name = fmt::format("sub_{}", fn.base);
+     }
+
+-#ifdef XENON_RECOMP_USE_ALIAS
++    println("#if defined(__ELF__) && !defined(PPC_CONFIG_DISABLE_ALIAS)");
+     println("__attribute__((alias(\"__imp__{}\"))) PPC_WEAK_FUNC({});", name, name);
+-#endif
++    println("#endif");
+
+     println("PPC_FUNC_IMPL(__imp__{}) {{", name);
+     println("\tPPC_FUNC_PROLOGUE();");
+@@ -2714,11 +2714,11 @@
+
+     println("}}\n");
+
+-#ifndef XENON_RECOMP_USE_ALIAS
++    println("#if !defined(__ELF__) || defined(PPC_CONFIG_DISABLE_ALIAS)");
+     println("PPC_WEAK_FUNC({}) {{", name);
+     println("\t__imp__{}(ctx, base);", name);
+     println("}}\n");
+-#endif
++    println("#endif");
+
+     std::swap(out, tempString);
+     if (localVariables.ctr)

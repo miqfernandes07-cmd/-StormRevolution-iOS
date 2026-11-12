@@ -1,12 +1,13 @@
 {
-  "id": "storm-guest32-experimental-2026-11-12-r2",
+  "id": "storm-guest32-experimental-2026-11-12-r4",
   "base_commit": "ddd128bcca99fe8bfbb99bea583c972351fa6ace",
   "game_execution_approved": false,
   "scope": "Experimental guest32 address/carry/CR0 policy; not a claim about title CPU mode",
   "files": {
-    "XenonRecomp/recompiler.cpp": "a1f028322cf66e221eb36ee52dc2efe6aacd5fafa3adf3988648f8f3780119bc"
+    "XenonRecomp/recompiler.cpp": "9653a7d38fd5de400ee120c9c22ec5f8de98125110594406f144d7a16791b1b1",
+    "XenonUtils/ppc_context.h": "455668d94f8af289402c9aeeca8666c249ee517dd61ee8737dd572581644ba4d"
   },
-  "context_sha256": "369acaf639c52bb25ee8a2c6a555c7875912f0692b1e8220ea8dab0384e42263",
+  "context_sha256": "455668d94f8af289402c9aeeca8666c249ee517dd61ee8737dd572581644ba4d",
   "patches": [
     {
       "path": "tools/recompilation/patches/0001-eqv-nonrecord.patch",
@@ -43,6 +44,22 @@
     {
       "path": "tools/recompilation/patches/0009-xenon-vsldoi-decode.patch",
       "sha256": "21521493e2c38d980a568526ac08480f9dc6e52f5b0d6d54af327f487024f7d0"
+    },
+    {
+      "path": "tools/recompilation/patches/0010-vscr-saturation.patch",
+      "sha256": "4b9ca467fd9d3403755410aaa1b19216111b6a38bbd997b9cb529d881d98b2e3"
+    },
+    {
+      "path": "tools/recompilation/patches/0011-portable-function-wrappers.patch",
+      "sha256": "be514d69562ee11ba83ff3d304ba61aeefdf6b1da58b4d9a4bfebb58cce59e85"
+    },
+    {
+      "path": "tools/recompilation/patches/0012-d3d-half-formats.patch",
+      "sha256": "c6c8edae966a502a62266c4e2ee5f7db7ee32adc2386f15ba4e984bb2c651fa1"
+    },
+    {
+      "path": "tools/recompilation/patches/0013-blrl-checked-dispatch.patch",
+      "sha256": "87f6677ae731335563dcc2c536a64415d49bc90f89bcbfcaa3c93b7ba658171e"
     }
   ]
 }

@@ -1,0 +1,118 @@
+--- a/XenonRecomp/recompiler.cpp
++++ b/XenonRecomp/recompiler.cpp
+@@ -2260,27 +2260,32 @@
+             println("\t{}.u32[{}] = {}.u32;", v(insn.operands[0]), insn.operands[4], temp());
+             break;
+ 
+-        case 5: // float16_4
+-            if (insn.operands[3] != 2 || insn.operands[4] > 2)
+-                fmt::println("Unexpected float16_4 pack instruction at {:X}", base);
+-
+-            for (size_t i = 0; i < 4; i++)
+-            {
+-        		// Strip sign from source
+-        		println("\t{}.u32 = ({}.u32[{}]&0x7FFFFFFF);", temp(), v(insn.operands[1]), i);
+-        		// If |source| is > 65504, clamp output to 0x7FFF, else save 8 exponent bits 
+-        		println("\t{0}.u8[0] = ({1}.f32 != {1}.f32) || ({1}.f32 > 65504.0f) ? 0xFF : (({2}.u32[{3}]&0x7f800000)>>23);", vTemp(), temp(), v(insn.operands[1]), i);
+-        		// If 8 exponent bits were saved, it can only be 0x8E at most
+-        		// If saved, save first 10 bits of mantissa
+-        		println("\t{}.u16 = {}.u8[0] != 0xFF ? (({}.u32[{}]&0x7FE000)>>13) : 0x0;", temp(), vTemp(), v(insn.operands[1]), i);
+-        		// If saved and > 127-15, exponent is converted from 8 to 5-bit by subtracting 0x70
+-        		// If saved but not > 127-15, clamp exponent at 0, add 0x400 to mantissa and shift right by (0x71-exponent)
+-        		// If right shift is greater than 31 bits, manually clamp mantissa to 0 or else the output of the shift will be wrong
+-        		println("\t{0}.u16[{1}] = {2}.u8[0] != 0xFF ? ({2}.u8[0] > 0x70 ? ((({2}.u8[0]-0x70)<<10)+{3}.u16) : (0x71-{2}.u8[0] > 31 ? 0x0 : ((0x400+{3}.u16)>>(0x71-{2}.u8[0])))) : 0x7FFF;", v(insn.operands[0]), i+(2*insn.operands[4]), vTemp(), temp());
+-        		// Add back original sign
+-        		println("\t{}.u16[{}] |= (({}.u32[{}]&0x80000000)>>16);", v(insn.operands[0]), i+(2*insn.operands[4]), v(insn.operands[1]), i);
++        case 3: // IEEE float16_2
++        case 5: // IEEE float16_4
++        {
++            const unsigned mask = insn.operands[3];
++            const unsigned shift = insn.operands[4];
++            if (mask == 0 || mask > 3 || shift > 3)
++                return false;
++            println("\t{}.u64[0] = 0;", vTemp());
++            println("\t{}.u64[1] = 0;", vTemp());
++            if (insn.operands[2] == 3)
++                println("\t{}.u32[0] = (uint32_t(PPCFloat32ToHalfBits({}.u32[3])) << 16) | PPCFloat32ToHalfBits({}.u32[2]);",
++                    vTemp(), v(insn.operands[1]), v(insn.operands[1]));
++            else
++                for (unsigned lane = 0; lane < 4; ++lane)
++                    println("\t{}.u16[{}] = PPCFloat32ToHalfBits({}.u32[{}]);", vTemp(), lane, v(insn.operands[1]), lane);
++            if (mask == 1)
++                println("\t{}.u32[{}] = {}.u32[0];", v(insn.operands[0]), shift, vTemp());
++            else if (mask == 3 && shift == 3)
++                println("\t{}.u32[0] = {}.u32[1];", v(insn.operands[0]), vTemp());
++            else
++            {
++                println("\t{}.u32[{}] = {}.u32[0];", v(insn.operands[0]), shift, vTemp());
++                println("\t{}.u32[{}] = {}.u32[1];", v(insn.operands[0]), (shift + 1) & 3, vTemp());
+             }
+             break;
++        }
+ 
+         default:
+             println("\t__builtin_debugtrap();");
+@@ -2471,6 +2476,20 @@
+             }
+             println("\t{}.f32[1] = 0.0f;", vTemp());
+             println("\t{}.f32[0] = 1.0f;", vTemp());
++            println("\t{} = {};", v(insn.operands[0]), vTemp());
++            break;
++
++        case 3: // IEEE float16_2 in the lowest guest word
++            println("\t{}.u32[3] = PPCHalfBitsToFloat32({}.u16[1]);", vTemp(), v(insn.operands[1]));
++            println("\t{}.u32[2] = PPCHalfBitsToFloat32({}.u16[0]);", vTemp(), v(insn.operands[1]));
++            println("\t{}.u32[1] = 0;", vTemp());
++            println("\t{}.u32[0] = 0x3F800000;", vTemp());
++            println("\t{} = {};", v(insn.operands[0]), vTemp());
++            break;
++
++        case 5: // IEEE float16_4 in the lowest guest doubleword
++            for (unsigned lane = 0; lane < 4; ++lane)
++                println("\t{}.u32[{}] = PPCHalfBitsToFloat32({}.u16[{}]);", vTemp(), lane, v(insn.operands[1]), lane);
+             println("\t{} = {};", v(insn.operands[0]), vTemp());
+             break;
+ 
+--- a/XenonUtils/ppc_context.h
++++ b/XenonUtils/ppc_context.h
+@@ -211,6 +211,40 @@
+ #define PPC_ROUND_UP 0x02
+ #define PPC_ROUND_DOWN 0x03
+ #define PPC_ROUND_MASK 0x03
++
++// IEEE binary16 conversion, truncating toward zero, independent of host FP mode.
++inline uint16_t PPCFloat32ToHalfBits(uint32_t bits) noexcept
++{
++    const uint16_t sign = uint16_t((bits >> 16) & 0x8000);
++    const uint32_t magnitude = bits & 0x7FFFFFFF;
++    const uint32_t exponent = magnitude >> 23;
++    const uint32_t fraction = magnitude & 0x7FFFFF;
++    if (exponent == 255)
++        return uint16_t(sign | 0x7C00 | (fraction ? 0x200 | (fraction >> 13) : 0));
++    if (magnitude >= 0x47800000)
++        return uint16_t(sign | 0x7BFF);
++    if (magnitude < 0x33800000)
++        return sign;
++    if (magnitude >= 0x38800000)
++        return uint16_t(sign | ((exponent - 112) << 10) | (fraction >> 13));
++    return uint16_t(sign | ((0x800000 | fraction) >> (126 - exponent)));
++}
++
++inline uint32_t PPCHalfBitsToFloat32(uint16_t bits) noexcept
++{
++    const uint32_t sign = uint32_t(bits & 0x8000) << 16;
++    const uint32_t exponent = (bits >> 10) & 31;
++    uint32_t fraction = bits & 1023;
++    if (exponent == 31)
++        return sign | 0x7F800000 | (fraction ? (fraction << 13) | 0x400000 : 0);
++    if (exponent != 0)
++        return sign | ((exponent + 112) << 23) | (fraction << 13);
++    if (fraction == 0)
++        return sign;
++    int power = -14;
++    while ((fraction & 0x400) == 0) { fraction <<= 1; --power; }
++    return sign | (uint32_t(power + 127) << 23) | ((fraction & 1023) << 13);
++}
+ 
+ // Native guest state: SAT is sticky, NJ controls VMX denormal handling.
+ struct PPCVSCRRegister

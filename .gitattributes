@@ -1,0 +1,2 @@
+# Patch hunks preserve upstream whitespace, including removed lines.
+tools/recompilation/patches/*.patch -whitespace

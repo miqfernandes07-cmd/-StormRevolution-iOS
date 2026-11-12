@@ -1,0 +1,16 @@
+--- a/XenonRecomp/recompiler.cpp
++++ b/XenonRecomp/recompiler.cpp
+@@ -815,7 +815,12 @@
+         break;
+ 
+     case PPC_INST_BLRL:
+-        println("__builtin_debugtrap();");
++        if (config.skipLr)
++            return false;
++        println("\t{}.u32 = uint32_t(ctx.lr) & ~uint32_t(3);", temp());
++        println("\tctx.lr = 0x{:X};", base + 4);
++        println("\tPPC_CALL_INDIRECT_FUNC({}.u32);", temp());
++        csrState = CSRState::Unknown;
+         break;
+ 
+     case PPC_INST_BLT:

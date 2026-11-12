@@ -1,0 +1,158 @@
+--- a/XenonRecomp/recompiler.cpp
++++ b/XenonRecomp/recompiler.cpp
+@@ -454,7 +454,13 @@
+             {
+                 auto prefix = enable ? "enable" : "disable";
+                 auto suffix = csrState != CSRState::Unknown ? "Unconditional" : "";
+-                println("\tctx.fpscr.{}FlushMode{}();", prefix, suffix);
++                if (enable)
++                {
++                    println("\tif (ctx.vscr.nonJava()) ctx.fpscr.enableFlushMode{}();", suffix);
++                    println("\telse ctx.fpscr.disableFlushMode{}();", suffix);
++                }
++                else
++                    println("\tctx.fpscr.{}FlushMode{}();", prefix, suffix);
+
+                 csrState = newState;
+             }
+@@ -549,6 +555,40 @@
+     // Handling instructions that don't disassemble correctly for some reason here
+     if (id == PPC_INST_VUPKHSB128 && insn.operands[2] == 0x60) id = PPC_INST_VUPKHSH128;
+     else if (id == PPC_INST_VUPKLSB128 && insn.operands[2] == 0x60) id = PPC_INST_VUPKLSH128;
++
++    switch (id)
++    {
++    case PPC_INST_VADDSHS:
++        println("\tfor (unsigned lane = 0; lane < 8; ++lane)");
++        println("\t\tctx.vscr.markSaturation(int64_t({0}.s16[lane]) + {1}.s16[lane] < -32768 || int64_t({0}.s16[lane]) + {1}.s16[lane] > 32767);", v(insn.operands[1]), v(insn.operands[2]));
++        break;
++    case PPC_INST_VADDUBS:
++        println("\tfor (unsigned lane = 0; lane < 16; ++lane)");
++        println("\t\tctx.vscr.markSaturation(uint32_t({0}.u8[lane]) + {1}.u8[lane] > 255);", v(insn.operands[1]), v(insn.operands[2]));
++        break;
++    case PPC_INST_VADDUWS:
++        println("\tfor (unsigned lane = 0; lane < 4; ++lane)");
++        println("\t\tctx.vscr.markSaturation(uint64_t({0}.u32[lane]) + {1}.u32[lane] > 0xFFFFFFFFull);", v(insn.operands[1]), v(insn.operands[2]));
++        break;
++    case PPC_INST_VSUBSWS:
++        println("\tfor (unsigned lane = 0; lane < 4; ++lane)");
++        println("\t\tctx.vscr.markSaturation(int64_t({0}.s32[lane]) - {1}.s32[lane] < INT32_MIN || int64_t({0}.s32[lane]) - {1}.s32[lane] > INT32_MAX);", v(insn.operands[1]), v(insn.operands[2]));
++        break;
++    case PPC_INST_VSUBUBS:
++        println("\tfor (unsigned lane = 0; lane < 16; ++lane)");
++        println("\t\tctx.vscr.markSaturation({0}.u8[lane] < {1}.u8[lane]);", v(insn.operands[1]), v(insn.operands[2]));
++        break;
++    case PPC_INST_VPKSHUS:
++    case PPC_INST_VPKSHUS128:
++        println("\tfor (unsigned lane = 0; lane < 8; ++lane)");
++        println("\t\tctx.vscr.markSaturation({0}.s16[lane] < 0 || {0}.s16[lane] > 255 || {1}.s16[lane] < 0 || {1}.s16[lane] > 255);", v(insn.operands[1]), v(insn.operands[2]));
++        break;
++    case PPC_INST_VPKSWSS128:
++        println("\tfor (unsigned lane = 0; lane < 4; ++lane)");
++        println("\t\tctx.vscr.markSaturation({0}.s32[lane] < -32768 || {0}.s32[lane] > 32767 || {1}.s32[lane] < -32768 || {1}.s32[lane] > 32767);", v(insn.operands[1]), v(insn.operands[2]));
++        break;
++    default: break;
++    }
+
+     switch (id)
+     {
+@@ -1996,12 +2036,9 @@
+
+     case PPC_INST_VCTSXS:
+     case PPC_INST_VCFPSXWS128:
+-        printSetFlushMode(true);
+-        print("\tsimde_mm_store_si128((simde__m128i*){}.s32, simde_mm_vctsxs(", v(insn.operands[0]));
+-        if (insn.operands[2] != 0)
+-            println("simde_mm_mul_ps(simde_mm_load_ps({}.f32), simde_mm_set1_ps({}))));", v(insn.operands[1]), 1u << insn.operands[2]);
+-        else
+-            println("simde_mm_load_ps({}.f32)));", v(insn.operands[1]));
++        for (unsigned lane = 0; lane < 4; ++lane)
++            println("\t{}.s32[{}] = ctx.vscr.signedFixed({}.u32[{}], {});",
++                v(insn.operands[0]), lane, v(insn.operands[1]), lane, insn.operands[2]);
+         break;
+
+     case PPC_INST_VCFSX:
+@@ -2249,6 +2286,22 @@
+             println("\t__builtin_debugtrap();");
+             break;
+         }
++        break;
++
++    case PPC_INST_MFVSCR:
++        println("\t{}.u64[0] = 0;", v(insn.operands[0]));
++        println("\t{}.u64[1] = 0;", v(insn.operands[0]));
++        println("\t{}.u32[0] = ctx.vscr.read();", v(insn.operands[0]));
++        break;
++
++    case PPC_INST_MTVSCR:
++        println("\tctx.vscr.write({}.u32[0]);", v(insn.operands[0]));
++        csrState = CSRState::Unknown;
++        break;
++
++    case PPC_INST_VPKSWSS128:
++        println("\tsimde_mm_store_si128((simde__m128i*){}.u8, simde_mm_packs_epi32(simde_mm_load_si128((simde__m128i*){}.s32), simde_mm_load_si128((simde__m128i*){}.s32)));",
++            v(insn.operands[0]), v(insn.operands[2]), v(insn.operands[1]));
+         break;
+
+     case PPC_INST_VPKSHUS:
+--- a/XenonUtils/ppc_context.h
++++ b/XenonUtils/ppc_context.h
+@@ -11,6 +11,7 @@
+ #include <cstdint>
+ #include <cstdlib>
+ #include <cstring>
++#include <stdexcept>
+
+ #include <x86/avx.h>
+ #include <x86/sse.h>
+@@ -210,6 +211,42 @@
+ #define PPC_ROUND_UP 0x02
+ #define PPC_ROUND_DOWN 0x03
+ #define PPC_ROUND_MASK 0x03
++
++// Native guest state: SAT is sticky, NJ controls VMX denormal handling.
++struct PPCVSCRRegister
++{
++    uint32_t value = 0x10000;
++    uint32_t read() const noexcept { return value & 0x10001u; }
++    void write(uint32_t bits) noexcept { value = bits & 0x10001u; }
++    void markSaturation(bool saturated) noexcept { value |= uint32_t(saturated); }
++    bool nonJava() const noexcept { return (value & 0x10000u) != 0; }
++
++    int32_t signedFixed(uint32_t bits, uint32_t scale)
++    {
++        if (scale > 31)
++            throw std::out_of_range("VSCR_FIXED_SCALE_OUT_OF_RANGE");
++        const bool negative = (bits >> 31) != 0;
++        const uint32_t exponent = (bits >> 23) & 255;
++        const uint32_t fraction = bits & 0x7FFFFF;
++        // NaNs become zero without adding saturation; preserve existing SAT.
++        if (exponent == 255 && fraction != 0)
++            return 0;
++        if (exponent == 0)
++            return 0; // even scaled binary32 subnormals remain below one
++        const int power = int(exponent) - 127 + int(scale);
++        if (power < 0)
++            return 0;
++        if (power >= 31)
++        {
++            const bool exactMinimum = negative && power == 31 && fraction == 0;
++            markSaturation(!exactMinimum);
++            return negative ? INT32_MIN : INT32_MAX;
++        }
++        const uint64_t significand = 0x800000u | fraction;
++        const uint64_t magnitude = power <= 23 ? significand >> (23 - power) : significand << (power - 23);
++        return int32_t(negative ? -int64_t(magnitude) : int64_t(magnitude));
++    }
++};
+
+ struct PPCFPSCRRegister
+ {
+@@ -542,6 +579,7 @@
+     PPCVRegister v126;
+     PPCVRegister v127;
+ #endif
++    PPCVSCRRegister vscr;
+ };
+
+ inline uint8_t VectorMaskL[] =
