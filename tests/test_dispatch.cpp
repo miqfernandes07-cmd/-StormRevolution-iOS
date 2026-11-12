@@ -1,4 +1,5 @@
 #include "cpu/aot_dispatch.h"
+#include "memory/address_space.h"
 #include <array>
 #include <atomic>
 #include <cstdint>
@@ -35,6 +36,12 @@ int main(){try{
   fault([&]{dispatch(context,alternate.data(),0x1000);},DispatchFaultKind::memory_mismatch,0x1000);
   fault([&]{dispatch(context,memory.data(),0x2000);},DispatchFaultKind::missing_function,0x2000);
   fault([&]{dispatch(context,memory.data(),0x1001);},DispatchFaultKind::missing_function,0x1001);
+  fault([&]{load_guest(context,memory.data(),0x80000000,4);},DispatchFaultKind::memory_not_bound,0x80000000);
+  fault([&]{store_guest(context,memory.data(),0x80000000,4,1);},DispatchFaultKind::memory_not_bound,0x80000000);
+  storm::memory::AddressSpace space;space.map(0x80000000,8,storm::memory::Access::read_write);
+  {AotBinding checked(functions,context,memory.data(),&space);store_guest(context,memory.data(),0x80000000,8,UINT64_C(0x0123456789abcdef));check(load_guest(context,memory.data(),0x80000000,8)==UINT64_C(0x0123456789abcdef));
+   fault([&]{load_guest(other,memory.data(),0x80000000,4);},DispatchFaultKind::context_mismatch,0x80000000);}
+  fault([&]{load_guest(context,memory.data(),0x80000000,4);},DispatchFaultKind::memory_not_bound,0x80000000);
   bool propagated=false;try{dispatch(context,memory.data(),0x1008);}catch(const std::runtime_error& error){propagated=std::string(error.what())=="synthetic native handler failure";}check(propagated);
   try{AotBinding inner(functions,other,alternate.data());dispatch(other,alternate.data(),0x1000);throw std::runtime_error("scope exit");}catch(const std::runtime_error&){}
   dispatch(context,memory.data(),0x1000);check(context.result==3&&other.result==1);

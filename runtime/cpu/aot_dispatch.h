@@ -5,10 +5,11 @@
 
 // Opaque here; the linked AOT image supplies the reviewed Xenon context layout.
 struct PPCContext;
+namespace storm::memory { class AddressSpace; }
 namespace storm::cpu {
 using AotFunction = void(PPCContext&, std::uint8_t*);
 enum class DispatchFaultKind { invalid_registration, duplicate_registration, sealed_table,
-    unsealed_table, unbound_thread, context_mismatch, memory_mismatch, missing_function };
+    unsealed_table, unbound_thread, context_mismatch, memory_mismatch, missing_function, memory_not_bound, mmio_unimplemented };
 class DispatchFault : public std::runtime_error {
 public:
     DispatchFault(DispatchFaultKind kind, std::uint32_t address);
@@ -37,18 +38,24 @@ private:
 // the table, context and memory alive until all bindings/guest calls have ended.
 class AotBinding {
 public:
-    AotBinding(const AotFunctionTable&, PPCContext&, std::uint8_t* memory);
+    AotBinding(const AotFunctionTable&, PPCContext&, std::uint8_t* memory,
+               memory::AddressSpace* address_space = nullptr);
     ~AotBinding() noexcept;
     AotBinding(const AotBinding&) = delete;
     AotBinding& operator=(const AotBinding&) = delete;
     AotBinding(AotBinding&&) = delete;
     AotBinding& operator=(AotBinding&&) = delete;
 private:
-    struct Frame { const AotFunctionTable* table; PPCContext* context; std::uint8_t* memory; };
+    struct Frame { const AotFunctionTable* table; PPCContext* context; std::uint8_t* memory; memory::AddressSpace* address_space; };
     Frame frame_;
     Frame* previous_;
     static thread_local Frame* current_;
+    static Frame& require(PPCContext&,std::uint8_t*,std::uint32_t);
+    friend std::uint64_t load_guest(PPCContext&,std::uint8_t*,std::uint32_t,unsigned);
+    friend void store_guest(PPCContext&,std::uint8_t*,std::uint32_t,unsigned,std::uint64_t);
     friend void dispatch(PPCContext&,std::uint8_t*,std::uint32_t);
 };
 void dispatch(PPCContext&,std::uint8_t* memory,std::uint32_t address);
+std::uint64_t load_guest(PPCContext&,std::uint8_t* base,std::uint32_t address,unsigned width);
+void store_guest(PPCContext&,std::uint8_t* base,std::uint32_t address,unsigned width,std::uint64_t value);
 } // namespace storm::cpu

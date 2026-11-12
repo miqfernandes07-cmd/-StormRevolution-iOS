@@ -10,7 +10,10 @@ add_library(storm_runtime STATIC
   runtime/cpu/aot_dispatch.cpp
   runtime/audio/pcm_ring.cpp
   runtime/memory/guest_memory.cpp
+  runtime/memory/address_space.cpp
   runtime/kernel/imports.cpp
+  runtime/kernel/executable_module.cpp
+  runtime/kernel/virtual_memory.cpp
   runtime/filesystem/content_root.cpp)
 target_include_directories(storm_runtime PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/runtime" "${CMAKE_CURRENT_SOURCE_DIR}")
 if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
@@ -50,6 +53,15 @@ else()
     add_executable(storm_dispatch_tests tests/test_dispatch.cpp)
     target_link_libraries(storm_dispatch_tests PRIVATE storm_runtime Threads::Threads)
     add_test(NAME aot_dispatch COMMAND storm_dispatch_tests)
+    add_executable(storm_address_space_tests tests/test_address_space.cpp)
+    target_link_libraries(storm_address_space_tests PRIVATE storm_runtime)
+    add_test(NAME address_space COMMAND storm_address_space_tests)
+    add_executable(storm_module_tests tests/test_executable_module.cpp)
+    target_link_libraries(storm_module_tests PRIVATE storm_runtime)
+    add_test(NAME executable_module COMMAND storm_module_tests)
+    add_executable(storm_virtual_memory_tests tests/test_virtual_memory.cpp)
+    target_link_libraries(storm_virtual_memory_tests PRIVATE storm_runtime)
+    add_test(NAME virtual_memory COMMAND storm_virtual_memory_tests)
     add_test(NAME python_tools COMMAND "${Python3_EXECUTABLE}" -m unittest discover -s tests -p "test_*.py" -v)
     set_tests_properties(python_tools PROPERTIES WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
       ENVIRONMENT "CXX=${CMAKE_CXX_COMPILER}")
