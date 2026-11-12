@@ -1,10 +1,11 @@
 # Aplicação iOS: infraestrutura nativa
 
-Status nesta iteração: **Implementado sem teste Apple**. O ambiente de desenvolvimento
-disponível é Linux x86_64, sem Xcode/SDKs Apple. O workflow
-[42083949119](https://github.com/miqfernandes07-cmd/-StormRevolution-iOS/actions/runs/42083949119)
-foi iniciado e aguarda runner macOS. Os testes host já passaram no GitHub com GCC
-e Clang; build Apple, IPA e instalação em dispositivo ainda não foram confirmados.
+Status: **Compila para iPhone ARM64 e simulador x86_64 em CI**. O run
+[43162119044](https://github.com/miqfernandes07-cmd/-StormRevolution-iOS/actions/runs/43162119044)
+usou macOS Intel, Xcode 16.4 (16F6), AppleClang 17 e SDK 18.5, com deployment
+17.0. O IPA de infraestrutura foi empacotado sem assinatura. Instalação em
+hardware e execução do jogo continuam pendentes. O ambiente local é Linux;
+os builds Apple foram realizados exclusivamente no GitHub Actions.
 
 O bundle UIKit/Objective-C++ liga diretamente a `storm_runtime`. O botão de iniciar
 chama `storm_runtime_start` após a identidade do XEX ser validada. A versão atual

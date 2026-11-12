@@ -45,13 +45,14 @@ ficam em `private/`; não são dependências da suíte pública.
 A CI `build-ios.yml` configura CMake com gerador Xcode, compila ARM64 para dispositivo,
 prepara um IPA **não assinado** sem dados do jogo e executa diagnóstico no simulador.
 Consulte [IOS.md](IOS.md) para comandos, saída exata e limites do smoke test.
-`tests.yml` cobre GCC e Clang em Ubuntu. O remoto agora é `miqfernandes07-cmd/-StormRevolution-iOS`. A execução host
-[42083949244](https://github.com/miqfernandes07-cmd/-StormRevolution-iOS/actions/runs/42083949244)
-passou com GCC e Clang. O workflow iOS
-[42083949119](https://github.com/miqfernandes07-cmd/-StormRevolution-iOS/actions/runs/42083949119)
-falhou nas duas tentativas antes de obter runner, sem executar passos de build.
-O workflow agora solicita `macos-15-intel`, mantendo o destino iPhone ARM64.
-Até haver resultado dessa execução, não há build Apple ou IPA confirmado.
+`tests.yml` cobre GCC e Clang em Ubuntu. O remoto é
+`miqfernandes07-cmd/-StormRevolution-iOS`. Na execução
+[43162119044](https://github.com/miqfernandes07-cmd/-StormRevolution-iOS/actions/runs/43162119044),
+o runner `macos-15-intel` compilou o app para iPhone ARM64 e simulador x86_64,
+e empacotou o IPA não assinado. A toolchain é Xcode 16.4 (16F6), SDK iOS 18.5,
+com deployment target 17.0. Consultar IOS/PROGRESS para o resultado do smoke test.
+Os runs anteriores sem runner e as correções de testes/link estão registrados
+em TESTING. Este IPA contém somente a infraestrutura pública.
 
 Abra o projeto gerado em um Mac com Xcode e SDK suportando o deployment escolhido.
 iOS 27 é alvo solicitado e não SDK detectado nesta sessão. A seleção de Xcode do

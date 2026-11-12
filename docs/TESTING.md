@@ -93,3 +93,14 @@ pública continua independente desses arquivos. O parser PE registrou a diferen�
 entre `SizeOfImage` e o buffer reconstruído sem fabricar a cauda ausente.
 Nenhuma execução de código comercial, Apple ou ARM64 foi concluída neste marco.
 [Log completo da suíte pública](validation/host-pe-2026-11-06.log).
+
+## Portabilidade dos testes macOS — 2026-11-12
+
+A CI Apple com Xcode 16.4/SDK 18.5 expôs três asserções que comparavam o alias
+`/var/folders` ao caminho físico `/private/var/folders`. A fixture agora resolve
+a raiz temporária, como o código de produção já fazia. Os oito testes do adaptador
+passaram localmente também com TMPDIR apontando a um symlink. No run
+[43161886428](https://github.com/miqfernandes07-cmd/-StormRevolution-iOS/actions/runs/43161886428),
+os três grupos CTest passaram no macOS Intel, incluindo os 62 testes Python.
+O link do app ARM64 revelou ausência de CoreGraphics; a dependência foi adicionada
+explicitamente ao target CMake. O resultado da nova CI está em PROGRESS/IOS.

@@ -2,7 +2,8 @@
 
 Projeto de port AOT PowerPC → C++ → ARM64 de Naruto Shippuden:
 Ultimate Ninja Storm Revolution, versão Xbox 360. **O jogo ainda não executa.**
-Não há IPA produzido, teste em iPhone ou medição de FPS nesta iteração.
+A CI produziu um IPA não assinado de infraestrutura; não há instalação no iPhone
+ou medição de FPS.
 
 O código original deste repositório é MIT. Não inclui jogo, código comercial
 recompilado, chaves, APKs ou assets. Forneça localmente os arquivos da sua cópia
@@ -19,11 +20,11 @@ O XenonRecomp gerou 242 arquivos C++ privados, mas a auditoria detectou 1.643
 ocorrências de 28 variantes rejeitadas. Essa saída ainda não foi compilada como
 código nativo do jogo. O tradutor sintético permanece um teste independente.
 
-Estado em 2026-11-11: 62 testes Python, 1.038 verificações do runtime e 33 de PCM
+Estado em 2026-11-12: 62 testes Python, 1.038 verificações do runtime e 33 de PCM
 passaram em 3/3 grupos CTest no Linux. GCC e Clang já passaram na CI host em um
-marco anterior. As duas tentativas do job iOS terminaram sem obter runner e sem
-executar etapas Apple; a troca para `macos-15-intel` está configurada. Não há
-JIT nem emulador completo no runtime.
+marco anterior. A CI macOS agora compilou o app para iPhone ARM64 e simulador
+x86_64, gerando o IPA não assinado. Ver [integração iOS](docs/IOS.md) para evidências.
+Não há JIT nem emulador completo no runtime.
 
 ```bash
 cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug -DSTORM_SANITIZERS=ON
@@ -51,6 +52,7 @@ do app é iOS 17; iOS 27 e iPhone 15 Pro são alvos solicitados, ainda sem valid
 Prioridade seguinte: corrigir as variantes rejeitadas, investigar o fluxo indireto
 e as tabelas de salto e validar funções geradas antes da compilação nativa do jogo.
 Também faltam serviços xboxkrnl/XAM, gráficos Xenos/Metal, áudio e os recursos.
-O ZIP de recursos disponibilizado no Drive tem cerca de 7,43 GB e excede o espaço
-livre deste ambiente; ainda não foi baixado. O executável e as saídas derivadas
+O ZIP de 7,43 GB foi inspecionado parcialmente: 21 arquivos e 8 diretórios,
+9,43 GB extraídos. Seu XEX foi validado isoladamente; recursos completos ainda
+não foram extraídos. Ver [inventário de recursos](docs/ASSETS.md). O executável e as saídas derivadas
 permanecem em `private/`.

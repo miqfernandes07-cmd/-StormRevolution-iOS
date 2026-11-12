@@ -17,15 +17,16 @@ flowchart LR
     DATA[Recursos originais locais] --> APP
 ```
 
-A seta de preparação é um contrato de integração: não significa que a geração do
-Storm já ocorreu. Não há configuração de funções ou executável real disponível.
+A preparação offline já gerou C++ privado do Storm, mas foi rejeitada por
+diagnósticos de instrução. Funções, chamadas indiretas e tabelas de salto ainda
+precisam de validação antes de compilar e vincular o código do jogo.
 
 ## Limites dos módulos
 
 | Módulo | Implementação inicial | Contrato e próximo trabalho |
 | --- | --- | --- |
-| A — análise | Python, stdlib, JSON, limites e identidade | Metadados XEX2 e inventário PPC raw separado; reconstruir PE, imports/exports, funções completas, tabelas de salto |
-| B — CPU/AOT | Tradutor sintético → C++ e contexto pequeno | Integrar XenonRecomp fixado; ABI guest, FPR/FPSCR/CR/XER, VMX128, indirect calls e atomics |
+| A — análise | Python, stdlib, JSON, limites e identidade | XEX2, PE e descritores de imports analisados; exports, funções completas e tabelas de salto pendentes |
+| B — CPU/AOT | Tradutor sintético → C++ e contexto pequeno | Corrigir geração exploratória do XenonRecomp fixado; ABI guest, FPR/FPSCR/CR/XER, VMX128, indirect calls e atomics |
 | C — runtime | C++17, API C estável, memória BE, allocator, imports, relógio, conteúdo local e input | Implementar serviços xboxkrnl/XAM reais somente após inventário; threads/TLS/eventos/save e proteção virtual pendentes |
 | D — gráficos | MetalKit e shader MSL de diagnóstico no app | Parser/interceptação Xenos, tradução shaders, texturas tiled, EDRAM, depth/stencil e resolve pendentes |
 | E — áudio | Fila PCM SPSC limitada com overflow/underrun e testes | Decodificador XMA e saída Core Audio/AVAudioEngine, sincronização e interrupções pendentes |

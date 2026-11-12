@@ -36,14 +36,17 @@ O CLI limita a leitura a 1 MiB + 1 byte. Em caso de falha, uma saída anterior n
 é removida: o código de saída precisa ser verificado e um arquivo antigo jamais
 deve ser apresentado como resultado da tentativa atual.
 
-## Adaptador XenonRecomp real (não executado nesta iteração)
+## Adaptador XenonRecomp real
 
 `xenon_pipeline.py` usa o CLI documentado no commit
 `ddd128bcca99fe8bfbb99bea583c972351fa6ace`, sem shell nem downloads automáticos.
 Requer Python 3.11+ (`tomllib` da biblioteca padrão). Por padrão somente valida e
 imprime um plano; `--execute` invoca os binários locais. Os testes do adaptador
 verificam montagem de argumentos, hashes e limites de caminhos; não executam
-XenonRecomp. Não foram instalados os binários upstream nesta iteração.
+XenonRecomp na suíte pública. Separadamente, os binários upstream foram compilados
+com Clang 19.1.7 e executados privadamente sobre o XEX validado: XenonAnalyse não
+recuperou tabelas; XenonRecomp produziu 242 C++ e 1643 diagnósticos em 28 variantes.
+A geração foi rejeitada e não houve compilação nativa desse código.
 
 Depois de obter e compilar o checkout fixado e auditar as dependências, criar
 localmente `private/toolchain.json`, com caminhos absolutos e SHA-256 dos artefatos:
@@ -92,7 +95,8 @@ python3 tools/recompilation/xenon_pipeline.py --manifest private/toolchain.json 
 
 A mudança de um byte da configuração invalida o hash revisado. Na execução, o
 adaptador grava stdout/stderr somente no log privado e recusa retorno não zero,
-saída ausente ou mensagens de warning/unsupported/unimplemented. Esse filtro é
+saída ausente ou mensagens de error/fatal/warning/unsupported/unimplemented,
+not implemented ou unrecognized instruction. Esse filtro é
 conservador e não prova cobertura: revisar também o C++ gerado por traps, instruções
 omitidas e chamadas sem implementação antes de compilar. Saída sem avisos não é
 prova de correção nem de boot. Nada desse fluxo invoca JIT no aplicativo.

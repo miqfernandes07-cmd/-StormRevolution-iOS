@@ -1,4 +1,4 @@
-# Progresso — atualização em 2026-11-11
+# Progresso — atualização em 2026-11-12
 
 ## Estado atual comprovado
 
@@ -23,7 +23,7 @@ fabricado para ocultar a diferença. Bases de carga XEX e PE coincidem.
 XenonAnalyse foi executado sobre o arquivo real e recuperou zero tabelas de salto.
 Isso exige investigação de fluxo indireto; não comprova ausência dessas tabelas.
 XenonRecomp gerou 242 arquivos C++ privados. A auditoria encontrou 1.643 ocorrências
-de 28 variantes rejeitadas, portanto a saída permanece incompleta e não foi
+de 28 variantes rejeitadas ([mapa de lacunas](CPU_GAPS.md)), portanto a saída permanece incompleta e não foi
 compilada como código nativo do jogo. Nenhuma instrução rejeitada foi declarada
 suportada para produzir uma afirmação de sucesso.
 
@@ -32,14 +32,18 @@ PCM, em 3/3 grupos CTest**. Os testes usam fixtures sintéticas; as análises do
 real são evidências separadas. GCC e Clang também passaram na CI host no marco
 registrado abaixo, antes das alterações atuais.
 
-As duas tentativas do job iOS anterior terminaram sem obter runner, sem logs de
-compilação e sem etapas Apple executadas. A troca do workflow para
-`macos-15-intel` está configurada; ainda não há resultado de compilação iOS.
-**Nenhum IPA foi produzido/instalado, nenhum app Apple iniciou e o jogo não executa.**
-Não há medição de FPS, gameplay ou qualificação de iPhone 15 Pro/iOS 27.
+A CI macOS Intel passou nos testes host após corrigir caminhos temporários.
+O primeiro link ARM64 revelou falta de CoreGraphics, corrigida no CMake.
+O run [43162119044](https://github.com/miqfernandes07-cmd/-StormRevolution-iOS/actions/runs/43162119044)
+compilou o aplicativo para iPhone ARM64 e simulador x86_64 e empacotou o primeiro
+IPA não assinado de infraestrutura. Xcode 16.4/SDK iOS 18.5, deployment 17.0.
+Ainda não há instalação no iPhone nem execução do jogo. Não há medição de FPS,
+gameplay ou qualificação de iPhone 15 Pro/iOS 27.
 
-O ZIP de recursos disponibilizado no Drive tem cerca de 7,43 GB e é maior que o
-espaço livre neste ambiente. Ele não foi baixado. Nenhum recurso comercial, imagem
+O índice do ZIP de 7,43 GB foi inspecionado por ranges: 21 arquivos e 8 diretórios,
+9,43 GB descompactados. Somente seu XEX foi extraído e validado por CRC32/tamanho/
+SHA-1, idêntico à cópia anterior. A extração completa excede o espaço disponível.
+Ver [ASSETS.md](ASSETS.md). Nenhum recurso comercial, imagem
 reconstruída, chave ou código C++ derivado foi incluído no repositório público.
 
 ## Próxima implementação prioritária
@@ -48,8 +52,8 @@ reconstruída, chave ou código C++ derivado foi incluído no repositório públ
    diferenciais para as correções necessárias antes de compilar funções do jogo.
 2. Revisar limites de funções, chamadas indiretas e as tabelas de salto que a
    análise automática não recuperou; manter logs e saídas detalhadas privados.
-3. Executar o workflow em runner Apple disponível e corrigir problemas reais de
-   SDK/compilação; ausência de runner não é evidência de defeito no código iOS.
+3. Validar a infraestrutura no simulador e, após assinatura, em aparelho físico.
+   Importação real, controles, interrupções e renderização precisam de testes.
 4. Obter os recursos em armazenamento com capacidade suficiente e iniciar os
    contratos xboxkrnl/XAM, shaders Xenos/Metal e áudio conforme evidência do título.
 
