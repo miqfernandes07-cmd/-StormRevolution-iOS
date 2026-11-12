@@ -1,0 +1,165 @@
+{
+  "scope": "synthetic_generated_native_host_only",
+  "game_executed": false,
+  "reports": [
+    {
+      "test": "eqv",
+      "scope": "synthetic_eqv_upstream_generated_native_host_only",
+      "vectors": 3264,
+      "eqv_record_rejected": true,
+      "game_executed": false,
+      "host": "x86_64",
+      "system": "Linux",
+      "compiler": "Debian clang version 19.1.7 (3+b1)",
+      "upstream_commit": "ddd128bcca99fe8bfbb99bea583c972351fa6ace",
+      "patch_sha256": "d8020dce25c974b16003bd2162f0073171515f1b41442568821eea7e44ce6204",
+      "context_sha256": "455668d94f8af289402c9aeeca8666c249ee517dd61ee8737dd572581644ba4d",
+      "recompiler_sha256": "8964bd5fb771ea144716f160144d20f361882ca5e76ff7f17e495bef2bb68faf",
+      "result": "EQV upstream-generated native functions: 3264 vectors passed; EQV. remains unsupported"
+    },
+    {
+      "test": "single_update",
+      "scope": "synthetic_upstream_generated_host_guest32_addressing_only",
+      "cases": 900,
+      "checked_memory_cases": 495,
+      "default_memory_cases": 405,
+      "invalid_forms_rejected": 3,
+      "host": "x86_64",
+      "compiler": "Debian clang version 19.1.7 (3+b1)",
+      "recompiler_sha256": "8964bd5fb771ea144716f160144d20f361882ca5e76ff7f17e495bef2bb68faf",
+      "patch_sha256": "c775280f2794520254dd6d9bc6d950c0cc5065f9650f387febdb86b3e0a8acf6",
+      "game_executed": false,
+      "results": {
+        "checked": "LFSU/STFSU: 495 native cases passed; checked-memory callbacks, guest32 EA, nearest rounding, fault ordering",
+        "default": "LFSU/STFSU: 405 native cases passed; default upstream memory macros, guest32 EA, nearest rounding"
+      }
+    },
+    {
+      "test": "memory_forms",
+      "scope": "synthetic_upstream_generated_host_guest32_memory_only",
+      "opcodes": 14,
+      "cases": 3402,
+      "invalid_rejections": 24,
+      "host": "x86_64",
+      "compiler": "Debian clang version 19.1.7 (3+b1)",
+      "binary_sha256": "8964bd5fb771ea144716f160144d20f361882ca5e76ff7f17e495bef2bb68faf",
+      "patch_sha256": "449f10c9e38033707837ad10d28b66ec53465dabebb074e4f4c277851cfefdc5",
+      "game_executed": false,
+      "results": {
+        "default": "memory forms: 1134 native cases passed",
+        "checked": "memory forms: 2268 native cases passed"
+      }
+    },
+    {
+      "test": "ctr_branch",
+      "scope": "synthetic_upstream_generated_host_guest32_intra_function_relative_only",
+      "cases": 3456,
+      "host": "x86_64",
+      "compiler": "Debian clang version 19.1.7 (3+b1)",
+      "binary_sha256": "8964bd5fb771ea144716f160144d20f361882ca5e76ff7f17e495bef2bb68faf",
+      "patch_sha256": "9b51fdf57e70b88a9d1f12414ef99ee77ac69c3e89d822e06c047c4d0bc045ea",
+      "game_executed": false,
+      "result": "CTR branches: 3456 native cases passed (guest32 counter test, all CR bits)"
+    },
+    {
+      "test": "carry",
+      "scope": "synthetic_upstream_generated_host_guest32_CA_CR0_only",
+      "cases": 78336,
+      "OE_variants_rejected": 6,
+      "host": "x86_64",
+      "compiler": "Debian clang version 19.1.7 (3+b1)",
+      "binary_sha256": "8964bd5fb771ea144716f160144d20f361882ca5e76ff7f17e495bef2bb68faf",
+      "patch_sha256": "94be816971e2d13702e0f76db9b00d4dac3d33438c94f5b284492ec52997eaaf",
+      "game_executed": false,
+      "result": "carry arithmetic: 78336 native cases passed; guest32 CA/CR0 policy"
+    },
+    {
+      "test": "vandc",
+      "scope": "synthetic_upstream_generated_host_VMX_bitwise_only",
+      "vectors": 3264,
+      "host": "x86_64",
+      "compiler": "Debian clang version 19.1.7 (3+b1)",
+      "binary_sha256": "8964bd5fb771ea144716f160144d20f361882ca5e76ff7f17e495bef2bb68faf",
+      "patch_sha256": "9485bf127ccb466cf698c3db0de4cd1c93f50f62f17875732a3e0d47ad56ba66",
+      "game_executed": false,
+      "result": "VANDC: 3264 native vectors passed"
+    },
+    {
+      "test": "lvehx",
+      "scope": "synthetic_upstream_generated_host_Xenon_LVEHX_full_vector_policy",
+      "vectors": 24576,
+      "host": "x86_64",
+      "compiler": "Debian clang version 19.1.7 (3+b1)",
+      "binary_sha256": "8964bd5fb771ea144716f160144d20f361882ca5e76ff7f17e495bef2bb68faf",
+      "patch_sha256": "6e05277ad7e79f33ffa2c3d06e8d54ca23baac5099a1fceeb897128eb6b03679",
+      "game_executed": false,
+      "result": "Xenon LVEHX: 24576 native vectors passed"
+    },
+    {
+      "test": "rotate_record",
+      "scope": "synthetic_upstream_generated_host_rotate64_guest32_CR0_policy",
+      "cases": 82368,
+      "functions": 572,
+      "shift_mask_pairs": 143,
+      "host": "x86_64",
+      "compiler": "Debian clang version 19.1.7 (3+b1)",
+      "binary_sha256": "8964bd5fb771ea144716f160144d20f361882ca5e76ff7f17e495bef2bb68faf",
+      "patch_sha256": "6e9367e08f8574a41644197bb17eb93b991905f7ba3d751d2549fe2c7b5b1659",
+      "game_executed": false,
+      "result": "rotate/record: 82368 native cases passed; guest32 CR0 policy"
+    },
+    {
+      "test": "vsldoi_decode",
+      "scope": "synthetic_upstream_generated_host_Xenon_VX128_5_MAC_collision_subset",
+      "vectors": 26112,
+      "functions": 24,
+      "host": "x86_64",
+      "compiler": "Debian clang version 19.1.7 (3+b1)",
+      "binary_sha256": "8964bd5fb771ea144716f160144d20f361882ca5e76ff7f17e495bef2bb68faf",
+      "patch_sha256": "21521493e2c38d980a568526ac08480f9dc6e52f5b0d6d54af327f487024f7d0",
+      "game_executed": false,
+      "result": "Xenon VSLDOI128 decode: 26112 native vectors passed"
+    },
+    {
+      "test": "vscr",
+      "scope": "synthetic_upstream_generated_host_VSCR_SAT_NJ_and_conversion",
+      "cases": 167951,
+      "integer_cases": 24576,
+      "conversion_cases": 143360,
+      "state_cases": 15,
+      "host": "x86_64",
+      "compiler": "Debian clang version 19.1.7 (3+b1)",
+      "binary_sha256": "8964bd5fb771ea144716f160144d20f361882ca5e76ff7f17e495bef2bb68faf",
+      "context_sha256": "455668d94f8af289402c9aeeca8666c249ee517dd61ee8737dd572581644ba4d",
+      "patch_sha256": "4b9ca467fd9d3403755410aaa1b19216111b6a38bbd997b9cb529d881d98b2e3",
+      "game_executed": false,
+      "result": "VSCR: integer=24576 conversion=143360 state=15 native cases passed"
+    },
+    {
+      "test": "half_formats",
+      "scope": "synthetic_D3D_binary16_pack_unpack",
+      "checks": 386748,
+      "host": "x86_64",
+      "binary_sha256": "8964bd5fb771ea144716f160144d20f361882ca5e76ff7f17e495bef2bb68faf",
+      "context_sha256": "455668d94f8af289402c9aeeca8666c249ee517dd61ee8737dd572581644ba4d",
+      "game_executed": false,
+      "result": "D3D half: 386748 native checks passed"
+    },
+    {
+      "test": "dispatch_bridge",
+      "scope": "synthetic_upstream_generated_BCTRL_BLRL_checked_dispatch",
+      "checks": 66,
+      "host": "x86_64",
+      "compiler": "Debian clang version 19.1.7 (3+b1)",
+      "signed_overflow_policy": "fwrapv for PPC modular arithmetic",
+      "binary_sha256": "8964bd5fb771ea144716f160144d20f361882ca5e76ff7f17e495bef2bb68faf",
+      "context_sha256": "455668d94f8af289402c9aeeca8666c249ee517dd61ee8737dd572581644ba4d",
+      "game_executed": false,
+      "results": {
+        "elf_alias": "Xenon dispatch bridge: 33 native checks passed; no game",
+        "portable_wrapper": "Xenon dispatch bridge: 33 native checks passed; no game"
+      }
+    }
+  ],
+  "cases_and_vectors": 780443
+}

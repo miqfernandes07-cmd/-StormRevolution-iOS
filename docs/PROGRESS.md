@@ -1,5 +1,26 @@
 # Progresso — atualização em 2026-11-12
 
+## Marco atual: VSCR, binary16, dispatch e auditoria da saída
+
+Série experimental de 13 patches: **780443 casos/vetores/verificações nativas
+sintéticas aprovados**, Clang 19.1.7/UBSan, Linux x86_64. VSCR SAT/NJ,
+VPKSWSS128, conversões signed fixed, D3D float16_2/float16_4 e BLRL implementados
+nos limites documentados. Dispatch C++ registra somente funções compiladas;
+contexto/thread/destino incorretos geram erro identificável. Suíte padrão:
+**90 testes Python, 1038 verificações runtime, 33 PCM e 16 dispatch; 4 grupos CTest**.
+
+A geração privada tem zero instruções rejeitadas no log e zero traps C++ após
+os patches, mas **continua bloqueada**: 79 chamadas estáticas omitidas e 19909
+palavras zero tratadas como `.long` pelo analisador. A recuperação de 49 entradas
+alternativas reduziu as omissões de 321 para 79; as restantes não foram omitidas
+nem substituídas. O gate agora verifica o fonte, além do status/log da ferramenta.
+
+Nova CI AOT sintética preparada para Linux/macOS e compilação de objetos de teste
+ARM64/iOS; execução/resultado serão registrados separadamente. Ainda sem boot,
+gameplay, instalação no iPhone ou FPS. [Evidências e limites](VSCR_DISPATCH.md).
+As 242 unidades privadas passaram em verificação sintática Clang, sem objetos,
+link ou execução comercial. Os marcos abaixo são históricos.
+
 ## Marco: rotate/record e decodificação VMX128
 
 Patch 0008 corrige RLDICL/CLRLDI/ROTLDI com record e foi testado em 82368 casos.

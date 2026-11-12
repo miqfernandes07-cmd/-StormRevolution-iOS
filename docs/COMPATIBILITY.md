@@ -16,8 +16,10 @@ ou SDK Apple local. Nenhum FPS, compatibilidade iOS 27 ou boot foi medido.
 | Validação completa de funções e fluxo indireto | Não implementado | Configuração e saída preliminares exigem revisão específica do executável |
 | PPC AOT sintético | Teste automatizado aprovado | C++ gerado de instruções sintéticas executado com GCC/UBSan no host |
 | Adaptador CLI XenonRecomp | Teste automatizado aprovado | Contratos, caminhos e identidade testados; ferramentas upstream também executadas privadamente sobre o XEX |
-| Geração XenonRecomp do Storm | Implementado sem compilação nativa aprovada | Baseline 1643/28; nove patches reduziram a 42/1, sem aviso CR; 242 C++ privados, ainda incompletos |
+| Geração XenonRecomp do Storm | Implementado sem compilação nativa aprovada | 13 patches removem rejeições de opcode/traps; 79 chamadas omitidas e 19909 palavras não decodificadas bloqueiam qualificação; 242 C++ privados |
 | Runtime C++, memória, vetor, imports, input e arquivos | Teste automatizado aprovado | 1.038 verificações em Linux x86_64; ainda sem contratos suficientes para executar o título |
+| Dispatch AOT verificado | Teste automatizado aprovado | 16 checks runtime e 66 de C++ sintético gerado; BCTRL/BLRL, alias ELF e wrapper portátil; sem jogo |
+| VSCR e formatos D3D half selecionados | Teste automatizado aprovado | 167951 checks VSCR e 386748 half no host; sem qualificação da ISA completa |
 | VMX128, FPU e atomics guest completos | Não implementado | Helpers e testes limitados não equivalem à ISA completa; variantes rejeitadas e sincronização exigem revisão |
 | Serviços xboxkrnl/XAM do jogo | Não implementado | Imports identificados; o resolver genérico não implementa os contratos do título |
 | Metal de diagnóstico | Executa no simulador | Comando Metal concluído no smoke test; sem comparação de pixels ou tradução Xenos |
@@ -37,8 +39,8 @@ artificialmente. Isso exige atenção em qualquer futuro acesso fora das seçõe
 
 | Etapa | Resultado comprovado |
 | --- | --- |
-| Compilação local | Runtime e testes host aprovados; AOT sintético executado. Código gerado do jogo ainda não compilado |
-| Testes locais atuais | 62 testes Python + 1.038 verificações do runtime + 33 de PCM; 3/3 grupos CTest aprovados em Linux |
+| Compilação local | Runtime e testes host aprovados; AOT sintético executado. 242 C++ comerciais passam em verificação sintática; sem objetos/link aprovado para execução |
+| Testes locais atuais | 90 testes Python + 1.038 runtime + 33 PCM + 16 dispatch; quatro grupos CTest no Linux |
 | Compilação em CI host | GCC/Clang Linux e AppleClang/macOS Intel aprovados |
 | Compilação em CI iOS | Aprovada para app de infraestrutura ARM64 e simulador x86_64 |
 | IPA produzido | Sim, infraestrutura sem jogo e sem assinatura; exige assinatura posterior |
@@ -94,3 +96,7 @@ patch/contexto alterado e avisos de decode/CR. Geração do título continua rej
 82368 casos de rotate/record e 26112 vetores de VSLDOI128 aprovados no host.
 Nove integrações acumuladas: 225678 casos/vetores. Geração ainda rejeitada por
 42 VPKSWSS128; sem boot. Ver [ROTATE_DECODE.md](ROTATE_DECODE.md).
+
+A série 13 passou em **780443** casos/vetores/checks sintéticos nativos no host.
+Isso não demonstra execução ARM64 ou do jogo. Detalhes e bloqueios atuais em
+[VSCR_DISPATCH.md](VSCR_DISPATCH.md). A nova workflow AOT tem resultado pendente.

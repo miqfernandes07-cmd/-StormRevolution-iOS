@@ -16,17 +16,12 @@ app UIKit/Objective-C++ com diagnóstico Metal e workflows de host/macOS.
 O XEX fornecido passou na validação de identidade; sua imagem foi reconstruída
 localmente e foram lidos 291 imports distintos por biblioteca/ordinal. O
 XenonAnalyse executou e recuperou zero tabelas de salto, o que exige investigação.
-O XenonRecomp gerou 242 arquivos C++ privados, mas a auditoria detectou 1.643
-ocorrências de 28 variantes rejeitadas. Um patch experimental de EQV, validado em 3264 vetores nativos sintéticos,
-reduziu esses diagnósticos para 1603/27; ver [correção EQV](docs/EQV_PATCH.md).
-O segundo patch LFSU/STFSU passou em 900 casos nativos e reduziu a saída para
-973 diagnósticos/25 variantes: [evidências e limites](docs/SINGLE_UPDATE_PATCH.md).
-A série acumulada chegou a 45 diagnósticos/3 variantes, mais um aviso de CR,
-com 117198 casos/vetores sintéticos aprovados: [evidências](docs/SERIES_SEVEN.md).
-A revisão seguinte removeu o aviso CR e corrigiu a colisão MAC/VSLDOI128:
-restam 42 VPKSWSS128, com 225678 casos/vetores sintéticos aprovados no host
-([relatório](docs/ROTATE_DECODE.md)).
-Essa saída ainda não foi compilada como código nativo do jogo. O tradutor sintético permanece um teste independente.
+O XenonRecomp gerou 242 arquivos C++ privados. A série experimental de 13 patches
+passou em **780443** verificações sintéticas nativas no host, mas a geração do
+jogo continua bloqueada por 79 chamadas sem destino e 19909 palavras zero
+não decodificadas. [Implementação e evidências](docs/VSCR_DISPATCH.md).
+O runtime já possui dispatch AOT verificado; o app ainda não tem uma imagem
+do jogo recompilada e qualificada para executar.
 
 Estado em 2026-11-12: 62 testes Python, 1.038 verificações do runtime e 33 de PCM
 passaram em 3/3 grupos CTest no Linux. GCC e Clang já passaram na CI host em um

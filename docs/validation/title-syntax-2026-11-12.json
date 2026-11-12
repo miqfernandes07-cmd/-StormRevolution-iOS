@@ -1,0 +1,16 @@
+{
+  "scope": "private_commercial_generated_cpp_syntax_only_no_object_link_or_execution",
+  "translation_units": 242,
+  "passed": 242,
+  "failed": [],
+  "game_executed": false,
+  "host": "Linux x86_64",
+  "compiler": "Clang 19.1.7",
+  "flags": [
+    "-std=c++20",
+    "-fsyntax-only",
+    "-fwrapv",
+    "-fno-strict-aliasing"
+  ],
+  "aot_image_approved": false
+}

@@ -204,3 +204,19 @@ No SHA Xenia já fixado, consultados `ppc_emit_alu.cc`, `ppc_hir_builder.cc`,
 `ppc_instr.h` e `ppc_opcode_table_gen.cc`. UpdateCR trunca para INT32; VX128_5
 descreve os campos divididos usados por VSLDOI128. Referências BSD-3-Clause;
 nenhum backend HIR/JIT ou fonte GPL do disassembler foi incorporado ao runtime.
+
+## Complemento VSCR e binary16
+
+Consultados `ppc_emit_altivec.cc`, `ppc_instr.h` e
+`src/xenia/cpu/backend/x64/x64_seq_vector.cc` no SHA Xenia já fixado, BSD-3-Clause.
+Pack half usa arredondamento em direção a zero; os layouts VX128_3/VX128_4
+orientam encodings sintéticos próprios. Nenhum backend JIT foi incorporado.
+O backend x64 consultado possui SAT pendente; não é um oráculo completo de flags.
+
+Para comparar a semântica SAT/NaN/truncamento de conversão, foi lido
+[`target/ppc/int_helper.c`](https://github.com/qemu/qemu/blob/29760efaf96bbe5928f8111881eddbf5ac06439e/target/ppc/int_helper.c)
+no QEMU `29760efaf96bbe5928f8111881eddbf5ac06439e`. O cabeçalho do arquivo é
+LGPL-2.1-or-later. Foi referência de comportamento: nenhum código, biblioteca,
+decoder, emulador ou dependência QEMU foi copiado ou vinculado. A implementação
+própria opera diretamente sobre bits IEEE; o teste independente usa matemática
+long double para a conversão signed fixed e double para binary16.

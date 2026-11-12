@@ -1,0 +1,96 @@
+name: Synthetic Xenon AOT qualification
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/aot-tests.yml'
+      - 'tools/recompilation/patches/**'
+      - 'config/xenon_experimental_series.json'
+      - 'tests/integration/**'
+      - 'runtime/cpu/aot_dispatch.*'
+      - 'runtime/cpu/xenon_bridge.h'
+permissions:
+  contents: read
+jobs:
+  synthetic:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, macos-15-intel]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/checkout@v4
+        with:
+          repository: hedge-dev/XenonRecomp
+          ref: ddd128bcca99fe8bfbb99bea583c972351fa6ace
+          path: build/upstream
+          submodules: recursive
+          persist-credentials: false
+      - name: Apply reviewed source series and verify final hashes
+        run: |
+          python3 - <<'PY'
+          import hashlib,json,subprocess
+          from pathlib import Path
+          root=Path.cwd();upstream=root/'build/upstream'
+          series=json.loads((root/'config/xenon_experimental_series.json').read_text())
+          actual=subprocess.check_output(['git','-C',str(upstream),'rev-parse','HEAD'],text=True).strip()
+          assert actual==series['base_commit']
+          subprocess.run(['git','-C',str(upstream),'diff','--exit-code'],check=True)
+          for patch in series['patches']:
+              path=root/patch['path']
+              assert hashlib.sha256(path.read_bytes()).hexdigest()==patch['sha256']
+              subprocess.run(['git','-C',str(upstream),'apply',str(path)],check=True)
+          for name,expected in series['files'].items():
+              assert hashlib.sha256((upstream/name).read_bytes()).hexdigest()==expected,name
+          assert series['game_execution_approved'] is False
+          print('Pinned source and complete patch series verified; synthetic tests only')
+          PY
+      - name: Build offline preparation tool
+        run: |
+          clang++ --version
+          cmake -S build/upstream -B build/upstream-build \
+            -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++
+          cmake --build build/upstream-build --target XenonRecomp --parallel 3
+      - name: Generate and execute own PowerPC fixtures
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p build/aot-results
+          for test in eqv single_update memory_forms ctr_branch carry vandc lvehx rotate_record vsldoi_decode vscr half_formats dispatch_bridge; do
+            python3 "tests/integration/xenon_${test}.py" \
+              --upstream build/upstream \
+              --recompiler build/upstream-build/XenonRecomp/XenonRecomp \
+              --clang "$(command -v clang++)" --work "build/integration-${test}"
+            cp "build/integration-${test}/result.json" "build/aot-results/${test}.json"
+          done
+      - name: Compile generated synthetic bridge for iPhone ARM64
+        if: runner.os == 'macOS'
+        shell: bash
+        run: |
+          set -euo pipefail
+          xcrun --sdk iphoneos clang++ -target arm64-apple-ios17.0 -std=c++20 \
+            -fwrapv -fno-strict-aliasing -Iruntime -Ibuild/upstream/XenonUtils \
+            -Ibuild/upstream/thirdparty/simde -c build/integration-dispatch_bridge/native.cpp \
+            -o build/aot-results/synthetic-bridge-arm64.o
+          xcrun --sdk iphoneos clang++ -target arm64-apple-ios17.0 -std=c++20 \
+            -Iruntime -c runtime/cpu/aot_dispatch.cpp -o build/aot-results/dispatch-arm64.o
+          file build/aot-results/*-arm64.o | tee build/aot-results/arm64-objects.txt
+          test "$(lipo -archs build/aot-results/synthetic-bridge-arm64.o)" = arm64
+          test "$(lipo -archs build/aot-results/dispatch-arm64.o)" = arm64
+      - name: Upload own test reports only
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: synthetic-aot-${{ matrix.os }}
+          path: |
+            build/aot-results/*.json
+            build/aot-results/*.txt
+            build/integration-*/generation.log
+          if-no-files-found: warn
+          retention-days: 7
