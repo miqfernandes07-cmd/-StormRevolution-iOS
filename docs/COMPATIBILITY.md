@@ -16,7 +16,7 @@ ou SDK Apple local. Nenhum FPS, compatibilidade iOS 27 ou boot foi medido.
 | Validação completa de funções e fluxo indireto | Não implementado | Configuração e saída preliminares exigem revisão específica do executável |
 | PPC AOT sintético | Teste automatizado aprovado | C++ gerado de instruções sintéticas executado com GCC/UBSan no host |
 | Adaptador CLI XenonRecomp | Teste automatizado aprovado | Contratos, caminhos e identidade testados; ferramentas upstream também executadas privadamente sobre o XEX |
-| Geração XenonRecomp do Storm | Implementado sem compilação nativa aprovada | 242 arquivos C++ privados; 1.643 ocorrências de 28 variantes rejeitadas; auditoria impede tratar a saída como pronta |
+| Geração XenonRecomp do Storm | Implementado sem compilação nativa aprovada | Baseline 1643/28; experimento EQV reduziu a 1603/27; 242 C++ privados, ainda incompletos |
 | Runtime C++, memória, vetor, imports, input e arquivos | Teste automatizado aprovado | 1.038 verificações em Linux x86_64; ainda sem contratos suficientes para executar o título |
 | VMX128, FPU e atomics guest completos | Não implementado | Helpers e testes limitados não equivalem à ISA completa; variantes rejeitadas e sincronização exigem revisão |
 | Serviços xboxkrnl/XAM do jogo | Não implementado | Imports identificados; o resolver genérico não implementa os contratos do título |
@@ -66,3 +66,11 @@ não fornece os modelos, texturas, áudio, arenas e demais dados necessários ao
 
 30 FPS é alvo funcional futuro; 60 FPS é alvo de otimização. Nenhuma etapa é
 `Gameplay funcional`, `Jogável com limitações` ou `Validado` para execução do título.
+
+## EQV experimental
+
+Patch offline do emissor: EQV sem record passou em 3264 vetores sintéticos de
+C++ gerado executado no Linux x86_64 com UBSan. EQV. continua rejeitada. Não é
+validação ARM64 nem execução de função comercial. Ver [EQV_PATCH.md](EQV_PATCH.md).
+A CI 43163104401 terminou globalmente com sucesso para a infraestrutura iOS;
+o patch offline não está ligado ao aplicativo.

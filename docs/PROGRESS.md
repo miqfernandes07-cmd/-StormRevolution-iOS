@@ -1,5 +1,20 @@
 # Progresso — atualização em 2026-11-12
 
+## Marco: correção experimental de EQV
+
+Primeiro patch do emissor XenonRecomp implementado e testado: EQV sem record,
+3264 vetores de C++ gerado executados com Clang/UBSan no Linux x86_64.
+Nova geração privada reduziu os diagnósticos de **1643/28 para 1603/27**;
+as 40 ocorrências EQV desapareceram. `eqv.` permanece rejeitada explicitamente.
+A suíte pública passou novamente em 3/3 grupos CTest (62 testes Python,
+1038 verificações runtime, 33 PCM). Nenhuma função comercial foi compilada ou
+executada. Fonte e binário upstream originais foram restaurados e verificados.
+Ver [patch, reprodução e limitações](EQV_PATCH.md).
+
+A CI [43163104401](https://github.com/miqfernandes07-cmd/-StormRevolution-iOS/actions/runs/43163104401)
+terminou globalmente com sucesso, incluindo build ARM64, IPA e smoke no simulador.
+Ela valida a infraestrutura pública anterior a este patch offline; não testa o jogo.
+
 ## Estado atual comprovado
 
 O executável fornecido pelo usuário está em `private/game/default.xex`, ignorado

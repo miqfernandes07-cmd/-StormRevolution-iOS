@@ -17,8 +17,9 @@ O XEX fornecido passou na validação de identidade; sua imagem foi reconstruíd
 localmente e foram lidos 291 imports distintos por biblioteca/ordinal. O
 XenonAnalyse executou e recuperou zero tabelas de salto, o que exige investigação.
 O XenonRecomp gerou 242 arquivos C++ privados, mas a auditoria detectou 1.643
-ocorrências de 28 variantes rejeitadas. Essa saída ainda não foi compilada como
-código nativo do jogo. O tradutor sintético permanece um teste independente.
+ocorrências de 28 variantes rejeitadas. Um patch experimental de EQV, validado em 3264 vetores nativos sintéticos,
+reduziu esses diagnósticos para 1603/27; ver [correção EQV](docs/EQV_PATCH.md).
+Essa saída ainda não foi compilada como código nativo do jogo. O tradutor sintético permanece um teste independente.
 
 Estado em 2026-11-12: 62 testes Python, 1.038 verificações do runtime e 33 de PCM
 passaram em 3/3 grupos CTest no Linux. GCC e Clang já passaram na CI host em um

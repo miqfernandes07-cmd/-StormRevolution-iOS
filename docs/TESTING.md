@@ -111,3 +111,11 @@ metal_command_completed=true, game_executed=false e pixel_comparison_performed=f
 O IPA baixado teve seu hash conferido e o cabeçalho Mach-O confirmou ARM64;
 sem LC_CODE_SIGNATURE. O run foi cancelado durante a finalização após novo push,
 portanto não é apresentado como sucesso global. Evidências e limites em IOS.md.
+
+## Integração experimental EQV — 2026-11-12
+
+`tests/integration/xenon_eqv.py` foi executado explicitamente com Clang 19.1.7 e
+libubsan Linux: 3264 vetores nativos aprovados e EQV. rejeitada. Trata-se do C++
+gerado pelo upstream com patch, sem jogo. A suíte padrão foi repetida por haver
+novos arquivos de teste: `ctest --test-dir build --output-on-failure`, 3/3 grupos
+aprovados. Reprodução, falhas encontradas e relatório em EQV_PATCH.md.

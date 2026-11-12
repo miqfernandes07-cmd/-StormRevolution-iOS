@@ -35,6 +35,13 @@ Prioridade de implementação:
 5. Regerar com a configuração revisada, exigir ausência de diagnósticos e revisar
    traps/defaults, chamadas indiretas e semântica ARM64 antes do build nativo.
 
-Nenhuma dessas 28 variantes foi implementada por este relatório. Os testes AOT
+No baseline deste relatório, nenhuma dessas 28 variantes tinha correção local. Os testes AOT
 sintéticos públicos atuais cobrem um subconjunto separado; não provam correção
 das funções comerciais nem execução ARM64 do jogo.
+
+## Atualização: primeiro patch experimental
+
+EQV sem record foi implementada no emissor e validada em 3264 vetores nativos
+sintéticos. A nova tentativa privada eliminou as 40 ocorrências EQV: restam
+1603 diagnósticos em 27 variantes. A tabela acima preserva o baseline original.
+EQV. e as demais variantes permanecem pendentes. Ver [EQV_PATCH.md](EQV_PATCH.md).
