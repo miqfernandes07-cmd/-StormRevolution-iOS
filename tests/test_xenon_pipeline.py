@@ -103,5 +103,20 @@ class XenonPipelineTests(unittest.TestCase):
         self.assertTrue(output.exists())
 
 
+    def test_decode_and_missing_record_diagnostics_are_rejected(self):
+        for index, diagnostic in enumerate((
+                'Unable to decode instruction 00000000 at 1000',
+                'eqv. at 1000 has RC bit enabled but no comparison was generated')):
+            with self.subTest(diagnostic=diagnostic):
+                output = self.private / f'diagnostic-{index}.toml'
+                plan = {'stage': 'analyse', 'output': str(output),
+                        'command': [sys.executable, '-c',
+                            'import pathlib,sys; pathlib.Path(sys.argv[1]).write_text("# synthetic"); print(sys.argv[2])',
+                            str(output), diagnostic]}
+                with patch.object(XENON, 'validate_identity'):
+                    with self.assertRaisesRegex(XENON.PipelineError, 'DIAGNOSTICS_REQUIRE_REVIEW'):
+                        XENON.execute(plan, self.private / f'diagnostic-{index}.log', self.private)
+
+
 if __name__ == "__main__":
     unittest.main()

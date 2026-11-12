@@ -39,6 +39,31 @@ def private_path(path: Path, private: Path) -> Path:
     return resolved
 
 
+def validate_patch_series(manifest: dict, checkout: Path) -> dict:
+    """An explicit experimental series; never authorize arbitrary dirty sources."""
+    config = ROOT / 'config/xenon_experimental_series.json'
+    if manifest.get('source_patch_series_sha256') != digest(config):
+        raise PipelineError('XENON_PATCH_SERIES_DIGEST_MISMATCH')
+    series = json.loads(config.read_text(encoding='utf-8'))
+    if (manifest.get('source_patch_series') != series.get('id')
+            or series.get('base_commit') != PINNED_COMMIT
+            or series.get('game_execution_approved') is not False):
+        raise PipelineError('XENON_PATCH_SERIES_ID_OR_POLICY')
+    for patch in series['patches']:
+        path = (ROOT / patch['path']).resolve()
+        if not path.is_relative_to(ROOT.resolve()) or digest(path) != patch['sha256']:
+            raise PipelineError('XENON_PATCH_CONTENT_CHANGED')
+    changes = subprocess.run(['git', '-C', str(checkout), 'diff', '--name-only', 'HEAD', '--'],
+                             text=True, capture_output=True, check=False)
+    if changes.returncode or set(changes.stdout.splitlines()) != set(series['files']):
+        raise PipelineError('XENON_PATCH_UNEXPECTED_TRACKED_CHANGES')
+    for name, expected in series['files'].items():
+        path = (checkout / name).resolve()
+        if not path.is_relative_to(checkout.resolve()) or digest(path) != expected:
+            raise PipelineError('XENON_PATCH_SOURCE_CHANGED')
+    return series
+
+
 def toolchain(manifest_path: Path) -> dict:
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
     if not isinstance(manifest,dict) or not isinstance(manifest.get("source_checkout"),str):
@@ -50,10 +75,16 @@ def toolchain(manifest_path: Path) -> dict:
                             capture_output=True, text=True, check=False)
     if result.returncode or result.stdout.strip() != PINNED_COMMIT:
         raise PipelineError("XENON_CHECKOUT_PIN_MISMATCH")
-    clean = subprocess.run(["git", "-C", str(checkout), "diff", "--quiet", "HEAD", "--"],
-                           capture_output=True, check=False)
-    if clean.returncode:
-        raise PipelineError("XENON_CHECKOUT_TRACKED_CHANGES")
+    series = None
+    if 'source_patch_series' in manifest:
+        series = validate_patch_series(manifest, checkout)
+    else:
+        if 'source_patch_series_sha256' in manifest:
+            raise PipelineError('XENON_PATCH_SERIES_ID_REQUIRED')
+        clean = subprocess.run(["git", "-C", str(checkout), "diff", "--quiet", "HEAD", "--"],
+                               capture_output=True, check=False)
+        if clean.returncode:
+            raise PipelineError("XENON_CHECKOUT_TRACKED_CHANGES")
     result = {}
     for name in ("analyse", "recomp", "context"):
         record = manifest.get(name)
@@ -65,6 +96,11 @@ def toolchain(manifest_path: Path) -> dict:
             raise PipelineError(f"XENON_TOOL_DIGEST_MISMATCH:{name}")
         result[name] = path
     result["source_commit"] = PINNED_COMMIT
+    if series is not None:
+        if digest(result['context']) != series['context_sha256']:
+            raise PipelineError('XENON_PATCH_CONTEXT_CHANGED')
+        result['source_patch_series'] = series['id']
+        result['game_execution_approved'] = False
     return result
 
 
@@ -76,7 +112,8 @@ def plan_analyse(tools: dict, xex: Path, output: Path, private: Path) -> dict:
     if output == xex:
         raise PipelineError("OUTPUT_OVERWRITES_INPUT")
     return {"stage": "analyse", "command": [str(tools["analyse"]), str(xex), str(output)],
-            "output": str(output), "input": str(xex), "input_sha256": digest(xex), "source_commit": PINNED_COMMIT}
+            "output": str(output), "input": str(xex), "input_sha256": digest(xex), "source_commit": PINNED_COMMIT,
+            "source_patch_series": tools.get("source_patch_series"), "game_execution_approved": False}
 
 
 def plan_recompile(tools: dict, config: Path, reviewed_digest: str, private: Path) -> dict:
@@ -104,7 +141,8 @@ def plan_recompile(tools: dict, config: Path, reviewed_digest: str, private: Pat
     return {"stage": "recompile", "command": [str(tools["recomp"]), str(config), str(tools["context"])],
             "output": str(output), "config_sha256": reviewed_digest,
             "input": str(paths["file_path"]), "input_sha256": digest(paths["file_path"]), "source_commit": PINNED_COMMIT,
-            "status": "requires_generated_code_and_diagnostics_review"}
+            "status": "requires_generated_code_and_diagnostics_review",
+            "source_patch_series": tools.get("source_patch_series"), "game_execution_approved": False}
 
 
 def validate_identity(plan: dict, private: Path) -> None:
@@ -150,7 +188,7 @@ def execute(plan: dict, log_path: Path, private: Path) -> int:
     if result.returncode:
         raise PipelineError(f"XENON_TOOL_FAILED:{result.returncode}; inspect private log")
     log = log_path.read_text(encoding="utf-8", errors="replace")
-    if re.search(r"\b(error|fatal|warning|unsupported|unimplemented)\b|not implemented|unrecognized instruction", log, re.I):
+    if re.search(r"\b(error|fatal|warning|unsupported|unimplemented)\b|not implemented|unrecognized instruction|unable to decode instruction|has RC bit enabled but no comparison", log, re.I):
         raise PipelineError("XENON_DIAGNOSTICS_REQUIRE_REVIEW; inspect private log")
     if plan["stage"] == "analyse" and not output.is_file():
         raise PipelineError("XENON_ANALYSIS_OUTPUT_MISSING")
