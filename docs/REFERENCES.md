@@ -197,3 +197,10 @@ Consultado `src/xenia/cpu/ppc/ppc_emit_altivec.cc` no mesmo SHA Xenia fixado:
 LVEHX usa leitura do bloco de 16 bytes como LVX; VPKSWSS128 grava SAT além do
 resultado saturado. Esses comportamentos orientam a série experimental; não se
 copiou HIR/JIT para o runtime. A licença BSD-3-Clause da referência permanece.
+
+## Complemento rotate e VX128_5
+
+No SHA Xenia já fixado, consultados `ppc_emit_alu.cc`, `ppc_hir_builder.cc`,
+`ppc_instr.h` e `ppc_opcode_table_gen.cc`. UpdateCR trunca para INT32; VX128_5
+descreve os campos divididos usados por VSLDOI128. Referências BSD-3-Clause;
+nenhum backend HIR/JIT ou fonte GPL do disassembler foi incorporado ao runtime.

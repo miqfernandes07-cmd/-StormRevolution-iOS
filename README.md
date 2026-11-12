@@ -23,6 +23,9 @@ O segundo patch LFSU/STFSU passou em 900 casos nativos e reduziu a saída para
 973 diagnósticos/25 variantes: [evidências e limites](docs/SINGLE_UPDATE_PATCH.md).
 A série acumulada chegou a 45 diagnósticos/3 variantes, mais um aviso de CR,
 com 117198 casos/vetores sintéticos aprovados: [evidências](docs/SERIES_SEVEN.md).
+A revisão seguinte removeu o aviso CR e corrigiu a colisão MAC/VSLDOI128:
+restam 42 VPKSWSS128, com 225678 casos/vetores sintéticos aprovados no host
+([relatório](docs/ROTATE_DECODE.md)).
 Essa saída ainda não foi compilada como código nativo do jogo. O tradutor sintético permanece um teste independente.
 
 Estado em 2026-11-12: 62 testes Python, 1.038 verificações do runtime e 33 de PCM

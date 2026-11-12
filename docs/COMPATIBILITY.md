@@ -16,7 +16,7 @@ ou SDK Apple local. Nenhum FPS, compatibilidade iOS 27 ou boot foi medido.
 | Validação completa de funções e fluxo indireto | Não implementado | Configuração e saída preliminares exigem revisão específica do executável |
 | PPC AOT sintético | Teste automatizado aprovado | C++ gerado de instruções sintéticas executado com GCC/UBSan no host |
 | Adaptador CLI XenonRecomp | Teste automatizado aprovado | Contratos, caminhos e identidade testados; ferramentas upstream também executadas privadamente sobre o XEX |
-| Geração XenonRecomp do Storm | Implementado sem compilação nativa aprovada | Baseline 1643/28; sete patches reduziram a 45/3, mais um aviso CR; 242 C++ privados, ainda incompletos |
+| Geração XenonRecomp do Storm | Implementado sem compilação nativa aprovada | Baseline 1643/28; nove patches reduziram a 42/1, sem aviso CR; 242 C++ privados, ainda incompletos |
 | Runtime C++, memória, vetor, imports, input e arquivos | Teste automatizado aprovado | 1.038 verificações em Linux x86_64; ainda sem contratos suficientes para executar o título |
 | VMX128, FPU e atomics guest completos | Não implementado | Helpers e testes limitados não equivalem à ISA completa; variantes rejeitadas e sincronização exigem revisão |
 | Serviços xboxkrnl/XAM do jogo | Não implementado | Imports identificados; o resolver genérico não implementa os contratos do título |
@@ -88,3 +88,9 @@ Ver [SINGLE_UPDATE_PATCH.md](SINGLE_UPDATE_PATCH.md). Nenhuma função comercial
 ARM64 ou comercial. Adaptador verifica ID/hashes da série e rejeita fontes extras,
 patch/contexto alterado e avisos de decode/CR. Geração do título continua rejeitada:
 45 instruções + um aviso CR. Ver [SERIES_SEVEN.md](SERIES_SEVEN.md).
+
+## Rotate/record e decode VX128_5
+
+82368 casos de rotate/record e 26112 vetores de VSLDOI128 aprovados no host.
+Nove integrações acumuladas: 225678 casos/vetores. Geração ainda rejeitada por
+42 VPKSWSS128; sem boot. Ver [ROTATE_DECODE.md](ROTATE_DECODE.md).

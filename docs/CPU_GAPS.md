@@ -58,3 +58,9 @@ Ver [SINGLE_UPDATE_PATCH.md](SINGLE_UPDATE_PATCH.md).
 Estado mais recente: 45 ocorrências em VPKSWSS128 (42), MACLHWU (1), MACCHWU (2),
 mais um aviso RLDICL. sem CR. O filtro agora recusa também esse aviso.
 Contagens anteriores são marcos históricos. [Provas e limites](SERIES_SEVEN.md).
+
+## Rotate e decodificação
+
+Estado mais recente: 42 VPKSWSS128, zero avisos CR/decode. Os três MAC eram
+colisões VX128_5/VSLDOI128; não foram ignorados. Nove integrações sintéticas,
+225678 casos/vetores no host. Ver [ROTATE_DECODE.md](ROTATE_DECODE.md).

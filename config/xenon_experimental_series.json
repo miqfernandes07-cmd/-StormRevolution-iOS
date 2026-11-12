@@ -1,10 +1,10 @@
 {
-  "id": "storm-guest32-experimental-2026-11-12",
+  "id": "storm-guest32-experimental-2026-11-12-r2",
   "base_commit": "ddd128bcca99fe8bfbb99bea583c972351fa6ace",
   "game_execution_approved": false,
   "scope": "Experimental guest32 address/carry/CR0 policy; not a claim about title CPU mode",
   "files": {
-    "XenonRecomp/recompiler.cpp": "42032d4759aff7879427d093623c35c6d4e2cfb3925f973e54caae46169c8815"
+    "XenonRecomp/recompiler.cpp": "a1f028322cf66e221eb36ee52dc2efe6aacd5fafa3adf3988648f8f3780119bc"
   },
   "context_sha256": "369acaf639c52bb25ee8a2c6a555c7875912f0692b1e8220ea8dab0384e42263",
   "patches": [
@@ -35,6 +35,14 @@
     {
       "path": "tools/recompilation/patches/0007-lvehx-xenon.patch",
       "sha256": "6e05277ad7e79f33ffa2c3d06e8d54ca23baac5099a1fceeb897128eb6b03679"
+    },
+    {
+      "path": "tools/recompilation/patches/0008-rldicl-record.patch",
+      "sha256": "6e9367e08f8574a41644197bb17eb93b991905f7ba3d751d2549fe2c7b5b1659"
+    },
+    {
+      "path": "tools/recompilation/patches/0009-xenon-vsldoi-decode.patch",
+      "sha256": "21521493e2c38d980a568526ac08480f9dc6e52f5b0d6d54af327f487024f7d0"
     }
   ]
 }

@@ -1,5 +1,18 @@
 # Progresso — atualização em 2026-11-12
 
+## Marco: rotate/record e decodificação VMX128
+
+Patch 0008 corrige RLDICL/CLRLDI/ROTLDI com record e foi testado em 82368 casos.
+Patch 0009 corrige a colisão de três encodings VSLDOI128 com mnemonics MAC BookE,
+com 26112 vetores aprovados. As nove integrações no mesmo binário somam 225678
+casos/vetores nativos sintéticos Linux/Clang/UBSan. Suíte padrão: 3/3 CTest, 71 Python.
+
+A geração real pelo adaptador, com série/hash revisados, agora registra somente
+42 VPKSWSS128; zero avisos CR e zero erros de decode. A saída continua rejeitada.
+Sem função comercial compilada/executada e sem novo estado de boot ou gameplay.
+[Evidências e limites](ROTATE_DECODE.md). Próximo foco: contexto VSCR/SAT e todas
+as operações saturadas usadas, sem ignorar efeitos sobre estado guest.
+
 ## Marco: série experimental acumulada
 
 Sete patches do emissor e integração explícita de proveniência no adaptador.
