@@ -119,3 +119,11 @@ libubsan Linux: 3264 vetores nativos aprovados e EQV. rejeitada. Trata-se do C++
 gerado pelo upstream com patch, sem jogo. A suíte padrão foi repetida por haver
 novos arquivos de teste: `ctest --test-dir build --output-on-failure`, 3/3 grupos
 aprovados. Reprodução, falhas encontradas e relatório em EQV_PATCH.md.
+
+## LFSU/STFSU experimental — 2026-11-12
+
+`tests/integration/xenon_single_update.py` executou 900 casos de funções sintéticas
+geradas pelo upstream com patch (Clang 19.1.7, UBSan, Linux x86_64). O teste EQV
+foi repetido com driver C++ preservado: 3264 vetores aprovados no mesmo binário.
+`ctest --test-dir build --output-on-failure`: 3/3 grupos aprovados. Esses resultados
+não são testes ARM64 nem execução de funções do título. Ver SINGLE_UPDATE_PATCH.md.

@@ -45,3 +45,10 @@ EQV sem record foi implementada no emissor e validada em 3264 vetores nativos
 sintéticos. A nova tentativa privada eliminou as 40 ocorrências EQV: restam
 1603 diagnósticos em 27 variantes. A tabela acima preserva o baseline original.
 EQV. e as demais variantes permanecem pendentes. Ver [EQV_PATCH.md](EQV_PATCH.md).
+
+## Atualização: LFSU/STFSU
+
+Segundo patch experimental validado em 900 casos nativos sintéticos: as 250
+ocorrências LFSU e 380 STFSU desapareceram. Restam 973 diagnósticos em 25 variantes.
+Tabelas anteriores são baselines históricos. Sem prova de alcançabilidade ou boot.
+Ver [SINGLE_UPDATE_PATCH.md](SINGLE_UPDATE_PATCH.md).

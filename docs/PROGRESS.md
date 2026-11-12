@@ -1,5 +1,16 @@
 # Progresso — atualização em 2026-11-12
 
+## Marco: LFSU/STFSU com atualização de endereço
+
+Segundo patch experimental do emissor implementado: LFSU/STFSU em endereçamento
+guest32, atualização de RA após acesso, RA=0/MMIO recusados. **900 casos nativos**
+passaram com Clang/UBSan no Linux x86_64: 405 com macros upstream e 495 com
+callbacks verificados. EQV passou novamente nos 3264 vetores no mesmo binário.
+Nova geração privada: **973 ocorrências em 25 variantes**, contra 1603/27;
+250 LFSU e 380 STFSU desapareceram. Saída continua incompleta, sem build nativo
+ou execução comercial. O baseline original foi restaurado e seu hash conferido.
+[Reprodução e limites](SINGLE_UPDATE_PATCH.md). Suíte pública: 3/3 CTest aprovados.
+
 ## Marco: correção experimental de EQV
 
 Primeiro patch do emissor XenonRecomp implementado e testado: EQV sem record,
