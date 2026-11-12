@@ -1,6 +1,27 @@
 # Progresso — atualização em 2026-11-12
 
-## Marco atual: VSCR, binary16, dispatch e auditoria da saída
+## Marco atual: prefixo AOT real, metadados de módulo e memória virtual
+
+11 funções comerciais AOT selecionadas foram compiladas/ligadas privadamente;
+o diagnóstico entrou em oito no Linux x86_64, executou a leitura do cabeçalho,
+reservou 1 MiB e fez commit de 64 KiB. Parou em KeGetCurrentProcessType ausente.
+É um experimento com SP/LR e contexto controlados, **sem ABI de boot validada,
+tela ou inicialização do jogo**. Nenhum código comercial foi publicado.
+
+Implementados AddressSpace esparso, ponte escalar verificada, descriptor parcial
+read-only, RtlImageXexHeaderField e reserva/commit/release nos limites documentados.
+GCC e Clang/UBSan: **7/7 CTest, 98 testes Python, 1038 runtime, 33 PCM, 21 dispatch,
+2088 memória, 44 módulo e 1083 VM**. Ponte sintética: 102 checks nativos.
+Ferramenta pública reproduz o probe com config/hash e resultados somente privados.
+[Implementação, comandos e limites](KERNEL_BRINGUP.md).
+
+CI do commit anterior f93c763: host GCC/Clang aprovado; 780443 verificações
+sintéticas aprovadas Linux/macOS e objetos ARM64/iOS compilados no run 43212214238;
+novo IPA unsigned de infraestrutura e smoke simulador aprovados no 43212214281.
+Não foi instalado no iPhone. Ainda sem jogo inicializando ou gameplay.
+A saída global continua bloqueada pelos 79 destinos estáticos e 19909 palavras zero.
+
+## Marco anterior: VSCR, binary16, dispatch e auditoria da saída
 
 Série experimental de 13 patches: **780443 casos/vetores/verificações nativas
 sintéticas aprovados**, Clang 19.1.7/UBSan, Linux x86_64. VSCR SAT/NJ,

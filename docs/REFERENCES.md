@@ -220,3 +220,21 @@ LGPL-2.1-or-later. Foi referência de comportamento: nenhum código, biblioteca,
 decoder, emulador ou dependência QEMU foi copiado ou vinculado. A implementação
 própria opera diretamente sobre bits IEEE; o teste independente usa matemática
 long double para a conversão signed fixed e double para binary16.
+
+## Complemento de módulo e memória guest
+
+No SHA Xenia fixado e licença BSD-3-Clause, consultados `kernel/xmodule.h`,
+`kernel/user_module.cc`, `kernel/xboxkrnl/xboxkrnl_module.cc`,
+`kernel/xboxkrnl/xboxkrnl_rtl.cc`, `kernel/xboxkrnl/xboxkrnl_memory.cc`,
+`xbox.h` e `memory.cc`. Usados como fatos de ABI: campos de loader, níveis de
+indireção do handle, chaves XEX, flags/pools virtuais 4/64 KiB e contratos
+de NtAllocateVirtualMemory. Implementação própria por regiões e páginas, sem
+copiar o gerenciador de memória, traduzir TLB ou vincular o emulador.
+Threading foi lido para investigar o próximo import, ainda não implementado.
+
+A toolchain local recebeu `libclang-rt-19-dev` Debian 1:19.1.7-3+b1, SHA-256
+`0c03a0a8fa37228e2de6c36d02ff0806643885c515a8137d1bcd22e248497cd6`,
+extraído somente em /tmp para os testes. Copyright do pacote consultado:
+Apache-2.0 com exceções LLVM para o conjunto principal. Não é dependência
+do runtime distribuído nem é incluído no IPA. Corrigiu a falta local das
+bibliotecas UBSan; depois os sete grupos CTest passaram também com Clang/UBSan.

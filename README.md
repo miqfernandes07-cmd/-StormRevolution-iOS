@@ -20,8 +20,11 @@ O XenonRecomp gerou 242 arquivos C++ privados. A série experimental de 13 patch
 passou em **780443** verificações sintéticas nativas no host, mas a geração do
 jogo continua bloqueada por 79 chamadas sem destino e 19909 palavras zero
 não decodificadas. [Implementação e evidências](docs/VSCR_DISPATCH.md).
-O runtime já possui dispatch AOT verificado; o app ainda não tem uma imagem
-do jogo recompilada e qualificada para executar.
+O runtime já possui dispatch AOT e memória escalar verificados. Um diagnóstico
+privado executou oito funções reais de entrada e avançou até a reserva/commit
+inicial do heap; parou no próximo serviço ausente. A ABI inicial não está
+validada e o jogo não inicializa. [Evidências](docs/KERNEL_BRINGUP.md).
+O app ainda não tem uma imagem do jogo qualificada para executar.
 
 Estado em 2026-11-12: 62 testes Python, 1.038 verificações do runtime e 33 de PCM
 passaram em 3/3 grupos CTest no Linux. GCC e Clang já passaram na CI host em um

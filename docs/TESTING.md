@@ -143,3 +143,16 @@ aprovados, incluindo 82368 rotate/record e 26112 VSLDOI128. Baselines originais
 falham nos gates de ambas as correções. 3/3 CTest e 71 testes Python aprovados.
 O adaptador continua recusando a geração comercial pelos 42 VPKSWSS128 restantes.
 Reprodução e hashes em ROTATE_DECODE.md; sem execução ARM64 ou comercial.
+
+## Marco de memória/módulo e prefixo real — 2026-11-12
+
+Sete grupos CTest aprovados localmente com GCC/UBSan e Clang 19.1.7/UBSan.
+98 testes Python, 1038 runtime, 33 PCM, 21 dispatch, 2088 memória esparsa,
+44 de módulo e 1083 VM. Integração `xenon_dispatch_bridge.py`: 102 checks.
+O primeiro teste Python AOT com Clang falhou pela ausência de compiler-rt no
+ambiente; a instalação isolada do pacote auditado corrigiu a dependência.
+Não se alterou nem se desativou esse teste para fazê-lo passar.
+
+O probe privado de onze funções comerciais, oito alcançadas, não entra nos
+testes públicos de CI. Ele terminou no guard KeGetCurrentProcessType após
+reserva/commit reais do runtime. [Escopo, comando e limitações](KERNEL_BRINGUP.md).

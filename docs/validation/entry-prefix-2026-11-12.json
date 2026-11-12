@@ -1,0 +1,31 @@
+{
+  "scope": "private_controlled_native_entry_prefix_diagnostic",
+  "host": "Linux x86_64",
+  "compiler": "Clang 19.1.7",
+  "sanitizer": "UBSan",
+  "selected_actual_generated_functions": 11,
+  "actual_functions_entered": 8,
+  "unimplemented_callee_guards": 19,
+  "binary_sha256": "67578de1bc25ba338e37412363790ab838edbb2148c6b56060e60753be8d7508",
+  "config_sha256": "2021e3c969594bc0fc9fcb193f5f9bc7c3e8a979755646fbdb5c5c504758e944",
+  "entry_ABI_qualified": false,
+  "full_aot_image_approved": false,
+  "native_commercial_entry_prefix_executed": true,
+  "game_initializes": false,
+  "gameplay": false,
+  "first_reservation_bytes": 1048576,
+  "first_committed_bytes": 65536,
+  "stop_import": "KeGetCurrentProcessType",
+  "original_input_files_sha256": {
+    "default.xex": "b9fd8ac231a96560db2b54340880f2c3d7e8d4cd4cfa1153112077f2fa8af777",
+    "reconstructed_image": "98aee7eeca1e79ed2f1c54bca894c5aa0624ed21fb20de3af8b16b3587933275"
+  },
+  "limits": [
+    "zeroed registers except diagnostic aligned SP and sentinel LR",
+    "64KiB diagnostic stack; Xbox entry thread ABI unqualified",
+    "whole image copied as RW diagnostic data; no MMIO or physical alias model",
+    "selected scalar functions only; unavailable callees stop explicitly",
+    "no title frame, menus, audio or gameplay",
+    "no execution on ARM64 device or simulator"
+  ]
+}

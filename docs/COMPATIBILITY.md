@@ -17,11 +17,12 @@ ou SDK Apple local. Nenhum FPS, compatibilidade iOS 27 ou boot foi medido.
 | PPC AOT sintético | Teste automatizado aprovado | C++ gerado de instruções sintéticas executado com GCC/UBSan no host |
 | Adaptador CLI XenonRecomp | Teste automatizado aprovado | Contratos, caminhos e identidade testados; ferramentas upstream também executadas privadamente sobre o XEX |
 | Geração XenonRecomp do Storm | Implementado sem compilação nativa aprovada | 13 patches removem rejeições de opcode/traps; 79 chamadas omitidas e 19909 palavras não decodificadas bloqueiam qualificação; 242 C++ privados |
+| Memória esparsa, módulo e VM inicial | Teste automatizado aprovado | 2088/44/1083 checks no host; backing só após commit; sem MMIO, aliases físicos ou kernel completo |
 | Runtime C++, memória, vetor, imports, input e arquivos | Teste automatizado aprovado | 1.038 verificações em Linux x86_64; ainda sem contratos suficientes para executar o título |
 | Dispatch AOT verificado | Teste automatizado aprovado | 16 checks runtime e 66 de C++ sintético gerado; BCTRL/BLRL, alias ELF e wrapper portátil; sem jogo |
 | VSCR e formatos D3D half selecionados | Teste automatizado aprovado | 167951 checks VSCR e 386748 half no host; sem qualificação da ISA completa |
 | VMX128, FPU e atomics guest completos | Não implementado | Helpers e testes limitados não equivalem à ISA completa; variantes rejeitadas e sincronização exigem revisão |
-| Serviços xboxkrnl/XAM do jogo | Não implementado | Imports identificados; o resolver genérico não implementa os contratos do título |
+| Serviços xboxkrnl/XAM do jogo | Teste automatizado aprovado para o subconjunto | Descriptor/cabeçalho e reserva/commit/release em subconjuntos documentados; KeGetCurrentProcessType é o bloqueio seguinte; a maioria dos contratos está ausente |
 | Metal de diagnóstico | Executa no simulador | Comando Metal concluído no smoke test; sem comparação de pixels ou tradução Xenos |
 | Shaders Xenos/EDRAM/texturas do jogo | Não implementado | Nenhum caminho gráfico do título validado |
 | Fila de frames PCM | Teste automatizado aprovado | 33 verificações, incluindo transferência SPSC de 100.000 frames no host |
@@ -39,15 +40,15 @@ artificialmente. Isso exige atenção em qualquer futuro acesso fora das seçõe
 
 | Etapa | Resultado comprovado |
 | --- | --- |
-| Compilação local | Runtime e testes host aprovados; AOT sintético executado. 242 C++ comerciais passam em verificação sintática; sem objetos/link aprovado para execução |
-| Testes locais atuais | 90 testes Python + 1.038 runtime + 33 PCM + 16 dispatch; quatro grupos CTest no Linux |
+| Compilação local | Runtime e testes host aprovados; AOT sintético executado. 242 C++ passam em verificação sintática; 11 funções selecionadas ligadas no diagnóstico privado, oito executadas; imagem completa sem aprovação |
+| Testes locais atuais | 98 testes Python; 1038 runtime, 33 PCM, 21 dispatch, 2088 memória, 44 módulo e 1083 VM; 7/7 CTest GCC e Clang/UBSan Linux |
 | Compilação em CI host | GCC/Clang Linux e AppleClang/macOS Intel aprovados |
 | Compilação em CI iOS | Aprovada para app de infraestrutura ARM64 e simulador x86_64 |
 | IPA produzido | Sim, infraestrutura sem jogo e sem assinatura; exige assinatura posterior |
 | IPA instalado | Não |
 | Aplicativo iniciado no simulador | Sim; autoteste runtime e conclusão de comando Metal aprovados, sem execução do jogo |
 | Aplicativo iniciado no iPhone | Não |
-| Jogo efetivamente executado | Não |
+| Jogo efetivamente executado | Não inicializa. Oito funções do prefixo real executadas no host em diagnóstico com contexto controlado; sem tela/gameplay |
 
 ## Recursos e etapas do jogo
 
@@ -99,4 +100,7 @@ Nove integrações acumuladas: 225678 casos/vetores. Geração ainda rejeitada p
 
 A série 13 passou em **780443** casos/vetores/checks sintéticos nativos no host.
 Isso não demonstra execução ARM64 ou do jogo. Detalhes e bloqueios atuais em
-[VSCR_DISPATCH.md](VSCR_DISPATCH.md). A nova workflow AOT tem resultado pendente.
+[VSCR_DISPATCH.md](VSCR_DISPATCH.md). A CI AOT 43212214238 passou em Linux/macOS e compilou objetos sintéticos ARM64/iOS. O marco posterior de memória tem CI própria pendente.
+
+[Diagnóstico nativo atual e limitações](KERNEL_BRINGUP.md). O app continua
+retornando RUNTIME_AOT_IMAGE_MISSING, sem imagem comercial qualificada ligada.

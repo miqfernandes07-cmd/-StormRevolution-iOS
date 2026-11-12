@@ -1,0 +1,14 @@
+{
+  "scope": "synthetic_upstream_generated_BCTRL_BLRL_checked_dispatch_and_scalar_memory",
+  "checks": 102,
+  "host": "x86_64",
+  "compiler": "Debian clang version 19.1.7 (3+b1)",
+  "signed_overflow_policy": "fwrapv for PPC modular arithmetic",
+  "binary_sha256": "8964bd5fb771ea144716f160144d20f361882ca5e76ff7f17e495bef2bb68faf",
+  "context_sha256": "455668d94f8af289402c9aeeca8666c249ee517dd61ee8737dd572581644ba4d",
+  "game_executed": false,
+  "results": {
+    "elf_alias": "Xenon dispatch bridge: 51 native checks passed; no game",
+    "portable_wrapper": "Xenon dispatch bridge: 51 native checks passed; no game"
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "scope": "public_runtime_and_synthetic_tools_only",
+  "host": "Linux x86_64",
+  "compilers": [
+    "GCC 14.2.0",
+    "Clang 19.1.7"
+  ],
+  "sanitizer": "UBSan",
+  "ctest_groups_passed": 7,
+  "python_tests": 98,
+  "runtime_checks": 1038,
+  "PCM_checks": 33,
+  "dispatch_checks": 21,
+  "address_space_checks": 2088,
+  "executable_module_checks": 44,
+  "virtual_memory_checks": 1083,
+  "game_initializes": false
+}

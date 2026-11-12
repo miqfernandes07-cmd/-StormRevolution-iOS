@@ -10,6 +10,9 @@ on:
       - 'tests/integration/**'
       - 'runtime/cpu/aot_dispatch.*'
       - 'runtime/cpu/xenon_bridge.h'
+      - 'runtime/cpu/xenon_checked_memory.h'
+      - 'runtime/memory/**'
+      - 'runtime/kernel/**'
 permissions:
   contents: read
 jobs:
@@ -80,6 +83,11 @@ jobs:
             -o build/aot-results/synthetic-bridge-arm64.o
           xcrun --sdk iphoneos clang++ -target arm64-apple-ios17.0 -std=c++20 \
             -Iruntime -c runtime/cpu/aot_dispatch.cpp -o build/aot-results/dispatch-arm64.o
+          for source in memory/address_space kernel/executable_module kernel/virtual_memory; do
+            name="${source##*/}"
+            xcrun --sdk iphoneos clang++ -target arm64-apple-ios17.0 -std=c++20 \
+              -Iruntime -c "runtime/${source}.cpp" -o "build/aot-results/${name}-arm64.o"
+          done
           file build/aot-results/*-arm64.o | tee build/aot-results/arm64-objects.txt
           test "$(lipo -archs build/aot-results/synthetic-bridge-arm64.o)" = arm64
           test "$(lipo -archs build/aot-results/dispatch-arm64.o)" = arm64
