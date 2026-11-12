@@ -1,0 +1,16 @@
+{
+  "scope": "synthetic_upstream_generated_host_guest32_addressing_only",
+  "cases": 900,
+  "checked_memory_cases": 495,
+  "default_memory_cases": 405,
+  "invalid_forms_rejected": 3,
+  "host": "x86_64",
+  "compiler": "Debian clang version 19.1.7 (3+b1)",
+  "recompiler_sha256": "60181d79d0b1587d139b13c12b1f8509a2134eda89ca4bf90e45d82d308dbf2c",
+  "patch_sha256": "c775280f2794520254dd6d9bc6d950c0cc5065f9650f387febdb86b3e0a8acf6",
+  "game_executed": false,
+  "results": {
+    "checked": "LFSU/STFSU: 495 native cases passed; checked-memory callbacks, guest32 EA, nearest rounding, fault ordering",
+    "default": "LFSU/STFSU: 405 native cases passed; default upstream memory macros, guest32 EA, nearest rounding"
+  }
+}

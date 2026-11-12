@@ -1,5 +1,19 @@
 # Progresso — atualização em 2026-11-12
 
+## Marco: série experimental acumulada
+
+Sete patches do emissor e integração explícita de proveniência no adaptador.
+117198 casos/vetores nativos sintéticos aprovados no mesmo binário Linux x86_64,
+Clang 19.1.7/UBSan. Suíte padrão: 71 testes Python + 1038 verificações runtime +
+33 PCM, 3/3 CTest. Os testes usam dados próprios, não executam o título.
+
+Geração privada pelo adaptador: de 973/25 para **45 ocorrências/3 variantes**,
+mais **um aviso de RLDICL. sem comparação CR**. O adaptador rejeitou a saída.
+Permanecem VPKSWSS128/VSCR, MACs suspeitas, fluxo indireto e os subsistemas do jogo.
+Fonte/binário originais restaurados, hashes conferidos. O manifesto experimental
+recusou corretamente o fonte restaurado. Sem função comercial compilada/executada.
+[Implementação, comandos, provas e bloqueios](SERIES_SEVEN.md).
+
 ## Marco: LFSU/STFSU com atualização de endereço
 
 Segundo patch experimental do emissor implementado: LFSU/STFSU em endereçamento

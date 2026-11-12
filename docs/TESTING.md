@@ -127,3 +127,11 @@ geradas pelo upstream com patch (Clang 19.1.7, UBSan, Linux x86_64). O teste EQV
 foi repetido com driver C++ preservado: 3264 vetores aprovados no mesmo binário.
 `ctest --test-dir build --output-on-failure`: 3/3 grupos aprovados. Esses resultados
 não são testes ARM64 nem execução de funções do título. Ver SINGLE_UPDATE_PATCH.md.
+
+## Série experimental — 2026-11-12
+
+Sete integrações executadas no mesmo binário: 117198 casos/vetores nativos com
+Clang 19.1.7 e UBSan Linux. Suite pública: 71 testes Python, 3/3 CTest, 1038
+verificações runtime e 33 PCM. O pipeline real aceitou a proveniência experimental
+e recusou a geração comercial por 45 instruções e um aviso CR. Fonte original
+restaurado e rejeitado pelo manifesto experimental. Ver SERIES_SEVEN.md.

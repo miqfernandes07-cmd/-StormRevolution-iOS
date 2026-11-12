@@ -1,0 +1,10 @@
+{
+  "scope": "synthetic_upstream_generated_host_Xenon_LVEHX_full_vector_policy",
+  "vectors": 24576,
+  "host": "x86_64",
+  "compiler": "Debian clang version 19.1.7 (3+b1)",
+  "binary_sha256": "60181d79d0b1587d139b13c12b1f8509a2134eda89ca4bf90e45d82d308dbf2c",
+  "patch_sha256": "6e05277ad7e79f33ffa2c3d06e8d54ca23baac5099a1fceeb897128eb6b03679",
+  "game_executed": false,
+  "result": "Xenon LVEHX: 24576 native vectors passed"
+}

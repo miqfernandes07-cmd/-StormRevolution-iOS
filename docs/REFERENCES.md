@@ -190,3 +190,10 @@ privada, diagnósticos que bloqueiam geração incompleta e testes sintéticos.
 Antes de incorporar código ou novas bibliotecas, registrar SHA, licença,
 notices e compatibilidade; nenhuma dependência externa faz parte do runtime
 desta primeira iteração por resultado desta auditoria.
+
+## Complemento de semântica vetorial
+
+Consultado `src/xenia/cpu/ppc/ppc_emit_altivec.cc` no mesmo SHA Xenia fixado:
+LVEHX usa leitura do bloco de 16 bytes como LVX; VPKSWSS128 grava SAT além do
+resultado saturado. Esses comportamentos orientam a série experimental; não se
+copiou HIR/JIT para o runtime. A licença BSD-3-Clause da referência permanece.

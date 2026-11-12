@@ -1,0 +1,10 @@
+{
+  "scope": "synthetic_upstream_generated_host_guest32_intra_function_relative_only",
+  "cases": 3456,
+  "host": "x86_64",
+  "compiler": "Debian clang version 19.1.7 (3+b1)",
+  "binary_sha256": "60181d79d0b1587d139b13c12b1f8509a2134eda89ca4bf90e45d82d308dbf2c",
+  "patch_sha256": "9b51fdf57e70b88a9d1f12414ef99ee77ac69c3e89d822e06c047c4d0bc045ea",
+  "game_executed": false,
+  "result": "CTR branches: 3456 native cases passed (guest32 counter test, all CR bits)"
+}

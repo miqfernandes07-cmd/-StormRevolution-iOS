@@ -21,6 +21,8 @@ ocorrências de 28 variantes rejeitadas. Um patch experimental de EQV, validado 
 reduziu esses diagnósticos para 1603/27; ver [correção EQV](docs/EQV_PATCH.md).
 O segundo patch LFSU/STFSU passou em 900 casos nativos e reduziu a saída para
 973 diagnósticos/25 variantes: [evidências e limites](docs/SINGLE_UPDATE_PATCH.md).
+A série acumulada chegou a 45 diagnósticos/3 variantes, mais um aviso de CR,
+com 117198 casos/vetores sintéticos aprovados: [evidências](docs/SERIES_SEVEN.md).
 Essa saída ainda não foi compilada como código nativo do jogo. O tradutor sintético permanece um teste independente.
 
 Estado em 2026-11-12: 62 testes Python, 1.038 verificações do runtime e 33 de PCM

@@ -1,0 +1,10 @@
+{
+  "scope": "synthetic_upstream_generated_host_VMX_bitwise_only",
+  "vectors": 3264,
+  "host": "x86_64",
+  "compiler": "Debian clang version 19.1.7 (3+b1)",
+  "binary_sha256": "60181d79d0b1587d139b13c12b1f8509a2134eda89ca4bf90e45d82d308dbf2c",
+  "patch_sha256": "9485bf127ccb466cf698c3db0de4cd1c93f50f62f17875732a3e0d47ad56ba66",
+  "game_executed": false,
+  "result": "VANDC: 3264 native vectors passed"
+}

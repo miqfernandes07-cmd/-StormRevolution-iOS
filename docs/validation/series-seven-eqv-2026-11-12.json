@@ -1,0 +1,14 @@
+{
+  "scope": "synthetic_eqv_upstream_generated_native_host_only",
+  "vectors": 3264,
+  "eqv_record_rejected": true,
+  "game_executed": false,
+  "host": "x86_64",
+  "system": "Linux",
+  "compiler": "Debian clang version 19.1.7 (3+b1)",
+  "upstream_commit": "ddd128bcca99fe8bfbb99bea583c972351fa6ace",
+  "patch_sha256": "d8020dce25c974b16003bd2162f0073171515f1b41442568821eea7e44ce6204",
+  "context_sha256": "369acaf639c52bb25ee8a2c6a555c7875912f0692b1e8220ea8dab0384e42263",
+  "recompiler_sha256": "60181d79d0b1587d139b13c12b1f8509a2134eda89ca4bf90e45d82d308dbf2c",
+  "result": "EQV upstream-generated native functions: 3264 vectors passed; EQV. remains unsupported"
+}

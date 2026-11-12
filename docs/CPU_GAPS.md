@@ -52,3 +52,9 @@ Segundo patch experimental validado em 900 casos nativos sintéticos: as 250
 ocorrências LFSU e 380 STFSU desapareceram. Restam 973 diagnósticos em 25 variantes.
 Tabelas anteriores são baselines históricos. Sem prova de alcançabilidade ou boot.
 Ver [SINGLE_UPDATE_PATCH.md](SINGLE_UPDATE_PATCH.md).
+
+## Série de sete patches
+
+Estado mais recente: 45 ocorrências em VPKSWSS128 (42), MACLHWU (1), MACCHWU (2),
+mais um aviso RLDICL. sem CR. O filtro agora recusa também esse aviso.
+Contagens anteriores são marcos históricos. [Provas e limites](SERIES_SEVEN.md).

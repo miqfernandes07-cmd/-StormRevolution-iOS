@@ -1,0 +1,11 @@
+{
+  "scope": "synthetic_upstream_generated_host_guest32_CA_CR0_only",
+  "cases": 78336,
+  "OE_variants_rejected": 6,
+  "host": "x86_64",
+  "compiler": "Debian clang version 19.1.7 (3+b1)",
+  "binary_sha256": "60181d79d0b1587d139b13c12b1f8509a2134eda89ca4bf90e45d82d308dbf2c",
+  "patch_sha256": "94be816971e2d13702e0f76db9b00d4dac3d33438c94f5b284492ec52997eaaf",
+  "game_executed": false,
+  "result": "carry arithmetic: 78336 native cases passed; guest32 CA/CR0 policy"
+}

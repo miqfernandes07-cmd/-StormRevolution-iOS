@@ -1,0 +1,15 @@
+{
+  "scope": "synthetic_upstream_generated_host_guest32_memory_only",
+  "opcodes": 14,
+  "cases": 3402,
+  "invalid_rejections": 24,
+  "host": "x86_64",
+  "compiler": "Debian clang version 19.1.7 (3+b1)",
+  "binary_sha256": "60181d79d0b1587d139b13c12b1f8509a2134eda89ca4bf90e45d82d308dbf2c",
+  "patch_sha256": "449f10c9e38033707837ad10d28b66ec53465dabebb074e4f4c277851cfefdc5",
+  "game_executed": false,
+  "results": {
+    "default": "memory forms: 1134 native cases passed",
+    "checked": "memory forms: 2268 native cases passed"
+  }
+}
