@@ -107,3 +107,20 @@ O [run iOS 43212214281](https://github.com/miqfernandes07-cmd/-StormRevolution-i
 produziu novo IPA de infraestrutura não assinado e passou no smoke runtime/Metal
 no simulador, Xcode 16.4/SDK 18.5. Os componentes deste marco precisam de sua
 própria execução em CI; não se atribuem a eles os resultados do commit anterior.
+
+
+## Serviços adicionais de processo — marco posterior
+
+ProcessState mapeia somente PIB+0x2f RW, inicial USER=1. Getter lê o byte real;
+setter valida0..2 e grava o mesmo byte. Região0x60 inteira precisa estar livre
+na criação; campos desconhecidos ficam sem mapeamento. Não há PIB/KTHREAD/TLS
+completo. Chamadas precisam ser serializadas pelo proprietário da AddressSpace.
+
+Inicialização de critical section preserva bytes2..3 e8..15; escreve tipo,
+spin, signal, lock_count=-1, recursion/owner=0. Preflight impede escrita parcial.
+O wrap uint32 no arredondamento de spin segue a referência Xenia, sem prova em
+hardware Xbox. Enter/TryEnter/Leave continuam ausentes, sem sucesso fictício.
+
+Probe passa a exigir process_block na config privada e digest novamente revisado.
+Os quatro wrappers foram executados com contexto sintético; não há nova execução
+comercial. Consulte RESUME_GAME_BOOT.md para os artefatos privados ausentes.

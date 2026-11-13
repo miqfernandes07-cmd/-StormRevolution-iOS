@@ -23,7 +23,7 @@ ou SDK Apple local. Nenhum FPS, compatibilidade iOS 27 ou boot foi medido.
 | Dispatch AOT verificado | Teste automatizado aprovado | 16 checks runtime e 66 de C++ sintético gerado; BCTRL/BLRL, alias ELF e wrapper portátil; sem jogo |
 | VSCR e formatos D3D half selecionados | Teste automatizado aprovado | 167951 checks VSCR e 386748 half no host; sem qualificação da ISA completa |
 | VMX128, FPU e atomics guest completos | Não implementado | Helpers e testes limitados não equivalem à ISA completa; variantes rejeitadas e sincronização exigem revisão |
-| Serviços xboxkrnl/XAM do jogo | Teste automatizado aprovado para o subconjunto | Descriptor/cabeçalho e reserva/commit/release em subconjuntos documentados; KeGetCurrentProcessType é o bloqueio seguinte; a maioria dos contratos está ausente |
+| Serviços xboxkrnl/XAM do jogo | Teste automatizado aprovado para o subconjunto | Descriptor/cabeçalho e reserva/commit/release em subconjuntos documentados; Get/Set do tipo de processo e inicialização de critical section testados sinteticamente; execução comercial com esses handlers pendente; locks/threads completos ausentes |
 | Metal de diagnóstico | Executa no simulador | Comando Metal concluído no smoke test; sem comparação de pixels ou tradução Xenos |
 | Shaders Xenos/EDRAM/texturas do jogo | Não implementado | Nenhum caminho gráfico do título validado |
 | Fila de frames PCM | Teste automatizado aprovado | 33 verificações, incluindo transferência SPSC de 100.000 frames no host |

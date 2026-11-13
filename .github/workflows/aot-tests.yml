@@ -83,7 +83,7 @@ jobs:
             -o build/aot-results/synthetic-bridge-arm64.o
           xcrun --sdk iphoneos clang++ -target arm64-apple-ios17.0 -std=c++20 \
             -Iruntime -c runtime/cpu/aot_dispatch.cpp -o build/aot-results/dispatch-arm64.o
-          for source in memory/address_space kernel/executable_module kernel/virtual_memory; do
+          for source in memory/address_space kernel/executable_module kernel/virtual_memory kernel/process_state; do
             name="${source##*/}"
             xcrun --sdk iphoneos clang++ -target arm64-apple-ios17.0 -std=c++20 \
               -Iruntime -c "runtime/${source}.cpp" -o "build/aot-results/${name}-arm64.o"

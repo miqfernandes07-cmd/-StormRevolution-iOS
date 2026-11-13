@@ -1,6 +1,19 @@
 # Progresso — atualização em 2026-11-13
 
 
+## Marco atual: serviços do processo e retomada do boot
+
+Implementados KeGet/SetCurrentProcessType no modelo de memória guest (PIB+0x2f)
+e inicializadores de critical section, sem simular locks/threads completos.
+Probe privado ganhou os quatro handlers; sua config agora exige `process_block`.
+Linux GCC14.2/UBSan: **10/10 CTest, 99 Python, 1069 checks do novo módulo**,
+incluindo compilação/execução dos adaptadores reais com contexto sintético.
+O XEX foi recuperado isoladamente e identidade/CRC/hash aprovados. A toolchain,
+imagem e fontes comerciais anteriores não sobreviveram à recriação do ambiente;
+a execução do título com os novos handlers continua pendente. Nenhum novo boot,
+tela, gameplay ou FPS é declarado. CI deste marco ainda pendente ao registrar.
+[Passos exatos para continuar](RESUME_GAME_BOOT.md).
+
 ## Correção validada no simulador: rolamento 0.2.1
 
 Usuário confirmou instalação/abertura do IPA 0.2.0 e relatou impossibilidade de

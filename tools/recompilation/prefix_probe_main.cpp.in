@@ -2,6 +2,7 @@
 #include "memory/address_space.h"
 #include "kernel/executable_module.h"
 #include "kernel/virtual_memory.h"
+#include "kernel/process_state.h"
 #include "ppc_recomp_shared.h"
 #include <cstdio>
 #include <fstream>
@@ -25,6 +26,25 @@ PPC_FUNC(__imp__NtFreeVirtualMemory){
     if(!vm)throw std::runtime_error("PROBE_VM_NOT_BOUND");
     ctx.r3.u64=vm->free_guest(ctx.r3.u32,ctx.r4.u32,ctx.r5.u32);
 }
+static storm::kernel::ProcessState* process_state=nullptr;
+static storm::memory::AddressSpace* kernel_space=nullptr;
+PPC_FUNC(__imp__KeGetCurrentProcessType){
+    if(!process_state)throw std::runtime_error("PROBE_PROCESS_NOT_BOUND");
+    ctx.r3.u64=process_state->get_type();
+    std::printf("KERNEL_PROCESS_TYPE %u\n",ctx.r3.u32);
+}
+PPC_FUNC(__imp__KeSetCurrentProcessType){
+    if(!process_state)throw std::runtime_error("PROBE_PROCESS_NOT_BOUND");
+    process_state->set_type(ctx.r3.u32);
+}
+PPC_FUNC(__imp__RtlInitializeCriticalSection){
+    if(!kernel_space)throw std::runtime_error("PROBE_MEMORY_NOT_BOUND");
+    storm::kernel::initialize_critical_section(*kernel_space,ctx.r3.u32);
+}
+PPC_FUNC(__imp__RtlInitializeCriticalSectionAndSpinCount){
+    if(!kernel_space)throw std::runtime_error("PROBE_MEMORY_NOT_BOUND");
+    ctx.r3.u64=storm::kernel::initialize_critical_section(*kernel_space,ctx.r3.u32,ctx.r4.u32);
+}
 @GUARDS@
 @FUNCTIONS@
 int main(int argc,char** argv){
@@ -43,6 +63,7 @@ int main(int argc,char** argv){
         @MODULE_VARIABLE@,@MODULE_DESCRIPTOR@,@MODULE_HEADER@,@IMAGE_BASE@,uint32_t(image.size()),@ENTRY_ADDRESS@});
     module=&executable;executable.bind_handle_slot(@HANDLE_SLOT@,@HANDLE_WORD@);
     storm::kernel::VirtualMemory virtual_memory(space);vm=&virtual_memory;
+    storm::kernel::ProcessState process(space,@PROCESS_BLOCK@);process_state=&process;kernel_space=&space;
     PPCContext ctx{};ctx.r1.u64=@STACK_BASE@+@STACK_SIZE@-32;ctx.lr=0xdeadbee0;
     alignas(32)uint8_t placeholder[32]{};
     storm::cpu::AotFunctionTable table;

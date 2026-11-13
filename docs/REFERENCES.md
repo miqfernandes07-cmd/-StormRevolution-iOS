@@ -248,3 +248,12 @@ sistema, sem vendoring de minizip. Licença Zlib permissiva revisada em
 No iOS/macOS usa libz/headers do SDK Apple, compatíveis com ARM64; no Linux/WSL
 requer o pacote de desenvolvimento zlib. Nenhum XEX/asset entra nos testes.
 Ícone geométrico original do projeto; não usa marcas/imagens comerciais do jogo.
+
+
+## Processo e inicialização de critical section
+
+Semântica consultada em Xenia95a5c3ee250f80c3b9d139658649d9ffb6db3eec, BSD3:
+`src/xenia/kernel/kernel_state.h/.cc` (ProcessInfoBlock/process_type),
+`src/xenia/kernel/xboxkrnl/xboxkrnl_threading.cc` (get/set exports) e
+`src/xenia/kernel/xboxkrnl/xboxkrnl_rtl.cc` (estrutura28bytes e inicializadores).
+Implementação própria sobre AddressSpace; nenhum código do emulador integrado.
