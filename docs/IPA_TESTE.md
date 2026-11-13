@@ -5,6 +5,12 @@ o jogo**: a imagem AOT completa ainda não foi aprovada nem ligada ao aplicativo
 O ZIP não é convertido em código ARM64 no iPhone; essa preparação continua offline.
 Projeto iOS desenvolvido por Miquéias.
 
+[Baixar IPA 0.2.0 verificado — artefato ZIP](https://github.com/miqfernandes07-cmd/-StormRevolution-iOS/actions/runs/43446293033/artifacts/14047299433)
+Disponível originalmente até 20/11/2026; o GitHub pode exigir login.
+[Capturas reais e logs do simulador](https://github.com/miqfernandes07-cmd/-StormRevolution-iOS/actions/runs/43446293033/artifacts/14049575402).
+O controle “Gamepad” detectado nessas capturas é uma entrada fornecida pelo ambiente
+do simulador; não comprova conexão Bluetooth/USB de um controle físico.
+
 ## Instalação
 
 1. No Windows, instale/configure AltServer e AltStore **Classic** conforme o

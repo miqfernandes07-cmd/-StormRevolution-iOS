@@ -1,0 +1,11 @@
+{
+  "controller_ui_present" : true,
+  "ui_build" : "zip-library-v1",
+  "pixel_comparison_performed" : false,
+  "game_executed" : false,
+  "developer_credit" : "Projeto iOS desenvolvido por Miquéias",
+  "metal_command_completed" : true,
+  "runtime_self_test" : true,
+  "zip_import_ui_present" : true,
+  "developed_by" : "Miquéias"
+}

@@ -1,7 +1,9 @@
 # Aplicação iOS: infraestrutura nativa
 
 Versão 0.2.0: nova biblioteca com importação ZIP/ZIP64, controles Xbox 360 e
-crédito Miquéias. Consulte [teste com AltStore](IPA_TESTE.md) e PROGRESS para
+crédito Miquéias. O run 43446293033 passou em build ARM64/simulador, smoke
+runtime/Metal e testes negativos/cancelamento do importador real. Não houve
+extração do jogo completo ou teste em iPhone. Consulte [teste com AltStore](IPA_TESTE.md) e PROGRESS para
 o build mais recente. As evidências abaixo de 0.1.0 são históricas.
 
 O fluxo atual substitui a seleção de pasta por ZIP. Ele usa staging privado,

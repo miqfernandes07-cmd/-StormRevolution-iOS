@@ -1,0 +1,11 @@
+{
+  "full_game_zip_tested" : false,
+  "passed" : true,
+  "scope" : "synthetic ZIP rejection, rollback and cancellation in actual iOS importer",
+  "checks" : [
+    true,
+    true,
+    true
+  ],
+  "game_executed" : false
+}

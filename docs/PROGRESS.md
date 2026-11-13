@@ -13,7 +13,22 @@ D-pad, dois sticks, LS/RS e GameController; status de conexão e painel de entra
 217 verificações ZIP e 1031 de entrada, além das suítes anteriores. ZIP64 foi
 exercitado com arquivo esparso e offsets acima de 4 GiB, sem baixar o jogo inteiro.
 O ZIP completo de 9,43 GB e controles físicos não foram testados nesta iteração.
-Build Apple da versão 0.2.0 ainda pendente ao registrar este marco.
+**CI Apple aprovada globalmente no [run 43446293033](https://github.com/miqfernandes07-cmd/-StormRevolution-iOS/actions/runs/43446293033)**,
+commit 921c8e5: app ARM64, simulador x86_64, 9/9 CTest Apple, smoke runtime/Metal
+e três casos negativos no importador real aprovados (XEX inválido, path traversal,
+cancelamento; staging limpo e instalação anterior preservada). Capturas reais da
+Biblioteca e Controles foram inspecionadas. O primeiro run 43404567934 produziu
+IPA e aprovou Metal, mas não produziu o relatório de importação no prazo. Foram
+acrescentados logs do processo; a nova execução passou sem alterar o importador.
+A causa da ausência no primeiro run não foi estabelecida, portanto não atribuir
+a aprovação a uma correção funcional não realizada.
+
+[Baixar IPA 0.2.0 não assinado](https://github.com/miqfernandes07-cmd/-StormRevolution-iOS/actions/runs/43446293033/artifacts/14047299433)
+(artefato ZIP, disponibilidade original até 20/11/2026). Hash e estado em
+[relatório verificado](validation/ios-0.2.0-verified-2026-11-13.json).
+Os metadados do ZIP real foram aceitos pelo novo parser usando apenas 68.981 bytes
+lidos por HTTP Range. Extração completa do jogo, instalação no iPhone, controle
+físico, boot e gameplay continuam sem comprovação.
 [Instruções AltStore e roteiro de teste](IPA_TESTE.md).
 
 A versão anterior 46bdc95e passou nas três CIs: host 43217146958,

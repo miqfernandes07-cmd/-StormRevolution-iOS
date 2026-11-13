@@ -30,8 +30,9 @@ ou SDK Apple local. Nenhum FPS, compatibilidade iOS 27 ou boot foi medido.
 | XMA, reprodução de áudio/voz/vídeo | Não implementado | Sem decodificador/saída Apple integrada |
 | Touch/GameController Xbox 360 | Teste automatizado aprovado para o mapeamento | 1031 checks de composição/deadzone/gatilhos; UI e hardware exigem validação Apple/física da versão 0.2.0 |
 | ZIP/ZIP64 streaming | Teste automatizado aprovado no host | 217 checks, CRC, offsets >4 GiB, cancelamento, caminhos; ZIP completo ainda não testado |
-| Aplicativo/importação iOS 0.2.0 | Implementado sem teste Apple | UIKit/ZIP e interface renovados; build Apple e smoke do importador pendentes |
-| Build/IPA iOS em CI | Compila | App ARM64 e simulador x86_64 compilados; IPA de infraestrutura não assinado gerado no run 43162119044, Xcode 16.4/SDK 18.5 |
+| Aplicativo iOS 0.2.0 | Executa no simulador | Build ARM64, smoke runtime/Metal e capturas reais no run 43446293033; sem iPhone |
+| Integração do importador ZIP no iOS | Teste automatizado aprovado para falhas e cancelamento | Três casos sintéticos no simulador preservam dados anteriores; importação bem-sucedida do ZIP comercial ainda não testada |
+| Build/IPA iOS em CI | Compila | App ARM64 e simulador x86_64 compilados; IPA 0.2.0 de infraestrutura não assinado gerado no run 43446293033, Xcode 16.4/SDK 18.5 |
 
 A imagem reconstruída tem 13.762.560 bytes, igual ao tamanho declarado pelo XEX;
 o PE declara 14.669.312. Todas as seções estão presentes. O relatório mantém o

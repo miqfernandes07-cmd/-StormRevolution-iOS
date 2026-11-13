@@ -156,3 +156,24 @@ Não se alterou nem se desativou esse teste para fazê-lo passar.
 O probe privado de onze funções comerciais, oito alcançadas, não entra nos
 testes públicos de CI. Ele terminou no guard KeGetCurrentProcessType após
 reserva/commit reais do runtime. [Escopo, comando e limitações](KERNEL_BRINGUP.md).
+
+
+## iOS 0.2.0, ZIP e controles — 2026-11-13
+
+`cmake --build build --parallel 2` e `ctest --test-dir build --output-on-failure`:
+9/9 grupos Linux GCC14.2/UBSan, 98 Python, 217 ZIP e 1031 input. Os grupos anteriores
+seguem aprovados. CI Linux GCC/Clang também aprovada. No macOS Intel/Xcode16.4,
+o run43446293033 aprovou9/9 CTest e construiu app dispositivoARM64/simuladorx86_64.
+
+O smoke de iOS executou o runtime/Metal e o `StormGameImporter` real com ZIPs
+próprios: XEX truncado, caminho `../` e cancelamento explícito. Os três recusaram
+as entradas, limparam staging e preservaram o arquivo da importação anterior.
+O teste não valida uma importação comercial bem-sucedida. Foram capturadas as
+páginas Biblioteca e Controles no simulador e inspecionadas visualmente; não são
+mockups, provas de gameplay ou de hardware de controle físico.
+
+O primeiro run43404567934 falhou por relatório de importação ausente. Adicionada
+coleta de stdout/stderr, logs do sistema e crash reports na falha; nova execução
+passou. Causa da primeira ausência não identificada; nenhuma exceção foi ignorada
+nem o critério de aprovação enfraquecido. IPA conferido por ZIPCRC/hash, plist,
+cabeçalho Mach-O ARM64 e ausência de assinatura e arquivos comerciais.

@@ -1,0 +1,20 @@
+{
+  "commit": "921c8e5612a0d4d783c343656de0d1daf82d374c",
+  "run_id": 43446293033,
+  "artifact_id": 14047299433,
+  "version": "0.2.0",
+  "build": "2",
+  "ipa_size_bytes": 135390,
+  "ipa_sha256": "a79c5bc53e3286c430d2592b3d35e395cd5b09ac5b51eb7f7ab6f34883ae08da",
+  "architecture": "ARM64",
+  "unsigned": true,
+  "runtime_metal_smoke": "passed",
+  "synthetic_import_smoke": "passed",
+  "game_zip_metadata": "accepted",
+  "full_game_zip_extracted": false,
+  "physical_controller_tested": false,
+  "installed_on_iphone": false,
+  "game_initializes": false,
+  "xcode": "16.4 (16F6)",
+  "sdk": "iOS 18.5"
+}

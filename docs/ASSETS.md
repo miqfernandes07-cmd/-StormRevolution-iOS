@@ -27,6 +27,19 @@ anterior. O original foi preservado. Relatórios, índice e cópia ficam sob
 Este ambiente tem aproximadamente 7 GB livres e não comporta os 9,43 GB
 extraídos. Para armazenar também o ZIP, são necessários mais de 16,87 GB,
 além de espaço para ferramentas, builds e saídas de recompilação. A importação
-iOS atual recebe uma pasta extraída e usa staging: requer espaço para a nova
-cópia além de qualquer instalação anterior. A extração de containers CPK, a
+iOS 0.2.0 recebe ZIP/ZIP64 e usa staging: requer espaço para a nova cópia
+descompactada, mais 256 MiB livres, além do ZIP e de qualquer instalação anterior. A extração de containers CPK, a
 identificação de shaders, texturas e streams XMA ainda precisam de implementação.
+
+
+## Conferência do ZIP com o novo importador — 2026-11-13
+
+Após recriar o workspace, 68.981 bytes de metadados foram obtidos por HTTP Range.
+O índice, cabeçalhos locais e descriptors foram reunidos em um arquivo **esparso
+somente de metadados**, ocupando 143.360 bytes físicos. O construtor real
+`ZipArchive` aceitou as 29 entradas e o total de 9.433.995.676 bytes com UBSan.
+Métodos encontrados: Stored/Deflate; flags 0/8; caminhos ASCII.
+Isso confirma a leitura estrutural pelo parser atual, **não extração completa ou
+CRC de payload**. Não se tentou extrair o arquivo esparso (seus payloads estão
+ausentes); nenhum dado incompleto foi tratado como cópia utilizável do jogo.
+[Relatório agregado](validation/zip-real-metadata-2026-11-13.json).
