@@ -1,5 +1,13 @@
 # Aplicação iOS: infraestrutura nativa
 
+Versão 0.2.0: nova biblioteca com importação ZIP/ZIP64, controles Xbox 360 e
+crédito Miquéias. Consulte [teste com AltStore](IPA_TESTE.md) e PROGRESS para
+o build mais recente. As evidências abaixo de 0.1.0 são históricas.
+
+O fluxo atual substitui a seleção de pasta por ZIP. Ele usa staging privado,
+verificação de CRC e identidade, cancelamento e espaço livre; não realiza AOT
+em tempo de execução.
+
 Status: **Compila para iPhone ARM64 e executa a infraestrutura no simulador x86_64**. O run
 [43162119044](https://github.com/miqfernandes07-cmd/-StormRevolution-iOS/actions/runs/43162119044)
 usou macOS Intel, Xcode 16.4 (16F6), AppleClang 17 e SDK 18.5, com deployment

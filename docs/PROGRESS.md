@@ -1,6 +1,29 @@
-# Progresso — atualização em 2026-11-12
+# Progresso — atualização em 2026-11-13
 
-## Marco atual: prefixo AOT real, metadados de módulo e memória virtual
+
+## Marco atual: biblioteca ZIP e controles Xbox 360 — versão 0.2.0
+
+Interface UIKit renovada, crédito “Projeto iOS desenvolvido por Miquéias”, biblioteca,
+progresso/cancelamento, controles e ajustes separados. Importador real ZIP/ZIP64
+com zlib do sistema, leitura em blocos de 128 KiB, CRC, limites, proteção de caminhos,
+validação do XEX e staging. Sem arquivos comerciais no app. Layout Xbox 360 com
+D-pad, dois sticks, LS/RS e GameController; status de conexão e painel de entrada.
+
+**Linux x86_64/GCC 14.2/UBSan: 9/9 grupos aprovados**, 98 testes Python,
+217 verificações ZIP e 1031 de entrada, além das suítes anteriores. ZIP64 foi
+exercitado com arquivo esparso e offsets acima de 4 GiB, sem baixar o jogo inteiro.
+O ZIP completo de 9,43 GB e controles físicos não foram testados nesta iteração.
+Build Apple da versão 0.2.0 ainda pendente ao registrar este marco.
+[Instruções AltStore e roteiro de teste](IPA_TESTE.md).
+
+A versão anterior 46bdc95e passou nas três CIs: host 43217146958,
+AOT 43217146876 (780479 verificações por plataforma) e iOS 43217147430.
+Seu IPA sem assinatura foi baixado e conferido: ARM64, SDK 18.5, sem jogo.
+O ambiente local foi recriado: arquivos privados anteriores não estão neste novo
+checkout. Evidências históricas abaixo continuam registradas, sem nova execução
+do prefixo comercial. Jogo, instalação física e gameplay seguem pendentes.
+
+## Marco anterior: prefixo AOT real, metadados de módulo e memória virtual
 
 11 funções comerciais AOT selecionadas foram compiladas/ligadas privadamente;
 o diagnóstico entrou em oito no Linux x86_64, executou a leitura do cabeçalho,

@@ -1,7 +1,8 @@
-# Compatibilidade — 2026-11-12
+# Compatibilidade — 2026-11-13
 
-Alvo: iPhone 15 Pro / A17 Pro / ARM64 / iOS 27. O XEX fornecido pelo usuário está
-presente somente no diretório privado e sua identidade foi validada. Não há aparelho
+Alvo: iPhone 15 Pro / A17 Pro / ARM64 / iOS 27. O XEX fornecido pelo usuário foi
+validado na sessão anterior. O workspace foi recriado e os dados privados não
+estão presentes no novo checkout. Não há aparelho
 ou SDK Apple local. Nenhum FPS, compatibilidade iOS 27 ou boot foi medido.
 
 | Componente | Estado objetivo | Evidência / limite |
@@ -27,8 +28,9 @@ ou SDK Apple local. Nenhum FPS, compatibilidade iOS 27 ou boot foi medido.
 | Shaders Xenos/EDRAM/texturas do jogo | Não implementado | Nenhum caminho gráfico do título validado |
 | Fila de frames PCM | Teste automatizado aprovado | 33 verificações, incluindo transferência SPSC de 100.000 frames no host |
 | XMA, reprodução de áudio/voz/vídeo | Não implementado | Sem decodificador/saída Apple integrada |
-| Touch/GameController no iOS | Compila | Código compilado em CI; entrada física/touch ainda sem teste interativo |
-| Aplicativo/importação iOS | Compila | App ARM64/simulador compilado; importação real pelo aplicativo Arquivos ainda sem teste |
+| Touch/GameController Xbox 360 | Teste automatizado aprovado para o mapeamento | 1031 checks de composição/deadzone/gatilhos; UI e hardware exigem validação Apple/física da versão 0.2.0 |
+| ZIP/ZIP64 streaming | Teste automatizado aprovado no host | 217 checks, CRC, offsets >4 GiB, cancelamento, caminhos; ZIP completo ainda não testado |
+| Aplicativo/importação iOS 0.2.0 | Implementado sem teste Apple | UIKit/ZIP e interface renovados; build Apple e smoke do importador pendentes |
 | Build/IPA iOS em CI | Compila | App ARM64 e simulador x86_64 compilados; IPA de infraestrutura não assinado gerado no run 43162119044, Xcode 16.4/SDK 18.5 |
 
 A imagem reconstruída tem 13.762.560 bytes, igual ao tamanho declarado pelo XEX;

@@ -26,8 +26,10 @@ inicial do heap; parou no próximo serviço ausente. A ABI inicial não está
 validada e o jogo não inicializa. [Evidências](docs/KERNEL_BRINGUP.md).
 O app ainda não tem uma imagem do jogo qualificada para executar.
 
-Estado em 2026-11-12: 62 testes Python, 1.038 verificações do runtime e 33 de PCM
-passaram em 3/3 grupos CTest no Linux. GCC e Clang já passaram na CI host em um
+Estado em 2026-11-13: 98 testes Python e oito suítes C++ passaram em
+9/9 grupos CTest no Linux/UBSan, incluindo ZIP64 e mapeamento Xbox 360.
+A versão 0.2.0 traz biblioteca ZIP, nova interface e crédito ao Miquéias;
+[guia de teste com AltStore](docs/IPA_TESTE.md). GCC e Clang já passaram na CI host em um
 marco anterior. A CI macOS agora compilou o app para iPhone ARM64 e simulador
 x86_64, gerando o IPA não assinado. O aplicativo iniciou no simulador e passou
 no autoteste do runtime e na conclusão de um comando Metal. Ver [integração iOS](docs/IOS.md) para evidências.
@@ -41,7 +43,8 @@ python3 tools/xex_analysis/xex.py private/game/default.xex \
   --reference config/game_reference.json --output private/reports/xex.json
 ```
 
-Requisitos host: C++17, CMake >=3.20, Python >=3.11 e ferramenta de build.
+Requisitos host: C++17, CMake >=3.20, Python >=3.11, zlib de desenvolvimento
+(`zlib1g-dev` no Debian/Ubuntu) e ferramenta de build.
 WSL/Linux cobre análise e testes; iOS exige macOS/Xcode. O deployment mínimo
 do app é iOS 17; iOS 27 e iPhone 15 Pro são alvos solicitados, ainda sem validação.
 

@@ -1,0 +1,24 @@
+{
+  "version": "0.2.0",
+  "local_environment": "Linux x86_64, GCC14.2.0, Python3.12.14, CMake3.31.6, system zlib1.3.1",
+  "sanitizer": "UBSan",
+  "ctest_groups_passed": 9,
+  "python_tests": 98,
+  "cpp_checks": {
+    "runtime": 1038,
+    "pcm": 33,
+    "dispatch": 21,
+    "address_space": 2088,
+    "module": 44,
+    "vm": 1083,
+    "xbox360_input": 1031,
+    "zip": 217
+  },
+  "zip64_offsets_over_4gib": true,
+  "game_zip_tested": false,
+  "ios_build_status": "pending",
+  "physical_controller_tested": false,
+  "installed_on_iphone": false,
+  "game_initializes": false,
+  "gameplay": false
+}

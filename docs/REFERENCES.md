@@ -238,3 +238,13 @@ extraído somente em /tmp para os testes. Copyright do pacote consultado:
 Apache-2.0 com exceções LLVM para o conjunto principal. Não é dependência
 do runtime distribuído nem é incluído no IPA. Corrigiu a falta local das
 bibliotecas UBSan; depois os sete grupos CTest passaram também com Clang/UBSan.
+
+## ZIP streaming — 2026-11-13
+
+Parser ZIP/ZIP64 próprio, licença MIT do projeto; somente o DEFLATE usa zlib do
+sistema, sem vendoring de minizip. Licença Zlib permissiva revisada em
+`/usr/share/doc/zlib1g-dev/copyright` (Debian zlib 1.3.1), autores Jean-loup Gailly
+ e Mark Adler. [Referência upstream](https://zlib.net/zlib_license.html).
+No iOS/macOS usa libz/headers do SDK Apple, compatíveis com ARM64; no Linux/WSL
+requer o pacote de desenvolvimento zlib. Nenhum XEX/asset entra nos testes.
+Ícone geométrico original do projeto; não usa marcas/imagens comerciais do jogo.
