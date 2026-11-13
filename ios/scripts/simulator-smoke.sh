@@ -39,3 +39,28 @@ if result.get("game_executed") is not False:
 print("Simulator runtime and Metal command smoke checks passed; no game or pixel comparison tested")
 PY
 xcrun simctl terminate "$device_id" org.stormrevolution.port
+rm -f "$data_path/Documents/import-smoke-result.json"
+xcrun simctl launch "$device_id" org.stormrevolution.port --import-smoke-test
+for attempt in $(seq 1 60); do
+  if [ -f "$data_path/Documents/import-smoke-result.json" ]; then break; fi
+  sleep 1
+done
+cp "$data_path/Documents/import-smoke-result.json" "$(dirname "$result_path")/import-smoke.json"
+python3 - "$data_path/Documents/import-smoke-result.json" <<'PY'
+import json,sys
+with open(sys.argv[1]) as stream:
+    result=json.load(stream)
+assert result.get('passed') is True, result
+assert result.get('game_executed') is False, result
+print('Actual iOS importer rejected synthetic invalid XEX/traversal/cancellation and preserved previous data.')
+PY
+xcrun simctl terminate "$device_id" org.stormrevolution.port
+# Capture the actual application UI, never a generated representation of gameplay.
+xcrun simctl launch "$device_id" org.stormrevolution.port
+sleep 3
+xcrun simctl io "$device_id" screenshot "$(dirname "$result_path")/library-simulator.png"
+xcrun simctl terminate "$device_id" org.stormrevolution.port
+xcrun simctl launch "$device_id" org.stormrevolution.port --capture-controls
+sleep 3
+xcrun simctl io "$device_id" screenshot "$(dirname "$result_path")/controls-simulator.png"
+xcrun simctl terminate "$device_id" org.stormrevolution.port

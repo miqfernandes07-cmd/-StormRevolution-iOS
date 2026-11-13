@@ -18,7 +18,8 @@ add_custom_command(OUTPUT "${STORM_METAL_LIBRARY}"
 set_source_files_properties("${STORM_METAL_LIBRARY}" PROPERTIES
   GENERATED TRUE MACOSX_PACKAGE_LOCATION Resources)
 add_executable(StormRevolution MACOSX_BUNDLE
-  App/main.mm App/StormViewController.mm
+  App/main.mm App/StormViewController.mm Import/StormGameImporter.mm Import/StormImportSmoke.mm
+  Assets.xcassets
   Metal/StormMetalView.mm Controls/StormControls.mm
   "${STORM_METAL_LIBRARY}")
 target_compile_features(StormRevolution PRIVATE cxx_std_17)
@@ -42,3 +43,6 @@ set_target_properties(StormRevolution PROPERTIES
   XCODE_ATTRIBUTE_CODE_SIGNING_ALLOWED NO
   XCODE_ATTRIBUTE_CODE_SIGNING_REQUIRED NO
   XCODE_ATTRIBUTE_GENERATE_INFOPLIST_FILE NO)
+set_source_files_properties(Assets.xcassets PROPERTIES MACOSX_PACKAGE_LOCATION Resources)
+set_target_properties(StormRevolution PROPERTIES
+  XCODE_ATTRIBUTE_ASSETCATALOG_COMPILER_APPICON_NAME AppIcon)
