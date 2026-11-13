@@ -4,6 +4,7 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 option(STORM_SANITIZERS "Enable undefined behavior sanitizer for host tests" OFF)
+find_package(ZLIB REQUIRED)
 add_library(storm_runtime STATIC
   runtime/storm_runtime.cpp
   runtime/cpu/context.cpp
@@ -14,7 +15,9 @@ add_library(storm_runtime STATIC
   runtime/kernel/imports.cpp
   runtime/kernel/executable_module.cpp
   runtime/kernel/virtual_memory.cpp
-  runtime/filesystem/content_root.cpp)
+  runtime/filesystem/content_root.cpp
+  runtime/filesystem/zip_archive.cpp)
+target_link_libraries(storm_runtime PUBLIC ZLIB::ZLIB)
 target_include_directories(storm_runtime PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/runtime" "${CMAKE_CURRENT_SOURCE_DIR}")
 if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
   include(CheckCXXSourceCompiles)
@@ -62,6 +65,12 @@ else()
     add_executable(storm_virtual_memory_tests tests/test_virtual_memory.cpp)
     target_link_libraries(storm_virtual_memory_tests PRIVATE storm_runtime)
     add_test(NAME virtual_memory COMMAND storm_virtual_memory_tests)
+    add_executable(storm_input_tests tests/test_input_mapping.cpp)
+    target_link_libraries(storm_input_tests PRIVATE storm_runtime)
+    add_test(NAME xbox360_input COMMAND storm_input_tests)
+    add_executable(storm_zip_tests tests/test_zip.cpp)
+    target_link_libraries(storm_zip_tests PRIVATE storm_runtime)
+    add_test(NAME zip_streaming COMMAND storm_zip_tests)
     add_test(NAME python_tools COMMAND "${Python3_EXECUTABLE}" -m unittest discover -s tests -p "test_*.py" -v)
     set_tests_properties(python_tools PROPERTIES WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
       ENVIRONMENT "CXX=${CMAKE_CXX_COMPILER}")
