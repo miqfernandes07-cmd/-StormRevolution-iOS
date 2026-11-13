@@ -1,0 +1,32 @@
+{
+  "finger_gesture_tested" : false,
+  "passed" : true,
+  "pages" : [
+    {
+      "scrolls" : true,
+      "offset_y" : 72.333333333333329,
+      "content_height" : 782.33333333333337,
+      "footer_visible" : true,
+      "viewport_height" : 710,
+      "page" : 0
+    },
+    {
+      "scrolls" : true,
+      "offset_y" : 535.66666666666663,
+      "content_height" : 1245.6666666666667,
+      "footer_visible" : true,
+      "viewport_height" : 710,
+      "page" : 1
+    },
+    {
+      "scrolls" : true,
+      "offset_y" : 596.66666666666663,
+      "content_height" : 1306.6666666666667,
+      "footer_visible" : true,
+      "viewport_height" : 710,
+      "page" : 2
+    }
+  ],
+  "game_executed" : false,
+  "button_touch_cancellation" : true
+}

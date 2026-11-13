@@ -1,0 +1,17 @@
+{
+  "version": "0.2.1",
+  "build": "3",
+  "run_id": 43451112622,
+  "artifact_id": 14051071083,
+  "commit": "b729eb5c21da6b3e50c774984aedccf0808e648d",
+  "ipa_sha256": "7ba2a0e63e7a19bacf8665e3ddc0ed8ee440bf05ef6b4e873ed4666d705e490e",
+  "ipa_size_bytes": 137287,
+  "architecture": "ARM64",
+  "unsigned": true,
+  "game_initializes": false,
+  "simulator_scroll_test": "passed",
+  "finger_gesture_tested": false,
+  "physical_device_scroll_test": "pending user test",
+  "runtime_metal_smoke": "passed",
+  "synthetic_import_smoke": "passed"
+}

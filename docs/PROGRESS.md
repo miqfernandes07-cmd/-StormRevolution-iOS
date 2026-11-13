@@ -1,7 +1,7 @@
 # Progresso — atualização em 2026-11-13
 
 
-## Correção em andamento: rolamento 0.2.1
+## Correção validada no simulador: rolamento 0.2.1
 
 Usuário confirmou instalação/abertura do IPA 0.2.0 e relatou impossibilidade de
 rolar a interface. Isso comprova apenas um relato de abertura, sem logs/modelo
@@ -11,7 +11,15 @@ A tela bloqueava o cancelamento de toques iniciados nos controles. A correção
 habilita cancelamento de UIButton durante arrasto, indicador vertical e bounce,
 e usa um container com quatro bordas ligadas ao contentLayoutGuide. As três abas
 ganharam diagnóstico real de contentSize, deslocamento até o rodapé e visibilidade
-do crédito, sem fingir gesto físico. CI Apple e novo IPA ainda pendentes.
+do crédito, sem fingir gesto físico. CI Apple [43451112622](https://github.com/miqfernandes07-cmd/-StormRevolution-iOS/actions/runs/43451112622)
+aprovou os builds ARM64/simulador e os testes de runtime/Metal, importação e
+rolamento. Deslocamentos até o rodapé: Biblioteca 72,3 pt, Controles 535,7 pt,
+Ajustes 596,7 pt; os três créditos finais ficaram visíveis, captura real inspecionada.
+O teste movimenta o UIScrollView por código e verifica cancelamento de UIButton;
+**não injeta gestos de dedo**, que precisam de confirmação no aparelho do usuário.
+IPA 0.2.1/build3 conferido, sem assinatura ou arquivos do jogo:
+[artefato](https://github.com/miqfernandes07-cmd/-StormRevolution-iOS/actions/runs/43451112622/artifacts/14051071083).
+Jogo continua sem inicialização. [Relatório](validation/ios-0.2.1-2026-11-13.json).
 
 ## Marco anterior: biblioteca ZIP e controles Xbox 360 — versão 0.2.0
 
