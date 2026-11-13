@@ -18,6 +18,23 @@ if [ "$device_state" != Booted ]; then xcrun simctl boot "$device_id"; fi
 xcrun simctl bootstatus "$device_id" -b
 xcrun simctl install "$device_id" "$app_path"
 data_path=$(xcrun simctl get_app_container "$device_id" org.stormrevolution.port data)
+output_dir=$(cd "$(dirname "$result_path")" && pwd)
+diagnose_failure() {
+  local result=$?
+  if [ "$result" -ne 0 ]; then
+    xcrun simctl spawn "$device_id" log show --last 3m --style compact --predicate 'process == "StormRevolution"' > "$output_dir/app-system-log.txt" 2>&1 || true
+    xcrun simctl io "$device_id" screenshot "$output_dir/failure-simulator.png" || true
+    python3 - "$output_dir" <<'PY'
+from pathlib import Path
+import shutil,sys
+for root in (Path.home()/'Library/Logs/DiagnosticReports',):
+    for report in root.glob('StormRevolution*'):
+        if report.is_file(): shutil.copy2(report,Path(sys.argv[1])/(report.name+'.txt'))
+PY
+    cat "$output_dir"/import-*.txt 2>/dev/null || true
+  fi
+}
+trap diagnose_failure EXIT
 rm -f "$data_path/Documents/smoke-result.json"
 xcrun simctl launch --terminate-running-process "$device_id" org.stormrevolution.port --smoke-test
 for attempt in $(seq 1 60); do
@@ -40,7 +57,7 @@ print("Simulator runtime and Metal command smoke checks passed; no game or pixel
 PY
 xcrun simctl terminate "$device_id" org.stormrevolution.port
 rm -f "$data_path/Documents/import-smoke-result.json"
-xcrun simctl launch "$device_id" org.stormrevolution.port --import-smoke-test
+xcrun simctl launch --stdout="$output_dir/import-stdout.txt" --stderr="$output_dir/import-stderr.txt" "$device_id" org.stormrevolution.port --import-smoke-test
 for attempt in $(seq 1 60); do
   if [ -f "$data_path/Documents/import-smoke-result.json" ]; then break; fi
   sleep 1

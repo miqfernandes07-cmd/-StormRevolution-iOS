@@ -1,6 +1,7 @@
 #import "Import/StormGameImporter.h"
 #import <Foundation/Foundation.h>
 #include <vector>
+#include <cstdio>
 #include <zlib.h>
 
 // Own synthetic data only. Runs exclusively under the explicit CI launch flag.
@@ -34,6 +35,7 @@ static NSData *Fixture(NSString *name) {
 @end
 @implementation StormImportSmoke
 - (void)start {
+  std::fprintf(stderr,"IMPORT_SMOKE_START\n");std::fflush(stderr);
   self.results=[NSMutableArray array];self.importer=[[StormGameImporter alloc] init];
   NSFileManager *fm=NSFileManager.defaultManager;
   NSURL *game=[StormGameImporter gameURL];
@@ -47,12 +49,15 @@ static NSData *Fixture(NSString *name) {
   [self next];
 }
 - (void)next {
+  std::fprintf(stderr,"IMPORT_SMOKE_STEP %lu\n",(unsigned long)self.step);std::fflush(stderr);
   NSString *name=self.step==1 ? @"../default.xex" : @"Folder/Default.xex";
   NSError *writeError=nil;
   if(![Fixture(name) writeToURL:self.fixture options:NSDataWritingAtomic error:&writeError]){[self.results addObject:@NO];[self finish];return;}
   [self.importer importZIPAtURL:self.fixture progress:^(double fraction,NSString *message){
-    (void)message;if(self.step==2 && fraction==0)[self.importer cancel];
+    std::fprintf(stderr,"IMPORT_SMOKE_PROGRESS %lu %.2f %s\n",(unsigned long)self.step,fraction,message.UTF8String);std::fflush(stderr);
+    if(self.step==2 && fraction==0)[self.importer cancel];
   } completion:^(NSDictionary *validation,NSError *error){
+    std::fprintf(stderr,"IMPORT_SMOKE_CALLBACK %lu %s\n",(unsigned long)self.step,error.description.UTF8String ?: "no error");std::fflush(stderr);
     NSString *saved=[NSString stringWithContentsOfURL:self.sentinel encoding:NSUTF8StringEncoding error:nil];
     BOOL clean=YES;
     NSArray<NSURL *> *children=[NSFileManager.defaultManager contentsOfDirectoryAtURL:[StormGameImporter gameURL].URLByDeletingLastPathComponent includingPropertiesForKeys:nil options:0 error:nil];
@@ -67,7 +72,9 @@ static NSData *Fixture(NSString *name) {
   for(NSNumber *result in self.results)passed=passed&&result.boolValue;
   NSDictionary *report=@{@"passed":@(passed),@"checks":self.results,@"scope":@"synthetic ZIP rejection, rollback and cancellation in actual iOS importer",@"game_executed":@NO,@"full_game_zip_tested":@NO};
   NSURL *documents=[NSFileManager.defaultManager URLsForDirectory:NSDocumentDirectory inDomains:NSUserDomainMask].firstObject;
-  [[NSJSONSerialization dataWithJSONObject:report options:NSJSONWritingPrettyPrinted error:nil] writeToURL:[documents URLByAppendingPathComponent:@"import-smoke-result.json"] atomically:YES];
+  NSError *writeError=nil;
+  BOOL written=[[NSJSONSerialization dataWithJSONObject:report options:NSJSONWritingPrettyPrinted error:&writeError] writeToURL:[documents URLByAppendingPathComponent:@"import-smoke-result.json"] options:NSDataWritingAtomic error:&writeError];
+  std::fprintf(stderr,"IMPORT_SMOKE_FINISH passed=%d written=%d error=%s\n",passed,written,writeError.description.UTF8String ?: "none");std::fflush(stderr);
   if(self.ownsGame)[NSFileManager.defaultManager removeItemAtURL:[StormGameImporter gameURL] error:nil];
   if(self.fixture)[NSFileManager.defaultManager removeItemAtURL:self.fixture error:nil];
 }
