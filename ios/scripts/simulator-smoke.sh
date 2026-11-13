@@ -73,6 +73,23 @@ print('Actual iOS importer rejected synthetic invalid XEX/traversal/cancellation
 PY
 xcrun simctl terminate "$device_id" org.stormrevolution.port
 # Capture the actual application UI, never a generated representation of gameplay.
+xcrun simctl launch "$device_id" org.stormrevolution.port --scroll-smoke-test
+for attempt in $(seq 1 60); do
+  if [ -f "$data_path/Documents/scroll-smoke.json" ]; then break; fi
+  sleep 1
+done
+cp "$data_path/Documents/scroll-smoke.json" "$output_dir/scroll-smoke.json"
+python3 - "$output_dir/scroll-smoke.json" <<'PY'
+import json,sys
+with open(sys.argv[1]) as stream:
+    result=json.load(stream)
+assert result.get('passed') is True, result
+assert len(result.get('pages',[])) == 3, result
+assert result.get('finger_gesture_tested') is False, result
+print('All three pages scroll programmatically to their visible footer; physical touch still requires device testing.')
+PY
+xcrun simctl io "$device_id" screenshot "$output_dir/scroll-footer-simulator.png"
+xcrun simctl terminate "$device_id" org.stormrevolution.port
 xcrun simctl launch "$device_id" org.stormrevolution.port
 sleep 3
 xcrun simctl io "$device_id" screenshot "$(dirname "$result_path")/library-simulator.png"

@@ -40,6 +40,17 @@ UILabel *Eyebrow(NSString *value) {
 }
 }
 
+// Allow a vertical drag that starts on a button to become scrolling. Sliders
+// and joystick pan recognizers retain their normal interaction semantics.
+@interface StormScrollView : UIScrollView
+@end
+@implementation StormScrollView
+- (BOOL)touchesShouldCancelInContentView:(UIView *)view {
+  if ([view isKindOfClass:UIButton.class]) return YES;
+  return [super touchesShouldCancelInContentView:view];
+}
+@end
+
 @implementation StormViewController {
   StormRuntime *_runtime;
   StormMetalView *_metal;
@@ -51,6 +62,8 @@ UILabel *Eyebrow(NSString *value) {
   UIStackView *_pageHost;
   UIStackView *_importCard;
   UILabel *_status;
+  UILabel *_credit;
+  BOOL _scrollTestStarted;
   UILabel *_importTitle;
   UILabel *_progressLabel;
   UILabel *_controllerStatus;
@@ -92,14 +105,20 @@ UILabel *Eyebrow(NSString *value) {
   [_navigation addTarget:self action:@selector(changePage:) forControlEvents:UIControlEventValueChanged];
   [self.view addSubview:_navigation];
 
-  _scroll = [[UIScrollView alloc] init];
-  _scroll.canCancelContentTouches = NO; _scroll.delaysContentTouches = NO;
+  _scroll = [[StormScrollView alloc] init];
+  _scroll.canCancelContentTouches = YES; _scroll.delaysContentTouches = YES;
+  _scroll.alwaysBounceVertical = YES;
+  _scroll.directionalLockEnabled = YES;
+  _scroll.accessibilityIdentifier = @"storm.pageScroll";
   _scroll.translatesAutoresizingMaskIntoConstraints = NO;
-  _scroll.showsVerticalScrollIndicator = NO;
+  _scroll.showsVerticalScrollIndicator = YES;
   [self.view addSubview:_scroll];
+  UIView *container = [[UIView alloc] init];
+  container.translatesAutoresizingMaskIntoConstraints = NO;
+  [_scroll addSubview:container];
   UIStackView *content = Column(24);
   content.translatesAutoresizingMaskIntoConstraints = NO;
-  [_scroll addSubview:content];
+  [container addSubview:content];
   NSLayoutConstraint *preferredWidth = [content.widthAnchor constraintEqualToAnchor:_scroll.frameLayoutGuide.widthAnchor constant:-40];
   preferredWidth.priority = 999;
   [NSLayoutConstraint activateConstraints:@[
@@ -111,10 +130,16 @@ UILabel *Eyebrow(NSString *value) {
     [_scroll.bottomAnchor constraintEqualToAnchor:_navigation.topAnchor constant:-12],
     [_scroll.leadingAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.leadingAnchor],
     [_scroll.trailingAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.trailingAnchor],
-    [_scroll.contentLayoutGuide.widthAnchor constraintEqualToAnchor:_scroll.frameLayoutGuide.widthAnchor],
-    [content.topAnchor constraintEqualToAnchor:_scroll.contentLayoutGuide.topAnchor constant:24],
-    [content.bottomAnchor constraintEqualToAnchor:_scroll.contentLayoutGuide.bottomAnchor constant:-24],
-    [content.centerXAnchor constraintEqualToAnchor:_scroll.contentLayoutGuide.centerXAnchor],
+    [container.leadingAnchor constraintEqualToAnchor:_scroll.contentLayoutGuide.leadingAnchor],
+    [container.trailingAnchor constraintEqualToAnchor:_scroll.contentLayoutGuide.trailingAnchor],
+    [container.topAnchor constraintEqualToAnchor:_scroll.contentLayoutGuide.topAnchor],
+    [container.bottomAnchor constraintEqualToAnchor:_scroll.contentLayoutGuide.bottomAnchor],
+    [container.widthAnchor constraintEqualToAnchor:_scroll.frameLayoutGuide.widthAnchor],
+    [content.topAnchor constraintEqualToAnchor:container.topAnchor constant:24],
+    [content.bottomAnchor constraintEqualToAnchor:container.bottomAnchor constant:-24],
+    [content.leadingAnchor constraintGreaterThanOrEqualToAnchor:container.leadingAnchor constant:20],
+    [content.trailingAnchor constraintLessThanOrEqualToAnchor:container.trailingAnchor constant:-20],
+    [content.centerXAnchor constraintEqualToAnchor:container.centerXAnchor],
     [content.widthAnchor constraintLessThanOrEqualToConstant:720], preferredWidth
   ]];
 
@@ -135,6 +160,7 @@ UILabel *Eyebrow(NSString *value) {
   _pageHost = Column(0);
   [content addArrangedSubview:_pageHost];
   UILabel *credit = Text(@"Projeto iOS desenvolvido por Miquéias", UIFontTextStyleFootnote, Muted());
+  _credit = credit;
   credit.textAlignment = NSTextAlignmentCenter;
   credit.accessibilityIdentifier = @"storm.developerCredit";
   [content addArrangedSubview:credit];
@@ -182,6 +208,43 @@ UILabel *Eyebrow(NSString *value) {
   [NSNotificationCenter.defaultCenter addObserver:self selector:@selector(resume:) name:UIApplicationDidBecomeActiveNotification object:nil];
   [NSNotificationCenter.defaultCenter addObserver:self selector:@selector(thermal:) name:NSProcessInfoThermalStateDidChangeNotification object:nil];
   [self validateInstalled];
+}
+
+- (void)viewDidAppear:(BOOL)animated {
+  [super viewDidAppear:animated];
+  [_scroll flashScrollIndicators];
+  if (!_scrollTestStarted && [NSProcessInfo.processInfo.arguments containsObject:@"--scroll-smoke-test"]) {
+    _scrollTestStarted = YES;
+    dispatch_async(dispatch_get_main_queue(), ^{ [self checkScrollLayout]; });
+  }
+}
+- (void)checkScrollLayout {
+  NSMutableArray *pages = [NSMutableArray array];
+  BOOL passed = YES;
+  for (NSUInteger index = 0; index < _pages.count; ++index) {
+    _navigation.selectedSegmentIndex = index;
+    [self changePage:_navigation];
+    [self.view setNeedsLayout];
+    [self.view layoutIfNeeded];
+    const CGFloat maximum = MAX(0, _scroll.contentSize.height - _scroll.bounds.size.height + _scroll.adjustedContentInset.bottom);
+    [_scroll setContentOffset:CGPointMake(0, maximum) animated:NO];
+    [self.view layoutIfNeeded];
+    CGRect credit = [_credit convertRect:_credit.bounds toView:_scroll];
+    BOOL visible = CGRectContainsRect(CGRectInset(_scroll.bounds, -1, -1), credit);
+    BOOL canScroll = maximum > 1 && _scroll.contentOffset.y > 1;
+    BOOL valid = visible && _scroll.scrollEnabled && _scroll.panGestureRecognizer.enabled && canScroll;
+    passed = passed && valid;
+    [pages addObject:@{@"page":@(index), @"content_height":@(_scroll.contentSize.height),
+      @"viewport_height":@(_scroll.bounds.size.height), @"offset_y":@(_scroll.contentOffset.y),
+      @"footer_visible":@(visible), @"scrolls":@(canScroll)}];
+  }
+  BOOL buttonCancellation = [_scroll touchesShouldCancelInContentView:_importButton];
+  passed = passed && buttonCancellation;
+  NSDictionary *report = @{@"passed":@(passed), @"pages":pages, @"button_touch_cancellation":@(buttonCancellation),
+    @"finger_gesture_tested":@NO, @"game_executed":@NO};
+  NSURL *documents = [NSFileManager.defaultManager URLsForDirectory:NSDocumentDirectory inDomains:NSUserDomainMask].firstObject;
+  [[NSJSONSerialization dataWithJSONObject:report options:NSJSONWritingPrettyPrinted error:nil]
+    writeToURL:[documents URLByAppendingPathComponent:@"scroll-smoke.json"] atomically:YES];
 }
 
 - (UIStackView *)libraryPage {

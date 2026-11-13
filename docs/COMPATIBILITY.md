@@ -48,9 +48,9 @@ artificialmente. Isso exige atenção em qualquer futuro acesso fora das seçõe
 | Compilação em CI host | GCC/Clang Linux e AppleClang/macOS Intel aprovados |
 | Compilação em CI iOS | Aprovada para app de infraestrutura ARM64 e simulador x86_64 |
 | IPA produzido | Sim, infraestrutura sem jogo e sem assinatura; exige assinatura posterior |
-| IPA instalado | Não |
+| IPA instalado | Relatado pelo usuário para 0.2.0; assinatura/instalação não observadas nesta sessão |
 | Aplicativo iniciado no simulador | Sim; autoteste runtime e conclusão de comando Metal aprovados, sem execução do jogo |
-| Aplicativo iniciado no iPhone | Não |
+| Aplicativo iniciado no iPhone | Relatado pelo usuário para 0.2.0; problema de rolamento em correção, sem logs ou versão exata do sistema |
 | Jogo efetivamente executado | Não inicializa. Oito funções do prefixo real executadas no host em diagnóstico com contexto controlado; sem tela/gameplay |
 
 ## Recursos e etapas do jogo

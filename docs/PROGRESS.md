@@ -1,7 +1,19 @@
 # Progresso — atualização em 2026-11-13
 
 
-## Marco atual: biblioteca ZIP e controles Xbox 360 — versão 0.2.0
+## Correção em andamento: rolamento 0.2.1
+
+Usuário confirmou instalação/abertura do IPA 0.2.0 e relatou impossibilidade de
+rolar a interface. Isso comprova apenas um relato de abertura, sem logs/modelo
+ou versão exata do dispositivo; o jogo continua sem executar.
+
+A tela bloqueava o cancelamento de toques iniciados nos controles. A correção
+habilita cancelamento de UIButton durante arrasto, indicador vertical e bounce,
+e usa um container com quatro bordas ligadas ao contentLayoutGuide. As três abas
+ganharam diagnóstico real de contentSize, deslocamento até o rodapé e visibilidade
+do crédito, sem fingir gesto físico. CI Apple e novo IPA ainda pendentes.
+
+## Marco anterior: biblioteca ZIP e controles Xbox 360 — versão 0.2.0
 
 Interface UIKit renovada, crédito “Projeto iOS desenvolvido por Miquéias”, biblioteca,
 progresso/cancelamento, controles e ajustes separados. Importador real ZIP/ZIP64
