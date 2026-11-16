@@ -93,6 +93,13 @@ NSString *ArchiveMessage(const std::string& code) {
 void CheckCancelled(const std::shared_ptr<std::atomic<bool>>& cancelled) {
   if (cancelled->load()) throw std::runtime_error("ZIP_CANCELLED");
 }
+void ReportExtractionProgress(void (^progress)(double, NSString *), double fraction,
+                              NSString *message) {
+  // Copy the callback and values into an Objective-C block outside the C++
+  // extraction lambda. A block created inside that lambda can capture its
+  // temporary closure through `this` and outlive it on the main queue.
+  dispatch_async(dispatch_get_main_queue(), ^{ progress(fraction, message); });
+}
 }
 
 @implementation StormGameImporter {
@@ -173,7 +180,7 @@ void CheckCancelled(const std::shared_ptr<std::atomic<bool>>& cancelled) {
         }
         if (!executable) { error = ImportError(@"Não encontramos default.xex no ZIP. Use os arquivos extraídos da versão Xbox 360, não uma ISO ou APK."); return; }
         auto lastUpdate = std::chrono::steady_clock::now();
-        archive.extract(staging.fileSystemRepresentation, [&](const storm::filesystem::ZipProgress& state) {
+        archive.extract(staging.fileSystemRepresentation, [cancelled, &lastUpdate, progress](const storm::filesystem::ZipProgress& state) {
           if (cancelled->load()) return false;
           const auto now = std::chrono::steady_clock::now();
           if (now-lastUpdate < std::chrono::milliseconds(150) && state.bytes_written < state.total_bytes) return true;
@@ -182,7 +189,7 @@ void CheckCancelled(const std::shared_ptr<std::atomic<bool>>& cancelled) {
           NSString *done = [NSByteCountFormatter stringFromByteCount:(long long)state.bytes_written countStyle:NSByteCountFormatterCountStyleFile];
           NSString *total = [NSByteCountFormatter stringFromByteCount:(long long)state.total_bytes countStyle:NSByteCountFormatterCountStyleFile];
           NSString *message = [NSString stringWithFormat:@"Extraindo %@ de %@", done, total];
-          dispatch_async(dispatch_get_main_queue(), ^{ progress(.02+.88*fraction, message); });
+          ReportExtractionProgress(progress, .02+.88*fraction, message);
           return true;
         });
         CheckCancelled(cancelled);
