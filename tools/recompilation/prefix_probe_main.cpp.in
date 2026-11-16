@@ -12,6 +12,10 @@
 static unsigned entered=0;
 static storm::kernel::ExecutableModule* module=nullptr;
 static storm::kernel::VirtualMemory* vm=nullptr;
+PPC_FUNC(__imp__XexCheckExecutablePrivilege){
+    if(!module)throw std::runtime_error("PROBE_MODULE_NOT_BOUND");
+    ctx.r3.u64=module->check_privilege(ctx.r3.u32)?1:0;
+}
 PPC_FUNC(__imp__RtlImageXexHeaderField){
     if(!module)throw std::runtime_error("PROBE_MODULE_NOT_BOUND");
     ctx.r3.u64=module->header_field(ctx.r3.u32,ctx.r4.u32);
@@ -45,6 +49,19 @@ PPC_FUNC(__imp__RtlInitializeCriticalSectionAndSpinCount){
     if(!kernel_space)throw std::runtime_error("PROBE_MEMORY_NOT_BOUND");
     ctx.r3.u64=storm::kernel::initialize_critical_section(*kernel_space,ctx.r3.u32,ctx.r4.u32);
 }
+static storm::kernel::CriticalSections* critical_sections=nullptr;
+PPC_FUNC(__imp__RtlEnterCriticalSection){
+    if(!critical_sections)throw std::runtime_error("PROBE_THREAD_NOT_BOUND");
+    critical_sections->enter(ctx.r3.u32);
+}
+PPC_FUNC(__imp__RtlTryEnterCriticalSection){
+    if(!critical_sections)throw std::runtime_error("PROBE_THREAD_NOT_BOUND");
+    ctx.r3.u64=critical_sections->try_enter(ctx.r3.u32)?1:0;
+}
+PPC_FUNC(__imp__RtlLeaveCriticalSection){
+    if(!critical_sections)throw std::runtime_error("PROBE_THREAD_NOT_BOUND");
+    critical_sections->leave(ctx.r3.u32);
+}
 @GUARDS@
 @FUNCTIONS@
 int main(int argc,char** argv){
@@ -64,6 +81,9 @@ int main(int argc,char** argv){
     module=&executable;executable.bind_handle_slot(@HANDLE_SLOT@,@HANDLE_WORD@);
     storm::kernel::VirtualMemory virtual_memory(space);vm=&virtual_memory;
     storm::kernel::ProcessState process(space,@PROCESS_BLOCK@);process_state=&process;kernel_space=&space;
+    storm::kernel::HardwareInfo hardware(space,@HARDWARE_ADDRESS@,@HARDWARE_FLAGS@,@HARDWARE_CPUS@);
+    hardware.bind_import(@HARDWARE_SLOT@,@HARDWARE_WORD@);
+    storm::kernel::CriticalSections locks(space,@DIAGNOSTIC_THREAD@);critical_sections=&locks;
     PPCContext ctx{};ctx.r1.u64=@STACK_BASE@+@STACK_SIZE@-32;ctx.lr=0xdeadbee0;
     alignas(32)uint8_t placeholder[32]{};
     storm::cpu::AotFunctionTable table;

@@ -12,7 +12,7 @@ import sys
 ROOT=Path(__file__).resolve().parents[2]
 NAME=re.compile(r'[A-Za-z_][A-Za-z0-9_]*\Z')
 FUNCTION=re.compile(r'^PPC_FUNC_IMPL\(__imp__(\w+)\) \{\n.*?^\}',re.M|re.S)
-HANDLERS={'__imp__RtlImageXexHeaderField','__imp__NtAllocateVirtualMemory','__imp__NtFreeVirtualMemory','__imp__KeGetCurrentProcessType','__imp__KeSetCurrentProcessType','__imp__RtlInitializeCriticalSection','__imp__RtlInitializeCriticalSectionAndSpinCount'}
+HANDLERS={'__imp__XexCheckExecutablePrivilege','__imp__RtlEnterCriticalSection','__imp__RtlTryEnterCriticalSection','__imp__RtlLeaveCriticalSection','__imp__RtlImageXexHeaderField','__imp__NtAllocateVirtualMemory','__imp__NtFreeVirtualMemory','__imp__KeGetCurrentProcessType','__imp__KeSetCurrentProcessType','__imp__RtlInitializeCriticalSection','__imp__RtlInitializeCriticalSectionAndSpinCount'}
 
 
 class ProbeError(ValueError):pass
@@ -96,9 +96,19 @@ def prepare(c):
     imports=pe.resolve_xex_imports(loaded,identity)
     slot=c['handle_slot'];record=next((r for lib in imports['libraries'] if lib['name']=='xboxkrnl.exe' for r in lib['records'] if r['address']==slot and r['kind']=='value_slot' and r['ordinal']==0x193 and 'thunk_address' not in r),None)
     if record is None:raise ProbeError('PREFIX_HANDLE_IMPORT_NOT_DATA_SLOT')
+    hardware=c['hardware_info']
+    if not isinstance(hardware,dict) or any(type(hardware.get(k)) is not int for k in ('slot','address','flags','logical_cpus')):
+        raise ProbeError('PREFIX_HARDWARE_LAYOUT')
+    if not 0<=hardware['flags']<1<<32 or not 1<=hardware['logical_cpus']<=6:
+        raise ProbeError('PREFIX_HARDWARE_PROFILE')
+    hardware_record=next((r for lib in imports['libraries'] if lib['name']=='xboxkrnl.exe' for r in lib['records'] if r['address']==hardware['slot'] and r['kind']=='value_slot' and r['ordinal']==0x156 and 'thunk_address' not in r),None)
+    if hardware_record is None:raise ProbeError('PREFIX_HARDWARE_IMPORT_NOT_DATA_SLOT')
+    hardware_word=int.from_bytes(loaded.rva_bytes(hardware['slot']-loaded.image_base,4),'big')
     word=int.from_bytes(loaded.rva_bytes(slot-loaded.image_base,4),'big')
     stack_base,stack_size=c['stack_base'],c['stack_size']
     pib=c['process_block']
+    thread=c['diagnostic_thread']
+    if type(thread) is not int or not 0<thread<1<<32 or thread%4:raise ProbeError('PREFIX_THREAD_IDENTITY')
     if type(pib) is not int or not 0<pib<=0xffffffa0 or pib%4:raise ProbeError('PREFIX_PROCESS_LAYOUT')
     for value in (stack_base,stack_size,*c['module_layout'].values()):
         if type(value) is not int or not 0<value<1<<32:raise ProbeError('PREFIX_LAYOUT_TYPE_OR_RANGE')
@@ -111,7 +121,8 @@ def prepare(c):
     template=(ROOT/'tools/recompilation/prefix_probe_main.cpp.in').read_text()
     values={'GUARDS':guards,'FUNCTIONS':bodies,'REGISTRATIONS':'\n'.join('    table.add('+str(mappings[n])+'u,'+n+');' for n in functions),
             'IMAGE_SIZE':len(image_data),'IMAGE_BASE':loaded.image_base,'ENTRY_ADDRESS':identity['entry_point'],
-            'PROCESS_BLOCK':pib,'HEADER_SIZE':identity['payload_offset'],'STACK_BASE':stack_base,'STACK_SIZE':stack_size,
+            'HARDWARE_ADDRESS':hardware['address'],'HARDWARE_FLAGS':hardware['flags'],'HARDWARE_CPUS':hardware['logical_cpus'],'HARDWARE_SLOT':hardware['slot'],'HARDWARE_WORD':hardware_word,
+            'DIAGNOSTIC_THREAD':thread,'PROCESS_BLOCK':pib,'HEADER_SIZE':identity['payload_offset'],'STACK_BASE':stack_base,'STACK_SIZE':stack_size,
             'MODULE_VARIABLE':c['module_layout']['variable'],'MODULE_DESCRIPTOR':c['module_layout']['descriptor'],'MODULE_HEADER':c['module_layout']['header'],
             'HANDLE_SLOT':slot,'HANDLE_WORD':word}
     template=re.sub(r'@(\w+)@',lambda m:str(values[m[1]])+'u' if type(values[m[1]]) is int else values[m[1]],template)

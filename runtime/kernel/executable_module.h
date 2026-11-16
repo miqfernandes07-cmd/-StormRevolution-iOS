@@ -27,6 +27,7 @@ struct ExecutableLayout {
 class ExecutableModule {
 public:
     ExecutableModule(memory::AddressSpace&, const XexHeader&, ExecutableLayout);
+    bool check_privilege(std::uint32_t bit) const;
     void bind_handle_slot(std::uint32_t address, std::uint32_t expected_import_word);
     std::uint32_t header_field(std::uint32_t header_pointer,std::uint32_t key) const;
 private:

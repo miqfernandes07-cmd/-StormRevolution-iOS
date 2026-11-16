@@ -35,6 +35,11 @@ int main(){unsigned checks=0;auto check=[&](bool value){++checks;if(!value)throw
   const kernel::ExecutableLayout layout{0x80001000,0x80002000,0x80003000,0x82000000,0x1000,0x82000020};
   memory::AddressSpace space;space.map(0x82000000,0x1000,memory::Access::read_write);space.store(0x82000010,4,0x10193);
   kernel::ExecutableModule module(space,header,layout);
+  for(unsigned bit=0;bit<32;++bit)check(!module.check_privilege(bit));
+  for(unsigned bit:{32u,0xffffffffu})invalid([&]{module.check_privilege(bit);},"KERNEL_XEX_PRIVILEGE_RANGE");
+  auto flags_bytes=fixture();put(flags_bytes,24,0x30000);put(flags_bytes,28,0x80000401);
+  memory::AddressSpace flags_space;kernel::ExecutableModule flagged(flags_space,kernel::XexHeader(flags_bytes),layout);
+  for(unsigned bit=0;bit<32;++bit)check(flagged.check_privilege(bit)==(bit==0||bit==10||bit==31));
   check(space.load(layout.variable,4)==layout.descriptor);
   for(unsigned offset=0;offset<24;offset+=8){check(space.load(layout.descriptor+offset,4)==layout.descriptor+offset);check(space.load(layout.descriptor+offset+4,4)==layout.descriptor+offset);}
   check(space.load(layout.descriptor+0x18,4)==layout.image_base);check(space.load(layout.descriptor+0x1c,4)==layout.image_base);

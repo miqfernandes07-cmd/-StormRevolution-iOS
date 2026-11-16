@@ -81,6 +81,18 @@ int main(){
     if(ctx.r3.u64!=0x20000||space.load(0x20010,4)!=0xffffffff)return 5;
     ctx.r4.u64=257;__imp__RtlInitializeCriticalSectionAndSpinCount(ctx,base);
     if(ctx.r3.u64!=0||space.load(0x20001,1)!=2)return 6;
+    failed=false;ctx.r3.u64=0x20000;
+    try{__imp__RtlEnterCriticalSection(ctx,base);}catch(const std::runtime_error&){failed=true;}
+    if(!failed)return 7;
+    storm::kernel::CriticalSections locks(space,0x1000);critical_sections=&locks;
+    __imp__RtlEnterCriticalSection(ctx,base);
+    if(ctx.r3.u64!=0x20000||space.load(0x20018,4)!=0x1000)return 8;
+    __imp__RtlTryEnterCriticalSection(ctx,base);
+    if(ctx.r3.u64!=1||space.load(0x20014,4)!=2)return 9;
+    ctx.r3.u64=0x20000;__imp__RtlLeaveCriticalSection(ctx,base);
+    if(ctx.r3.u64!=0x20000||space.load(0x20014,4)!=1)return 10;
+    __imp__RtlLeaveCriticalSection(ctx,base);
+    if(space.load(0x20010,4)!=0xffffffff)return 11;
     return 0;
 }
 """
