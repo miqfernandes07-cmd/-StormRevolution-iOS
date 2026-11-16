@@ -1,0 +1,84 @@
+name: ReXGlue iPhone base library (experimental)
+on:
+  push:
+    branches: [codex/rexglue-ios-feasibility]
+    paths:
+      - '.github/workflows/rexglue-ios-base.yml'
+      - 'tools/recompilation/rexglue_patches/**'
+      - 'config/rexglue_reference.json'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  base-library:
+    runs-on: macos-15-intel
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          repository: rexglue/rexglue-sdk
+          ref: a3e1d82678ca20d68d4837a8e9ee4652ff073745
+          path: sdk-source
+          submodules: recursive
+          persist-credentials: false
+      - name: Select newest installed Xcode
+        run: |
+          mkdir -p out/ios-base
+          python3 - <<'PY'
+          import glob,os,plistlib
+          candidates=[]
+          for app in glob.glob('/Applications/Xcode*.app'):
+              with open(app+'/Contents/Info.plist','rb') as f:
+                  version=plistlib.load(f)['CFBundleShortVersionString']
+              candidates.append((tuple(int(x) for x in version.split('.')),app))
+          _,app=max(candidates)
+          with open(os.environ['GITHUB_ENV'],'a') as f:
+              f.write('DEVELOPER_DIR='+app+'/Contents/Developer\n')
+          print('Selected',app)
+          PY
+      - name: Install configuration dependencies
+        run: |
+          brew install vulkan-loader molten-vk vulkan-memory-allocator
+          brew list --versions > out/ios-base/packages.txt
+          xcodebuild -version | tee out/ios-base/xcode.txt
+      - name: Apply and verify the iOS adapter
+        run: |
+          python3 tools/recompilation/rexglue_ios_probe.py \
+            --sdk-source sdk-source --output out/ios-base/preflight \
+            --experimental-ios-patch
+      - name: Configure upstream for iPhone ARM64
+        run: |
+          set -o pipefail
+          cmake -S sdk-source -B build-rex-ios \
+            -DCMAKE_SYSTEM_NAME=iOS -DCMAKE_OSX_SYSROOT=iphoneos \
+            -DCMAKE_OSX_ARCHITECTURES=arm64 -DCMAKE_OSX_DEPLOYMENT_TARGET=17.0 \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_C_COMPILER="$(xcrun --sdk iphoneos --find clang)" \
+            -DCMAKE_CXX_COMPILER="$(xcrun --sdk iphoneos --find clang++)" \
+            -DCMAKE_XCODE_ATTRIBUTE_CODE_SIGNING_ALLOWED=NO \
+            -DREXGLUE_BUILD_TESTS=OFF -DREXGLUE_ENABLE_TRACY=OFF \
+            -DREXGLUE_ENABLE_PERF_COUNTERS=OFF \
+            -DVulkan_INCLUDE_DIR="$(brew --prefix vulkan-headers)/include" \
+            -DVulkan_LIBRARY="$(brew --prefix vulkan-loader)/lib/libvulkan.dylib" \
+            -DVulkan_MoltenVK_INCLUDE_DIR="$(brew --prefix molten-vk)/include" \
+            -DVulkan_MoltenVK_LIBRARY="$(brew --prefix molten-vk)/lib/libMoltenVK.dylib" \
+            -DREXGLUE_VMA_INCLUDE_DIR="$(brew --prefix vulkan-memory-allocator)/include" \
+            2>&1 | tee out/ios-base/configure.txt
+      - name: Compile and link base library only
+        run: |
+          set -o pipefail
+          cmake --build build-rex-ios --target rexbase --parallel 3 \
+            2>&1 | tee out/ios-base/build.txt
+          find build-rex-ios -name 'librexbase*.dylib' -exec file {} \; \
+            | tee out/ios-base/mach-o.txt
+      - name: Upload compilation diagnostics only
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: rexglue-ios-base-diagnostics
+          path: |
+            out/ios-base/**/*.txt
+            out/ios-base/**/*.json
+            out/ios-base/*.txt
+          retention-days: 7
