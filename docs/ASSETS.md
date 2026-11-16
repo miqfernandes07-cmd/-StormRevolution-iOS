@@ -1,5 +1,14 @@
 # Recursos fornecidos e armazenamento privado
 
+Atualização 2026-11-16: os 21 arquivos, 9.433.995.676 bytes, foram recuperados
+privadamente. O XEX tinha CRC/SHA-1 conferidos; os outros 20 arquivos passaram
+pela conferência de CRC32 ao terminar a descompressão. Parte dos CPK está no
+tmpfs com symlinks no GameRoot, devido ao espaço local limitado. O runtime
+também usa tmpfs para memória compartilhada: é necessário deixar espaço para
+essas páginas. Isso não valida todos os formatos internos nem o importador
+iPhone sobre o ZIP completo. [Execução e limites](REXGLUE_BOOT_2026_11_16.md).
+As seções seguintes registram a inspeção anterior à extração completa.
+
 O ZIP indicado pelo usuário foi inspecionado por leituras HTTP parciais, sem
 baixar os 7.431.884.205 bytes completos. O diretório central ZIP64 contém
 29 entradas: 21 arquivos e 8 diretórios, com 9.433.995.676 bytes descompactados.

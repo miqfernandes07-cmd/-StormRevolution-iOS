@@ -1,5 +1,9 @@
 # Boot: relógio atualizado e reservas guest32 — 2026-11-16
 
+Este registro antecede o [boot privado com ReXGlue](REXGLUE_BOOT_2026_11_16.md),
+que já compilou e vinculou o título no Linux e exibiu telas de inicialização.
+As limitações do prefixo XenonRecomp descritas abaixo continuam válidas.
+
 O jogo continua sem versão jogável. Não há execução comercial comprovada no
 simulador/iPhone, renderer Xenos no aplicativo, gameplay ou FPS medido.
 

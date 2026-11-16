@@ -1,5 +1,11 @@
 # Retomada direta do boot comercial
 
+Estado mais recente: [boot privado completo com ReXGlue](REXGLUE_BOOT_2026_11_16.md).
+O protótipo Linux exibiu telas reais de inicialização; ainda não há gameplay
+comprovado ou runtime ReXGlue integrado no aplicativo iOS. Os recursos completos
+foram extraídos privadamente. O importador iOS recebeu uma correção de lifetime
+do callback de progresso após crash comprovado no simulador.
+
 Atualização de 2026-11-16: [relógios e reservas guest32](BOOT_CLOCK_RESERVATIONS_2026_11_16.md).
 O diagnóstico passou pelo export KeTimeStampBundle e por lwarx/stwcx de 32 bits.
 Agora explora inicializadores do título, mantendo campos/variantes ausentes com

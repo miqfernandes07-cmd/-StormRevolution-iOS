@@ -1,10 +1,11 @@
 # Storm Revolution — pesquisa de port nativo para iOS
 
 Projeto de port AOT PowerPC → C++ → ARM64 de Naruto Shippuden:
-Ultimate Ninja Storm Revolution, versão Xbox 360. **O jogo ainda não executa.**
-Atualização de boot em 2026-11-16: diagnóstico privado avançou por heap, locks,
-TLS, identidade, uptime atualizado e reservas guest32 sob perfil VGA experimental.
-O jogo continua sem abrir. [Estado atual](docs/BOOT_CLOCK_RESERVATIONS_2026_11_16.md).
+Ultimate Ninja Storm Revolution, versão Xbox 360. **O jogo ainda não executa no iOS.**
+Em 2026-11-16, um experimento privado com ReXGlue compilou o título completo
+no Linux e exibiu gráficos de inicialização e o aviso de salvamento automático.
+Não há menu/combate comprovado nem integração desse runtime no IPA.
+[Estado atual e limites](docs/REXGLUE_BOOT_2026_11_16.md).
 
 A CI produziu um IPA não assinado de infraestrutura; não há instalação no iPhone
 ou medição de FPS.
@@ -66,7 +67,7 @@ do app é iOS 17; iOS 27 e iPhone 15 Pro são alvos solicitados, ainda sem valid
 Prioridade seguinte: corrigir as variantes rejeitadas, investigar o fluxo indireto
 e as tabelas de salto e validar funções geradas antes da compilação nativa do jogo.
 Também faltam serviços xboxkrnl/XAM, gráficos Xenos/Metal, áudio e os recursos.
-O ZIP de 7,43 GB foi inspecionado parcialmente: 21 arquivos e 8 diretórios,
-9,43 GB extraídos. Seu XEX foi validado isoladamente; recursos completos ainda
-não foram extraídos. Ver [inventário de recursos](docs/ASSETS.md). O executável e as saídas derivadas
+O ZIP de 7,43 GB contém 21 arquivos e 8 diretórios. Os 9,43 GB foram extraídos
+privadamente com CRC conferido, usando filesystem e tmpfs separados.
+Ver [inventário de recursos](docs/ASSETS.md). O executável e as saídas derivadas
 permanecem em `private/`.

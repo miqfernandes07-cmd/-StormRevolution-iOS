@@ -1,0 +1,8 @@
+{
+  "repository": "https://github.com/rexglue/rexglue-sdk",
+  "release": "v0.11.0",
+  "commit": "a3e1d82678ca20d68d4837a8e9ee4652ff073745",
+  "linux_amd64_archive_sha256": "e7d543ab8dde2c7839836a0417bfe84691c10f93357ec2c023fa98d3d315803b",
+  "ios_runtime_supported": false,
+  "integrated_into_application": false
+}
