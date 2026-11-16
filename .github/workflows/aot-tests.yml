@@ -1,6 +1,12 @@
 name: Synthetic Xenon AOT qualification
 on:
   workflow_dispatch:
+    inputs:
+      apple_runner:
+        description: 'Apple runner pool (select another if capacity is exhausted)'
+        type: choice
+        default: macos-15-intel
+        options: [macos-15-intel, macos-15, macos-latest]
   push:
     branches: [main]
     paths:
@@ -20,7 +26,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-24.04, macos-15]
+        os: [ubuntu-24.04, "${{ inputs.apple_runner || 'macos-15-intel' }}"]
     runs-on: ${{ matrix.os }}
     timeout-minutes: 30
     steps:
@@ -65,7 +71,7 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p build/aot-results
-          for test in eqv single_update memory_forms ctr_branch carry vandc lvehx rotate_record vsldoi_decode vscr half_formats dispatch_bridge; do
+          for test in eqv single_update memory_forms ctr_branch carry vandc lvehx rotate_record vsldoi_decode vscr half_formats dispatch_bridge checked_reservations; do
             python3 "tests/integration/xenon_${test}.py" \
               --upstream build/upstream \
               --recompiler build/upstream-build/XenonRecomp/XenonRecomp \
@@ -83,11 +89,15 @@ jobs:
             -o build/aot-results/synthetic-bridge-arm64.o
           xcrun --sdk iphoneos clang++ -target arm64-apple-ios17.0 -std=c++20 \
             -Iruntime -c runtime/cpu/aot_dispatch.cpp -o build/aot-results/dispatch-arm64.o
-          for source in memory/address_space kernel/executable_module kernel/virtual_memory kernel/process_state kernel/tls_state; do
+          for source in memory/address_space kernel/executable_module kernel/virtual_memory kernel/process_state kernel/tls_state kernel/timestamp_bundle; do
             name="${source##*/}"
             xcrun --sdk iphoneos clang++ -target arm64-apple-ios17.0 -std=c++20 \
               -Iruntime -c "runtime/${source}.cpp" -o "build/aot-results/${name}-arm64.o"
           done
+          xcrun --sdk iphoneos clang++ -target arm64-apple-ios17.0 -std=c++20 \
+            -fwrapv -fno-strict-aliasing -Iruntime -Ibuild/upstream/XenonUtils \
+            -Ibuild/upstream/thirdparty/simde -c build/integration-checked_reservations/native.cpp \
+            -o build/aot-results/checked-reservations-arm64.o
           file build/aot-results/*-arm64.o | tee build/aot-results/arm64-objects.txt
           test "$(lipo -archs build/aot-results/synthetic-bridge-arm64.o)" = arm64
           test "$(lipo -archs build/aot-results/dispatch-arm64.o)" = arm64

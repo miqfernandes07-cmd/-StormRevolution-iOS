@@ -90,6 +90,12 @@ int main() {
         check(storm::kernel::filetime_from_unix_nanoseconds(INT64_MAX)==208678456368547758ULL,"FILETIME maximum Unix nanosecond");
         check(storm::kernel::filetime_from_unix_nanoseconds(INT64_C(946684800000000000))==125911584000000000ULL,"FILETIME 2000-01-01 UTC");
 
+        check(storm::kernel::timebase_from_nanoseconds(0)==0,"timebase origin");
+        check(storm::kernel::timebase_from_nanoseconds(19)==0,"timebase sub-tick");
+        check(storm::kernel::timebase_from_nanoseconds(20)==1,"timebase tick");
+        check(storm::kernel::timebase_from_nanoseconds(21)==1,"timebase rounding");
+        check(storm::kernel::timebase_from_nanoseconds(1000000000)==50000000,"timebase 50MHz");
+        check(storm::kernel::timebase_from_nanoseconds(UINT64_MAX)==922337203685477580ULL,"timebase overflow avoidance");
         storm::input::InputState input;
         input.update({0xFFFFFFFF,2,-2,std::numeric_limits<float>::quiet_NaN(),0,-1,2});
         auto state=input.snapshot();

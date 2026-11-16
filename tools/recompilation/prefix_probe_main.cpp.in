@@ -5,6 +5,7 @@
 #include "kernel/process_state.h"
 #include "kernel/tls_state.h"
 #include "kernel/imports.h"
+#include "kernel/timestamp_bundle.h"
 #include "ppc_recomp_shared.h"
 #include <cstdio>
 #include <fstream>
@@ -12,6 +13,15 @@
 #include <vector>
 #include <string>
 static unsigned entered=0;
+static bool diagnostic_clock_bound=false;
+static std::uint64_t diagnostic_clock_epoch=0;
+static std::uint64_t probe_timebase(){
+    if(!diagnostic_clock_bound)throw std::runtime_error("PROBE_CLOCK_NOT_BOUND");
+    return storm::kernel::timebase_from_nanoseconds(storm::kernel::monotonic_nanoseconds()-diagnostic_clock_epoch);
+}
+// The reviewed emitter emits __rdtsc() for mftb. Define this AFTER the generated
+// context header: replace call sites, not the ARM intrinsic's declaration.
+#define __rdtsc() probe_timebase()
 // Explicit virtual profile only; no automatic host detection or renderer implied.
 static unsigned diagnostic_av_pack=0;
 PPC_FUNC(__imp__XGetAVPack){
@@ -120,6 +130,13 @@ int main(int argc,char** argv){
     diagnostic_thread=@DIAGNOSTIC_THREAD@;tls.attach(diagnostic_thread,@TLS_ADDRESS@);dynamic_tls=&tls;
     diagnostic_av_pack=@DIAGNOSTIC_AV_PACK@;
     storm::kernel::map_thread_identity(space,@PCR_ADDRESS@,@DIAGNOSTIC_THREAD@,@THREAD_NUMERIC_ID@);
+    const auto clock_epoch=storm::kernel::monotonic_nanoseconds();
+    diagnostic_clock_epoch=clock_epoch;diagnostic_clock_bound=true;
+    std::puts("DIAGNOSTIC_TIMEBASE hz=50000000 host_cycle_counter_disabled=1");
+    storm::kernel::TimestampBundle timestamps(space,@TIMESTAMP_ADDRESS@,[clock_epoch]{
+        return (storm::kernel::monotonic_nanoseconds()-clock_epoch)/1000000;
+    });
+    timestamps.bind_import(@TIMESTAMP_SLOT@,@TIMESTAMP_WORD@);
     PPCContext ctx{};ctx.r13.u64=@PCR_ADDRESS@;ctx.r1.u64=@STACK_BASE@+@STACK_SIZE@-32;ctx.lr=0xdeadbee0;
     alignas(32)uint8_t placeholder[32]{};
     storm::cpu::AotFunctionTable table;

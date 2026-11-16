@@ -1,5 +1,6 @@
 #pragma once
 #include <cstdint>
+#include "memory/address_space.h"
 #include <stdexcept>
 #include <unordered_map>
 
@@ -46,15 +47,19 @@ public:
     AotBinding(AotBinding&&) = delete;
     AotBinding& operator=(AotBinding&&) = delete;
 private:
-    struct Frame { const AotFunctionTable* table; PPCContext* context; std::uint8_t* memory; memory::AddressSpace* address_space; };
+    struct Frame { const AotFunctionTable* table; PPCContext* context; std::uint8_t* memory; memory::AddressSpace* address_space; memory::AddressSpace::Reservation reservation; };
     Frame frame_;
     Frame* previous_;
     static thread_local Frame* current_;
     static Frame& require(PPCContext&,std::uint8_t*,std::uint32_t);
     friend std::uint64_t load_guest(PPCContext&,std::uint8_t*,std::uint32_t,unsigned);
     friend void store_guest(PPCContext&,std::uint8_t*,std::uint32_t,unsigned,std::uint64_t);
+    friend std::uint32_t load_reserve_guest32(PPCContext&,std::uint8_t*,std::uint32_t);
+    friend bool store_conditional_guest32(PPCContext&,std::uint8_t*,std::uint32_t,std::uint32_t);
     friend void dispatch(PPCContext&,std::uint8_t*,std::uint32_t);
 };
+std::uint32_t load_reserve_guest32(PPCContext&,std::uint8_t*,std::uint32_t);
+bool store_conditional_guest32(PPCContext&,std::uint8_t*,std::uint32_t,std::uint32_t);
 void dispatch(PPCContext&,std::uint8_t* memory,std::uint32_t address);
 std::uint64_t load_guest(PPCContext&,std::uint8_t* base,std::uint32_t address,unsigned width);
 void store_guest(PPCContext&,std::uint8_t* base,std::uint32_t address,unsigned width,std::uint64_t value);

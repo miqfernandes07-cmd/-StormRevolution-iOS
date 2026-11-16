@@ -38,6 +38,18 @@ class PrefixTests(unittest.TestCase):
         self.assertEqual(set(PROBE.extract(self.generated,names)),set(names))
         with self.assertRaisesRegex(PROBE.ProbeError,'FUNCTION_LIST'):
             PROBE.extract(self.generated,names+['one_too_many'])
+        with patch.object(PROBE,'MAX_SELECTED_SOURCE',1),self.assertRaisesRegex(PROBE.ProbeError,'SELECTED_SOURCE_LIMIT'):
+            PROBE.extract(self.generated,names)
+
+    def test_only_exact_guest32_reservation_forms_are_adapted(self):
+        body='\tctx.reserved.u32 = *(uint32_t*)(base + ctx.r3.u32 + ctx.r4.u32);\n\tctx.r5.u64 = __builtin_bswap32(ctx.reserved.u32);\n\tctx.cr0.eq = __sync_bool_compare_and_swap(reinterpret_cast<uint32_t*>(base + ctx.r3.u32 + ctx.r4.u32), ctx.reserved.s32, __builtin_bswap32(ctx.r6.s32));'
+        adapted=PROBE.checked_reservations(body)
+        self.assertIn('PPC_LOAD_RESERVE_U32(ctx.r3.u32 + ctx.r4.u32)',adapted)
+        self.assertIn('PPC_STORE_CONDITIONAL_U32(ctx.r3.u32 + ctx.r4.u32, ctx.r6.u32)',adapted)
+        self.assertNotIn('base +',adapted);self.assertNotIn('__sync_',adapted)
+        for wrong in (body.replace('uint32_t','uint64_t'),body.replace('ctx.reserved','reserved'),body.replace('ctx.r6.s32','ctx.r6.s64')):
+            adapted=PROBE.checked_reservations(wrong)
+            self.assertTrue('base +' in adapted or '__sync_' in adapted)
 
     def test_missing_and_duplicate_definition_are_rejected(self):
         with self.assertRaisesRegex(PROBE.ProbeError,'FUNCTION_MISSING'):PROBE.extract(self.generated,['own'])
@@ -117,13 +129,18 @@ int main(){
     __imp__KeQuerySystemTime(ctx,base);const auto after=storm::kernel::system_time_filetime();
     const auto written=space.load(0x20000,8);
     if(ctx.r3.u64!=0x20000||written<before||written>after)return 19;
+    failed=false;try{__rdtsc();}catch(const std::runtime_error&){failed=true;}
+    if(!failed)return 20;
+    diagnostic_clock_epoch=storm::kernel::monotonic_nanoseconds();diagnostic_clock_bound=true;
+    const auto ticks=__rdtsc();const auto elapsed=storm::kernel::monotonic_nanoseconds()-diagnostic_clock_epoch;
+    if(ticks>elapsed/20)return 21;
     return 0;
 }
 """
         source=self.root/'kernel_probe.cpp';source.write_text(handlers+main)
         executable=self.root/'kernel_probe'
         compiler=shlex.split(os.environ.get('CXX','c++'))
-        sources=['memory/address_space.cpp','kernel/executable_module.cpp','kernel/virtual_memory.cpp','kernel/process_state.cpp','kernel/tls_state.cpp','kernel/imports.cpp']
+        sources=['memory/address_space.cpp','kernel/executable_module.cpp','kernel/virtual_memory.cpp','kernel/process_state.cpp','kernel/tls_state.cpp','kernel/imports.cpp','kernel/timestamp_bundle.cpp']
         result=subprocess.run(compiler+['-std=c++17','-fsanitize=undefined','-fno-sanitize-recover=all','-I'+str(ROOT/'runtime'),'-I'+str(self.root),str(source)]+[str(ROOT/'runtime'/x) for x in sources]+['-o',str(executable)],capture_output=True,text=True,timeout=60)
         self.assertEqual(result.returncode,0,result.stderr)
         result=subprocess.run([str(executable)],capture_output=True,text=True,timeout=10)

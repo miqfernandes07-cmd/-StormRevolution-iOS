@@ -22,4 +22,6 @@ std::uint64_t monotonic_nanoseconds();
 // timestamps round down, rather than towards zero, across the epoch boundary.
 std::uint64_t filetime_from_unix_nanoseconds(std::int64_t nanoseconds);
 std::uint64_t system_time_filetime();
+// Xbox 360 timebase: 50 MHz, independent of the host cycle-counter frequency.
+std::uint64_t timebase_from_nanoseconds(std::uint64_t elapsed);
 } // namespace storm::kernel
