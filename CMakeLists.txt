@@ -16,6 +16,7 @@ add_library(storm_runtime STATIC
   runtime/kernel/executable_module.cpp
   runtime/kernel/virtual_memory.cpp
   runtime/kernel/process_state.cpp
+  runtime/kernel/tls_state.cpp
   runtime/filesystem/content_root.cpp
   runtime/filesystem/zip_archive.cpp)
 target_link_libraries(storm_runtime PUBLIC ZLIB::ZLIB)
@@ -69,6 +70,9 @@ else()
     add_executable(storm_process_tests tests/test_process_state.cpp)
     target_link_libraries(storm_process_tests PRIVATE storm_runtime)
     add_test(NAME process_services COMMAND storm_process_tests)
+    add_executable(storm_tls_tests tests/test_tls_state.cpp)
+    target_link_libraries(storm_tls_tests PRIVATE storm_runtime)
+    add_test(NAME dynamic_tls COMMAND storm_tls_tests)
     add_executable(storm_input_tests tests/test_input_mapping.cpp)
     target_link_libraries(storm_input_tests PRIVATE storm_runtime)
     add_test(NAME xbox360_input COMMAND storm_input_tests)

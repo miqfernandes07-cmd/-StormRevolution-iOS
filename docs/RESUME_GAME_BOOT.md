@@ -1,8 +1,12 @@
 # Retomada direta do boot comercial
 
-Atualização de 2026-11-16: [novo diagnóstico e passos atuais](BOOT_BRINGUP_2026_11_16.md).
-O trecho já passou pela leitura de processo/hardware, locks e privilégios; agora para em
-`XGetAVPack`. O jogo continua sem abrir. O estado abaixo é histórico.
+Atualização de 2026-11-16: [novo diagnóstico TLS/identidade/vídeo](BOOT_TLS_2026_11_16.md).
+O trecho passou por heap, locks, TLS dinâmico e leitura do ID da thread usando um
+perfil VGA virtual experimental. A parada atual é o export de dados `KeTimeStampBundle` (+16, uptime).
+O jogo continua sem abrir. A config privada
+atual exige `dynamic_tls`, `thread_identity` e `diagnostic_thread`. Os checkpoints
+mais recentes estão em `private/probeclock-*/report.json`; conferir sua existência.
+O estado abaixo é histórico.
 
 Prioridade: execução do título. Não refazer interface, importação ou layout de
 controles para tentar resolver a ausência de gameplay. O IPA 0.2.1 é infraestrutura.

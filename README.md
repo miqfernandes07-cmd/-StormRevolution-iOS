@@ -2,8 +2,9 @@
 
 Projeto de port AOT PowerPC → C++ → ARM64 de Naruto Shippuden:
 Ultimate Ninja Storm Revolution, versão Xbox 360. **O jogo ainda não executa.**
-Atualização de boot em 2026-11-16: diagnóstico privado passou por heap, processo,
-locks e privilégios; parou em `XGetAVPack`. [Estado atual](docs/BOOT_BRINGUP_2026_11_16.md).
+Atualização de boot em 2026-11-16: diagnóstico privado avançou por heap, locks,
+TLS dinâmico e identidade de thread com perfil VGA virtual experimental.
+O jogo continua sem abrir. [Estado atual](docs/BOOT_TLS_2026_11_16.md).
 
 A CI produziu um IPA não assinado de infraestrutura; não há instalação no iPhone
 ou medição de FPS.

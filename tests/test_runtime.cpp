@@ -80,6 +80,16 @@ int main() {
         const auto t = storm::kernel::monotonic_nanoseconds();
         check(storm::kernel::monotonic_nanoseconds()>=t,"monotonic timer");
 
+        struct TimeCase {std::int64_t ns,ticks;};
+        for(const auto c:{TimeCase{0,0},TimeCase{1,0},TimeCase{99,0},TimeCase{100,1},
+                          TimeCase{-1,-1},TimeCase{-99,-1},TimeCase{-100,-1},TimeCase{-101,-2},
+                          TimeCase{1000000000,10000000},TimeCase{-1000000000,-10000000}})
+            check(storm::kernel::filetime_from_unix_nanoseconds(c.ns)==
+                  std::uint64_t(INT64_C(116444736000000000)+c.ticks),"FILETIME epochs and sub-tick rounding");
+        check(storm::kernel::filetime_from_unix_nanoseconds(INT64_MIN)==24211015631452241ULL,"FILETIME minimum Unix nanosecond");
+        check(storm::kernel::filetime_from_unix_nanoseconds(INT64_MAX)==208678456368547758ULL,"FILETIME maximum Unix nanosecond");
+        check(storm::kernel::filetime_from_unix_nanoseconds(INT64_C(946684800000000000))==125911584000000000ULL,"FILETIME 2000-01-01 UTC");
+
         storm::input::InputState input;
         input.update({0xFFFFFFFF,2,-2,std::numeric_limits<float>::quiet_NaN(),0,-1,2});
         auto state=input.snapshot();

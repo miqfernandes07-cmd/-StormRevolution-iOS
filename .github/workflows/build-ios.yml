@@ -11,9 +11,9 @@ concurrency:
   cancel-in-progress: true
 jobs:
   build:
-    # The macos-15 ARM pool failed to allocate a runner in run 42083949119.
-    # Intel Xcode still cross-compiles the device application for ARM64.
-    runs-on: macos-15-intel
+    # Intel pool never acquired a runner in run 43905517028 (no build steps).
+    # Use the standard pool; simulator architecture follows uname -m below.
+    runs-on: macos-15
     timeout-minutes: 40
     steps:
       - uses: actions/checkout@v4
