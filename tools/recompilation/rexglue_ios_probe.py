@@ -49,7 +49,8 @@ def main():
               "ios_runtime_qualified": False}
     flags = [compiler.strip(), "-target", report["target"], "-isysroot", sysroot.strip(),
              "-std=c++23", "-fexperimental-library", "-DREX_BUILDING_BASE",
-             "-DSPDLOG_COMPILED_LIB", "-D_XOPEN_SOURCE=700"]
+             "-DSPDLOG_COMPILED_LIB", "-fno-char8_t", "-fno-strict-aliasing",
+             "-ffp-model=strict"]
     for directory in (source / "include", source / "src", source / "thirdparty/spdlog/include"):
         flags.extend(["-I", str(directory)])
     for name in SOURCES:
