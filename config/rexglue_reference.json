@@ -4,5 +4,21 @@
   "commit": "a3e1d82678ca20d68d4837a8e9ee4652ff073745",
   "linux_amd64_archive_sha256": "e7d543ab8dde2c7839836a0417bfe84691c10f93357ec2c023fa98d3d315803b",
   "ios_runtime_supported": false,
-  "integrated_into_application": false
+  "integrated_into_application": false,
+  "ios_experimental_patch": {
+    "path": "tools/recompilation/rexglue_patches/0001-ios-vm-region.patch",
+    "sha256": "47b2af858dc4f76e689fef865534a2639fca4d64a1b0df8f58ae75094750abfa",
+    "files": [
+      {
+        "path": "src/base/memory_posix.cpp",
+        "before_sha256": "4f4035fa73e1382ca2ef60622da667626bb3057da6358fb721eb27b5872e720c",
+        "after_sha256": "a5c545cf234692b38ea7a0f00d2646e49cc8caba06a1c6f28a553bf5869cb7a8"
+      },
+      {
+        "path": "src/base/process_resources_posix.cpp",
+        "before_sha256": "a07b62b1cdfa5ac226bf0e20ae57980b5daf6d2ec13ff2ea5a88ff910e8aa15d",
+        "after_sha256": "bb6c506762177803f80f5ff3d8cc12beaf2168d837250e653c3d016c7f8b27ee"
+      }
+    ]
+  }
 }

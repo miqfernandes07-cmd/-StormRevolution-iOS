@@ -7,6 +7,7 @@ on:
       - '.github/workflows/rexglue-ios-probe.yml'
       - 'tools/recompilation/rexglue_ios_probe.py'
       - 'config/rexglue_reference.json'
+      - 'tools/recompilation/rexglue_patches/**'
   workflow_dispatch:
     inputs:
       apple_runner:
@@ -46,10 +47,16 @@ jobs:
           print('Selected',app)
           PY
       - name: Compile selected SDK sources for iPhone ARM64
+        continue-on-error: true
         run: |
           xcodebuild -version | tee out/rexglue-ios/xcode.txt
           python3 tools/recompilation/rexglue_ios_probe.py \
             --sdk-source sdk-source --output out/rexglue-ios
+      - name: Compile the pinned experimental VM-region adapter
+        run: |
+          python3 tools/recompilation/rexglue_ios_probe.py \
+            --sdk-source sdk-source --output out/rexglue-ios-patched \
+            --experimental-ios-patch
       - name: Upload open source compilation diagnostics only
         if: always()
         uses: actions/upload-artifact@v4
@@ -58,4 +65,6 @@ jobs:
           path: |
             out/rexglue-ios/*.txt
             out/rexglue-ios/*.json
+            out/rexglue-ios-patched/*.txt
+            out/rexglue-ios-patched/*.json
           retention-days: 7

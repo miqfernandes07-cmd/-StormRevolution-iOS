@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Compile selected unmodified SDK sources for iPhone; never load a title."""
 import argparse
+import hashlib
 import json
 from pathlib import Path
 import subprocess
@@ -25,6 +26,8 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--sdk-source", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
+    parser.add_argument("--experimental-ios-patch", action="store_true",
+                        help="Apply the pinned VM-region adapter before compiling")
     args = parser.parse_args()
     source, output = args.sdk_source.resolve(), args.output.resolve()
     if output == source or source in output.parents:
@@ -36,6 +39,24 @@ def main():
     code, changes = capture(["git", "status", "--porcelain", "--untracked-files=no"], cwd=source)
     if code or changes.strip():
         parser.error("SDK source must be unmodified for this baseline probe")
+    patch_digest = None
+    if args.experimental_ios_patch:
+        patch = reference["ios_experimental_patch"]
+        patch_path = ROOT / patch["path"]
+        patch_digest = hashlib.sha256(patch_path.read_bytes()).hexdigest()
+        if patch_digest != patch["sha256"]:
+            parser.error("Experimental patch digest mismatch")
+        for item in patch["files"]:
+            if hashlib.sha256((source / item["path"]).read_bytes()).hexdigest() != item["before_sha256"]:
+                parser.error("SDK source file digest mismatch: " + item["path"])
+        for command in (["git", "apply", "--check", str(patch_path)],
+                        ["git", "apply", str(patch_path)]):
+            code, log = capture(command, cwd=source)
+            if code:
+                parser.error("Experimental patch failed: " + log)
+        for item in patch["files"]:
+            if hashlib.sha256((source / item["path"]).read_bytes()).hexdigest() != item["after_sha256"]:
+                parser.error("Patched source file digest mismatch: " + item["path"])
     compiler_code, compiler = capture(["xcrun", "--sdk", "iphoneos", "--find", "clang++"])
     sdk_code, sysroot = capture(["xcrun", "--sdk", "iphoneos", "--show-sdk-path"])
     if compiler_code or sdk_code:
@@ -47,6 +68,9 @@ def main():
               "target": "arm64-apple-ios17.0", "sources": [],
               "linked": False, "device_executed": False, "game_executed": False,
               "ios_runtime_qualified": False}
+    if patch_digest:
+        report["scope"] = "selected_patched_sdk_sources_compile_only"
+        report["patch_sha256"] = patch_digest
     flags = [compiler.strip(), "-target", report["target"], "-isysroot", sysroot.strip(),
              "-std=c++23", "-fexperimental-library", "-DREX_BUILDING_BASE",
              "-DSPDLOG_COMPILED_LIB", "-fno-char8_t", "-fno-strict-aliasing",
