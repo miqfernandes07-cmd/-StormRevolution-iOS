@@ -40,6 +40,35 @@ Diagnóstico comercial separado: Clang19.1.7/UBSan, `private/probepriv-19/`.
 Config atual: `private/entry-prefix-qualified.json`. Todos os artefatos do título
 continuam privados; não houve push ao GitHub.
 
+## Integração GitHub e investigação de entradas alternativas
+
+A conexão autenticada foi confirmada para a conta proprietária. Código e testes
+foram enviados para a branch `codex/boot-runtime-bringup` no
+[pull request #1](https://github.com/miqfernandes07-cmd/-StormRevolution-iOS/pull/1).
+Nenhum material de `private/` foi enviado. GCC e Clang passaram nos dois runs host
+43904768933 e 43904900606. A validação iOS 43904900576 estava em fila ao registrar;
+não se atribui resultado Apple a esta alteração.
+
+O upstream XenonRecomp permanece em `ddd128b`; não havia versão mais recente
+para incorporar no momento da consulta. O README upstream confirma que a
+ferramenta não fornece runtime, MMIO ou solução genérica de jump tables.
+
+A recuperação de entradas identificou 63 destinos únicos omitidos: 49 candidatos
+de fluxo direto contíguo, 11 com lacunas e três com fluxo indireto. Para uma
+experiência de geração separada, foram selecionadas somente 29 entradas de até
+128 bytes, sem chamadas de saída. Os hashes da imagem e os critérios foram
+registrados privadamente. Recompilação e nova auditoria reduziram as ocorrências
+de chamadas estáticas sem destino de 321 para 135; as 19.909 palavras não
+decodificadas permanecem. Essa saída não foi executada nem aprovada como imagem
+completa. O probe continua usando a saída anterior, com hashes revisados.
+
+Os logs do run iOS histórico 43454975416 puderam ser recuperados. A compilação
+ARM64, o empacotamento IPA e a compilação do simulador haviam passado. O smoke
+de importação não concluiu no prazo: registrou START, STEP 0 e progresso inicial,
+sem callback. O log não estabelece a causa. Não foi feita uma alteração funcional
+no importador com base apenas nesse timeout. A nova execução deve fornecer sua
+própria evidência.
+
 O relatório abaixo registra o marco anterior desta sessão.
 
 
