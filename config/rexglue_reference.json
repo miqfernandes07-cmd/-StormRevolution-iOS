@@ -76,7 +76,7 @@
     },
     {
       "path": "tools/recompilation/rexglue_patches/0005-ios-private-mapping-file.patch",
-      "sha256": "4d225d47ae2191eefedb2bd7c2b1810514b9af160bab4f578c8195aabf4f0e77",
+      "sha256": "23863d6403114554a8f562e77d6e757d155dd6de94b8ee332e0585fbec94c9b7",
       "files": [
         {
           "path": "src/base/memory_posix.h",
@@ -86,7 +86,7 @@
         {
           "path": "src/base/memory_posix.cpp",
           "before_sha256": "a5c545cf234692b38ea7a0f00d2646e49cc8caba06a1c6f28a553bf5869cb7a8",
-          "after_sha256": "c47ae27cec2a1de71b5fce11e4a4d2e1ba9cd97b003605247ca5c50aaf864a04"
+          "after_sha256": "e57d3e770c0cd56873654f11d61902addaf93017716329900f029d4d8cf5cb46"
         }
       ]
     }

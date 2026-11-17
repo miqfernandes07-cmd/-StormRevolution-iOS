@@ -56,9 +56,21 @@
   * Accepts a fixed address mmap result only when it ended up at the requested address. A kernel
 --- a/src/base/memory_posix.cpp
 +++ b/src/base/memory_posix.cpp
-@@ -350,7 +350,20 @@
+@@ -67,7 +67,7 @@
+ namespace memory {
  
- FileMappingHandle CreateFileMappingHandle(const std::filesystem::path& path, size_t length,
+ /** Builds a shm_open name from a path, hashing long names on macOS (31 character limit). */
+-static std::string BuildSHMName(const std::filesystem::path& path) {
++[[maybe_unused]] static std::string BuildSHMName(const std::filesystem::path& path) {
+   std::string name = path.string();
+   for (char& c : name) {
+     if (c == '/') {
+@@ -348,9 +348,22 @@
+ #endif
+ }
+ 
+-FileMappingHandle CreateFileMappingHandle(const std::filesystem::path& path, size_t length,
++FileMappingHandle CreateFileMappingHandle([[maybe_unused]] const std::filesystem::path& path, size_t length,
                                            PageAccess access, [[maybe_unused]] bool commit) {
 -#if REX_PLATFORM_ANDROID
 +#if REX_PLATFORM_MAC && TARGET_OS_IPHONE
@@ -78,9 +90,12 @@
    if (android_ASharedMemory_create_) {
      int sharedmem_fd = android_ASharedMemory_create_(path.c_str(), length);
      return sharedmem_fd >= 0 ? sharedmem_fd : kFileMappingHandleInvalid;
-@@ -431,7 +444,7 @@
+@@ -429,9 +442,9 @@
+ #endif
+ }
  
- void CloseFileMappingHandle(FileMappingHandle handle, const std::filesystem::path& path) {
+-void CloseFileMappingHandle(FileMappingHandle handle, const std::filesystem::path& path) {
++void CloseFileMappingHandle(FileMappingHandle handle, [[maybe_unused]] const std::filesystem::path& path) {
    close(handle);
 -#if !REX_PLATFORM_ANDROID
 +#if !REX_PLATFORM_ANDROID && !(REX_PLATFORM_MAC && TARGET_OS_IPHONE)
