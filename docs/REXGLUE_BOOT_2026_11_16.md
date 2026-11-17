@@ -134,14 +134,18 @@ UIKit. Não usa o executável UIKit diagnóstico como se fosse o jogo.
 O pacote experimental converte as bibliotecas abertas em frameworks iPhone,
 reescreve seus install names e inclui MoltenVK dinâmico para iOS 1.4.2,
 verificado por SHA-256. A ABI exige `REX_PHYSICAL_OFFSET_IN_CODE=1` devido às
-páginas ARM64 de 16 KiB. O pacote, o link do fixture e a compilação do frontend
-ainda estão em verificação. Os resultados não comprovam execução no aparelho.
+páginas ARM64 de 16 KiB. O pacote com 17 frameworks, o link do fixture próprio e a compilação do
+frontend passaram no
+[run 44003543615](https://github.com/miqfernandes07-cmd/-StormRevolution-iOS/actions/runs/44003543615).
+[Relatório agregado](validation/rexglue-ios-frameworks-2026-11-17.json).
+Os resultados não comprovam execução no aparelho.
 
 A compilação privada preparada está em `private/iphone-build/`, com os 253
-fontes/headers derivados e nenhum XEX ou recurso do jogo. A tentativa de criar
-`miqfernandes07-cmd/StormRevolution-iPhone-Private` foi recusada pelo GitHub:
-`Resource not accessible by integration (createRepository)`. A criação e a
-liberação de acesso desse repositório privado dependem do proprietário.
+fontes/headers derivados e nenhum XEX ou recurso do jogo. O proprietário criou e liberou o acesso a
+`miqfernandes07-cmd/StormRevolution-iPhone-Private` após o GitHub recusar a
+criação automática. A visibilidade privada e o acesso ADMIN foram conferidos.
+O build do título foi iniciado no run privado 44004158738. Um workflow
+seguinte reutiliza o pacote aberto verificado para recompilar somente o app.
 Nunca usar a CI pública como substituição para compilar o título comercial.
 
 ## Retomar neste workspace

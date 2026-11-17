@@ -1,0 +1,253 @@
+{
+  "scope": "open_source_iphone_runtime_package_and_native_frontend_compile",
+  "workflow_url": "https://github.com/miqfernandes07-cmd/-StormRevolution-iOS/actions/runs/44003543615",
+  "sdk_commit": "a3e1d82678ca20d68d4837a8e9ee4652ff073745",
+  "physical_offset_in_code": 1,
+  "frameworks": [
+    {
+      "name": "rexbase",
+      "sha256": "a6a08046507fa4055f82d2fbb6c3aa10001174a1f9612af78a44859cd33a0d97",
+      "dependencies": [
+        "@rpath/rexbase.framework/rexbase",
+        "/usr/lib/libSystem.B.dylib",
+        "/usr/lib/libiconv.2.dylib",
+        "/usr/lib/libc++.1.dylib"
+      ]
+    },
+    {
+      "name": "rexppc",
+      "sha256": "78e6dc3700fc4a5dfedb7e9995a15dc090790a21189260a4d263dfcee8b73a22",
+      "dependencies": [
+        "@rpath/rexppc.framework/rexppc",
+        "@rpath/rexbase.framework/rexbase",
+        "/usr/lib/libiconv.2.dylib",
+        "/usr/lib/libc++.1.dylib",
+        "/usr/lib/libSystem.B.dylib"
+      ]
+    },
+    {
+      "name": "rexfilesystem",
+      "sha256": "8e6f4325ad6ee0932d23a5a08479a7493e81f57bb163eaa5b8b4ef4fb739a10d",
+      "dependencies": [
+        "@rpath/rexfilesystem.framework/rexfilesystem",
+        "@rpath/rexbase.framework/rexbase",
+        "/usr/lib/libiconv.2.dylib",
+        "/usr/lib/libc++.1.dylib",
+        "/usr/lib/libSystem.B.dylib"
+      ]
+    },
+    {
+      "name": "rexkernel",
+      "sha256": "86ab16bcf9a666b5bc8394d8bba2e35fd8c6f0d012c86c4f029088fd0d4d54a5",
+      "dependencies": [
+        "@rpath/rexkernel.framework/rexkernel",
+        "@rpath/rexppc.framework/rexppc",
+        "@rpath/rexbase.framework/rexbase",
+        "/usr/lib/libiconv.2.dylib",
+        "/usr/lib/libc++.1.dylib",
+        "/usr/lib/libSystem.B.dylib"
+      ]
+    },
+    {
+      "name": "rexxam",
+      "sha256": "6cbd222a080181ec7f660949145dbf39500d5115dfc3765160d38cb5cd818313",
+      "dependencies": [
+        "@rpath/rexxam.framework/rexxam",
+        "@rpath/rexppc.framework/rexppc",
+        "@rpath/rexbase.framework/rexbase",
+        "/usr/lib/libiconv.2.dylib",
+        "/usr/lib/libc++.1.dylib",
+        "/usr/lib/libSystem.B.dylib"
+      ]
+    },
+    {
+      "name": "rexxbdm",
+      "sha256": "e7b43fa8d3c14cc50fbfc2f2fe88ff7dcb3893a1738e667b2f2fbb07ec52072d",
+      "dependencies": [
+        "@rpath/rexxbdm.framework/rexxbdm",
+        "@rpath/rexppc.framework/rexppc",
+        "@rpath/rexbase.framework/rexbase",
+        "/usr/lib/libiconv.2.dylib",
+        "/usr/lib/libc++.1.dylib",
+        "/usr/lib/libSystem.B.dylib"
+      ]
+    },
+    {
+      "name": "rexui",
+      "sha256": "7555bf3037a0011f8c803fafc90b4c7ac4630fbe4b869fa512d87986daa090f5",
+      "dependencies": [
+        "@rpath/rexui.framework/rexui",
+        "@rpath/rexbase.framework/rexbase",
+        "/usr/lib/libiconv.2.dylib",
+        "/usr/lib/libc++.1.dylib",
+        "/usr/lib/libSystem.B.dylib"
+      ]
+    },
+    {
+      "name": "rexapu",
+      "sha256": "29be67c8ae76700cadf161b9b5a9d76439d615180ed654c342c42f7b5c5bd7cc",
+      "dependencies": [
+        "@rpath/rexapu.framework/rexapu",
+        "@rpath/rexbase.framework/rexbase",
+        "/usr/lib/libiconv.2.dylib",
+        "/usr/lib/libc++.1.dylib",
+        "/usr/lib/libSystem.B.dylib"
+      ]
+    },
+    {
+      "name": "rexhid",
+      "sha256": "54046500ca18e084baa6960ab6e5076140e2797746e478e0300d981d4b9be7e8",
+      "dependencies": [
+        "@rpath/rexhid.framework/rexhid",
+        "@rpath/rexbase.framework/rexbase",
+        "/usr/lib/libiconv.2.dylib",
+        "/usr/lib/libc++.1.dylib",
+        "/usr/lib/libSystem.B.dylib"
+      ]
+    },
+    {
+      "name": "rexgpu",
+      "sha256": "0c66c4edd5d39494f8f114640d05a5f86cccfc628ff2c66397eae4a4d7c36427",
+      "dependencies": [
+        "@rpath/rexgpu.framework/rexgpu",
+        "@rpath/rexbase.framework/rexbase",
+        "/usr/lib/libiconv.2.dylib",
+        "/usr/lib/libc++.1.dylib",
+        "/usr/lib/libSystem.B.dylib"
+      ]
+    },
+    {
+      "name": "rexapp",
+      "sha256": "f708ea3fe9f92630f89fcc4558586500a8079aa5c8078dee65064f32d7b56b0c",
+      "dependencies": [
+        "@rpath/rexapp.framework/rexapp",
+        "@rpath/rexkernel.framework/rexkernel",
+        "@rpath/rexppc.framework/rexppc",
+        "@rpath/rexbase.framework/rexbase",
+        "/usr/lib/libiconv.2.dylib",
+        "/usr/lib/libc++.1.dylib",
+        "/usr/lib/libSystem.B.dylib"
+      ]
+    },
+    {
+      "name": "rexui-sdl3",
+      "sha256": "390130fa01876a994ff706f79fa9cfa0c1d09400ea40d2b25e395f0f96488080",
+      "dependencies": [
+        "@rpath/rexui-sdl3.framework/rexui-sdl3",
+        "@rpath/rexbase.framework/rexbase",
+        "@rpath/SDL3.framework/SDL3",
+        "/System/Library/Frameworks/CoreFoundation.framework/CoreFoundation",
+        "/usr/lib/libiconv.2.dylib",
+        "/usr/lib/libc++.1.dylib",
+        "/usr/lib/libSystem.B.dylib"
+      ]
+    },
+    {
+      "name": "rexapu-sdl3",
+      "sha256": "21b02d939ac02f74a5a04334c3a73c7084310482908d4aaf71b1742e8fb781b3",
+      "dependencies": [
+        "@rpath/rexapu-sdl3.framework/rexapu-sdl3",
+        "@rpath/rexbase.framework/rexbase",
+        "@rpath/SDL3.framework/SDL3",
+        "/usr/lib/libiconv.2.dylib",
+        "/usr/lib/libc++.1.dylib",
+        "/usr/lib/libSystem.B.dylib"
+      ]
+    },
+    {
+      "name": "rexhid-sdl3",
+      "sha256": "90c4ac3eb24849d710ea0aa062c02f0d4ade15d33cd0c840ecf4aa2717691d21",
+      "dependencies": [
+        "@rpath/rexhid-sdl3.framework/rexhid-sdl3",
+        "@rpath/rexbase.framework/rexbase",
+        "@rpath/SDL3.framework/SDL3",
+        "/usr/lib/libiconv.2.dylib",
+        "/usr/lib/libc++.1.dylib",
+        "/usr/lib/libSystem.B.dylib"
+      ]
+    },
+    {
+      "name": "rexgpu-xenos-vulkan",
+      "sha256": "3456fe4ad3ecfb56c29ad728b28416041952a7005a112929ec65c38cde71e3a2",
+      "dependencies": [
+        "@rpath/rexgpu-xenos-vulkan.framework/rexgpu-xenos-vulkan",
+        "@rpath/rexgpu.framework/rexgpu",
+        "@rpath/rexbase.framework/rexbase",
+        "/usr/lib/libiconv.2.dylib",
+        "/usr/lib/libc++.1.dylib",
+        "/usr/lib/libSystem.B.dylib"
+      ]
+    },
+    {
+      "name": "SDL3",
+      "sha256": "2a3754a6c18dc69e67fa9b706938ab95b656ab6058a2f4d0a39b783ce27116bc",
+      "dependencies": [
+        "@rpath/SDL3.framework/SDL3",
+        "/usr/lib/libSystem.B.dylib",
+        "/System/Library/Frameworks/CoreMedia.framework/CoreMedia",
+        "/System/Library/Frameworks/CoreVideo.framework/CoreVideo",
+        "/System/Library/Frameworks/CoreAudio.framework/CoreAudio",
+        "/System/Library/Frameworks/AudioToolbox.framework/AudioToolbox",
+        "/System/Library/Frameworks/AVFoundation.framework/AVFoundation",
+        "/System/Library/Frameworks/CoreBluetooth.framework/CoreBluetooth",
+        "/System/Library/Frameworks/CoreGraphics.framework/CoreGraphics",
+        "/System/Library/Frameworks/CoreMotion.framework/CoreMotion",
+        "/System/Library/Frameworks/Foundation.framework/Foundation",
+        "/System/Library/Frameworks/GameController.framework/GameController",
+        "/System/Library/Frameworks/Metal.framework/Metal",
+        "/System/Library/Frameworks/QuartzCore.framework/QuartzCore",
+        "/System/Library/Frameworks/UIKit.framework/UIKit",
+        "/System/Library/Frameworks/CoreHaptics.framework/CoreHaptics",
+        "/System/Library/Frameworks/AVFAudio.framework/AVFAudio",
+        "/System/Library/Frameworks/CoreFoundation.framework/CoreFoundation",
+        "/usr/lib/libobjc.A.dylib"
+      ]
+    },
+    {
+      "name": "MoltenVK",
+      "sha256": "b6d6c6081df1b3a80ff018a28b5183c4c7021abc68da9f087643fbce09342fec",
+      "dependencies": [
+        "@rpath/MoltenVK.framework/MoltenVK",
+        "/System/Library/Frameworks/IOSurface.framework/IOSurface",
+        "/System/Library/Frameworks/UIKit.framework/UIKit",
+        "/System/Library/Frameworks/Foundation.framework/Foundation",
+        "/System/Library/Frameworks/CoreGraphics.framework/CoreGraphics",
+        "/System/Library/Frameworks/Metal.framework/Metal",
+        "/usr/lib/libc++.1.dylib",
+        "/System/Library/Frameworks/IOKit.framework/Versions/A/IOKit",
+        "/System/Library/Frameworks/QuartzCore.framework/QuartzCore",
+        "/usr/lib/libSystem.B.dylib",
+        "/System/Library/Frameworks/CoreFoundation.framework/CoreFoundation",
+        "/usr/lib/libobjc.A.dylib"
+      ]
+    }
+  ],
+  "framework_count": 17,
+  "platform": "iOS",
+  "architecture": "arm64",
+  "own_link_fixture_passed": true,
+  "native_frontend_syntax_check_passed": true,
+  "commercial_application_linked": false,
+  "device_executed": false,
+  "game_executed": false,
+  "ios_runtime_qualified": false,
+  "archive_sha256": "5dfc07d630f1881d53dffcf8996e6e37032a45a0dae0709a84e9763579f583f5",
+  "patches": [
+    {
+      "path": "tools/recompilation/rexglue_patches/0001-ios-vm-region.patch",
+      "sha256": "47b2af858dc4f76e689fef865534a2639fca4d64a1b0df8f58ae75094750abfa"
+    },
+    {
+      "path": "tools/recompilation/rexglue_patches/0002-sdl-uikit-metal-surface.patch",
+      "sha256": "69da16627738338eb3b6c24a8794d5512cc3a65f876701397666be111f322499"
+    },
+    {
+      "path": "tools/recompilation/rexglue_patches/0003-appleclang-aes-schedule-extent.patch",
+      "sha256": "e7ed2c51c5889c9716b920733b1041d3a45a94b273b5a51d7aaebb1b73b63b15"
+    },
+    {
+      "path": "tools/recompilation/rexglue_patches/0004-ios-framework-loading.patch",
+      "sha256": "49abf27e74fb48cc1f3650d3b8fc74727a59744c697b420e7e44aa7c469d4fde"
+    }
+  ]
+}
