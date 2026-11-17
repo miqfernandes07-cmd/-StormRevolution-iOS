@@ -1,0 +1,18 @@
+{
+  "passed": true,
+  "scope": "Actual UIKit controls and settings; programmatic input events",
+  "failures": [],
+  "checks": 273,
+  "game_executed": false,
+  "physical_touch_tested": false,
+  "workflow_run": 44189829883,
+  "repository_visibility": "private",
+  "source": "2ee4d5e",
+  "screenshots_inspected": [
+    "home",
+    "options"
+  ],
+  "real_game_mask_method_checks": 326896,
+  "mask_test_scope": "Synthetic save memory, original character and ten collection bit-check methods, bounded metadata lookup stub",
+  "fps_gain_verified": false
+}

@@ -1,5 +1,17 @@
 # Full GPU readback reuse and diagnostics
 
+## Build 8 device results and build 9 experiment
+
+The owner's subsequent two sessions confirm build 8, Safe rendering, full resolve readback, synchronous memexport, 1×, 30 FPS, FXAA off and expanded memory. At 720p, the 60-sample FPS median is 17 (mean 13.53); at 480p it is 12 (mean 14.28). These include different menu/gameplay intervals and are not a controlled resolution comparison. All 60 thermal samples in each session report `serious`. Available memory is approximately 1.8–1.9 GiB, with zero memory warnings.
+
+The timing summaries account for 180,249 and 190,096 ms respectively. GPU waits take 135,307 and 139,529 ms: **75.1% and 73.4%** of those intervals. There are 51,221 and 73,424 resolve operations and **zero memexport calls**. Thus the previous memexport allocation optimization does not address these measured sessions; its instrumentation identifies the resolve synchronization cost instead. Inclusive resolve durations and wait durations overlap and must not be added.
+
+Build 9 introduces an opt-in **Performance / Desempenho** profile. It retains Safe's host render targets, traditional render passes, disabled direct-host resolve and synchronous memexport. It changes `gpu.xenos.readback_resolve` to `none` and the legacy Vulkan resolve-readback flag to `false`, avoiding the CPU resolve copies and their waits. This requires restarting the app. GPU resolve/rendering operations themselves remain enabled. CPU consumers of resolved textures may require these copies, so effects can regress; restore Safe if artifacts appear. This is an explicit compatibility tradeoff, not proof that a required synchronization can safely be removed in all scenes. No physical FPS gain has been measured for this candidate.
+
+The home screen also gains a default-on unlock toggle, backed by a separate save profile. See [save profile behavior](UNLOCK_PROFILES.md). It is independent of graphics settings.
+
+## Earlier instrumentation work
+
 The owner reports at most 18 FPS in the menu and stuttering gameplay on iPhone 15 Pro. Device log 005 confirms A17 Pro Vulkan/MoltenVK, UIKit at 2556×1179, the previous optional thread-name workaround, and a full 512 MiB shared GPU buffer. It has no CPU/GPU timing or active-preference snapshot. The primitive-restart and integer-blending warnings do not by themselves identify the performance bottleneck. More RAM alone has not established a speedup.
 
 The pinned SDK's full memexport path creates, maps, unmaps and destroys a dedicated allocation for every nonempty readback. Patch 0006 retains one mapped buffer, growing only when required and releasing it after queue completion during shutdown. It uses a dedicated private field, separate from the address-keyed fast-path cache, so reclamation during a fence wait cannot evict this storage. No public SDK header or guest mapping ABI changes.

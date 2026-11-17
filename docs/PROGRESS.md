@@ -1,31 +1,41 @@
 # Progresso — atualização em 2026-11-17
 
-## Marco atual: reaproveitamento de leitura GPU 0.6.1
+## Marco atual: perfil Desempenho e desbloqueios separados 0.7.0
 
-Versão atual publicada: **0.6.1 / build 8**, [download privado](https://github.com/miqfernandes07-cmd/StormRevolution-iPhone-Private/releases/tag/native-iphone-run-44165837354).
-O renderizador agora reaproveita o buffer de leitura síncrona de memexport,
-em vez de criar, mapear, desmapear e destruir uma alocação por leitura. A espera
-pelos dados da submissão atual e a invalidação da memória permanecem. Novos logs
-`Native GPU timing` medem os tempos inclusivos de desenhos/leituras e as esperas.
+Versão atual publicada: **0.7.0 / build 9**, [download privado](https://github.com/miqfernandes07-cmd/StormRevolution-iPhone-Private/releases/tag/native-iphone-run-44189383485).
 
-O proprietário relata até 18 FPS nos menus e jogabilidade travada no build
-anterior. O log enviado não mede CPU/GPU nem identifica o perfil ativo.
-O ganho do build 8 ainda precisa ser medido no iPhone. Use Seguro, 1×, 30 FPS,
-FXAA desligado, reabra o aplicativo e exporte logs + native-session.json após
-comparar a mesma arena e personagens. Rápido continua experimental.
+Os novos logs do build 8 identificaram 73–75% do intervalo medido em esperas
+nas cópias de resolve, com nenhuma chamada de memexport. As duas sessões
+estavam em estado térmico elevado; a resolução menor não eliminou a lentidão.
+A otimização anterior de memexport não foi usada nessas sessões.
 
-O build do runtime 44164692810, o refresh 44165837354 e a publicação 44165928216
-passaram. O pacote tem 22.795.253 bytes e SHA-256
-`157a57b769403c90f883fc1c058c40109891e202149f2d02f75ead9f5366cb86`.
-Todos os 924 headers públicos são idênticos ao SDK anterior. Só o binário do
-renderizador Vulkan e Info.plist mudaram; os outros 79 itens, incluindo o
-executável principal, ícones e demais frameworks, são idênticos ao build 7.
-Preserva idiomas, controles, memória ampliada, Modo Jogo, importação e saves.
-Não apague o app para atualizar.
+O novo perfil **Desempenho**, em Ajustes → Perfil gráfico, desativa as cópias
+de resolve para CPU e mantém o renderizador clássico do Seguro e memexport
+síncrono. Selecione-o e feche/reabra o aplicativo. É experimental: efeitos que
+leem essas cópias podem apresentar artefatos; nesse caso, volte a Seguro.
+Use 1×, 30 FPS e FXAA desligado, com o aparelho frio, para comparar a mesma luta.
+Ainda não há ganho de FPS medido no aparelho para o build 9.
 
-[Detalhes da otimização e limitações](GPU_READBACK_PERFORMANCE.md).
-[Testes do caminho de leitura](validation/pooled-readback-2026-11-17.json).
-[Auditoria do IPA](validation/native-iphone-ipa-v8-2026-11-17.json).
+A tela inicial oferece **Modo trapaça**, ligado por padrão, para personagens,
+variações e coleções presentes nos arquivos importados. Usa um perfil separado:
+a primeira ativação copia o progresso normal; desligar antes de Jogar retorna
+ao save original. Cada perfil mantém seu progresso. Não fornece DLC ausente
+nem completa automaticamente todas as missões. [Comportamento dos saves e limites](UNLOCK_PROFILES.md).
+
+Compilação nativa 44189383485 e publicação 44190341006 aprovadas. O IPA tem
+22.800.674 bytes e SHA-256
+`99460421c87b32cf25da0254460071ff5ff5e7c2401a88f4a5ccae58e2f33327`.
+A auditoria independente confirma ARM64/iOS, os hooks de desbloqueio ligados,
+o novo frontend e os conteúdos carregáveis dos 17 frameworks iguais ao SDK
+verificado do run 44164692810. O teste UIKit passou em 273 verificações, incluindo
+isolamento de saves; as máscaras passaram em 326.896 verificações com métodos
+originais e memória sintética. Esses testes não executam gameplay física.
+Preserva idiomas, ícone, controles, memória ampliada, Modo Jogo e créditos
+MiquéiasF07. **Atualize pelo AltStore sem apagar o aplicativo.**
+
+[Diagnóstico de desempenho e limitações](GPU_READBACK_PERFORMANCE.md).
+[Testes UIKit e máscaras](validation/native-controls-unlock-v9-2026-11-17.json).
+[Auditoria do IPA](validation/native-iphone-ipa-v9-2026-11-17.json).
 
 ## Histórico — idiomas, Arquivos e memória ampliada 0.6.0
 
