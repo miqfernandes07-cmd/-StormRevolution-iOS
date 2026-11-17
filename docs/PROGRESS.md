@@ -1,6 +1,33 @@
 # Progresso — atualização em 2026-11-17
 
-## Marco atual: idiomas, Arquivos e memória ampliada 0.6.0
+## Marco atual: reaproveitamento de leitura GPU 0.6.1
+
+Versão atual publicada: **0.6.1 / build 8**, [download privado](https://github.com/miqfernandes07-cmd/StormRevolution-iPhone-Private/releases/tag/native-iphone-run-44165837354).
+O renderizador agora reaproveita o buffer de leitura síncrona de memexport,
+em vez de criar, mapear, desmapear e destruir uma alocação por leitura. A espera
+pelos dados da submissão atual e a invalidação da memória permanecem. Novos logs
+`Native GPU timing` medem os tempos inclusivos de desenhos/leituras e as esperas.
+
+O proprietário relata até 18 FPS nos menus e jogabilidade travada no build
+anterior. O log enviado não mede CPU/GPU nem identifica o perfil ativo.
+O ganho do build 8 ainda precisa ser medido no iPhone. Use Seguro, 1×, 30 FPS,
+FXAA desligado, reabra o aplicativo e exporte logs + native-session.json após
+comparar a mesma arena e personagens. Rápido continua experimental.
+
+O build do runtime 44164692810, o refresh 44165837354 e a publicação 44165928216
+passaram. O pacote tem 22.795.253 bytes e SHA-256
+`157a57b769403c90f883fc1c058c40109891e202149f2d02f75ead9f5366cb86`.
+Todos os 924 headers públicos são idênticos ao SDK anterior. Só o binário do
+renderizador Vulkan e Info.plist mudaram; os outros 79 itens, incluindo o
+executável principal, ícones e demais frameworks, são idênticos ao build 7.
+Preserva idiomas, controles, memória ampliada, Modo Jogo, importação e saves.
+Não apague o app para atualizar.
+
+[Detalhes da otimização e limitações](GPU_READBACK_PERFORMANCE.md).
+[Testes do caminho de leitura](validation/pooled-readback-2026-11-17.json).
+[Auditoria do IPA](validation/native-iphone-ipa-v8-2026-11-17.json).
+
+## Histórico — idiomas, Arquivos e memória ampliada 0.6.0
 
 Versão atual publicada: **0.6.0 / build 7**, [download privado](https://github.com/miqfernandes07-cmd/StormRevolution-iPhone-Private/releases/tag/native-iphone-run-44082240260).
 O build nativo 44079853215, a configuração final 44082240260 e a publicação

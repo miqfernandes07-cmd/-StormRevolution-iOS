@@ -1,0 +1,466 @@
+{
+  "scope": "static_private_ipa_audit",
+  "size": 22795253,
+  "sha256": "157a57b769403c90f883fc1c058c40109891e202149f2d02f75ead9f5366cb86",
+  "bundle_identifier": "org.stormrevolution.native",
+  "bundle_version": "8",
+  "architecture": "arm64",
+  "main": {
+    "kind": 2,
+    "dependencies": [
+      "@rpath/MoltenVK.framework/MoltenVK",
+      "@rpath/SDL3.framework/SDL3",
+      "@rpath/rexapp.framework/rexapp",
+      "@rpath/rexapu-sdl3.framework/rexapu-sdl3",
+      "@rpath/rexapu.framework/rexapu",
+      "@rpath/rexbase.framework/rexbase",
+      "@rpath/rexfilesystem.framework/rexfilesystem",
+      "@rpath/rexgpu-xenos-vulkan.framework/rexgpu-xenos-vulkan",
+      "@rpath/rexgpu.framework/rexgpu",
+      "@rpath/rexhid-sdl3.framework/rexhid-sdl3",
+      "@rpath/rexhid.framework/rexhid",
+      "@rpath/rexkernel.framework/rexkernel",
+      "@rpath/rexppc.framework/rexppc",
+      "@rpath/rexui-sdl3.framework/rexui-sdl3",
+      "@rpath/rexui.framework/rexui",
+      "@rpath/rexxam.framework/rexxam",
+      "@rpath/rexxbdm.framework/rexxbdm",
+      "/usr/lib/libz.1.dylib",
+      "/System/Library/Frameworks/Foundation.framework/Foundation",
+      "/System/Library/Frameworks/UIKit.framework/UIKit",
+      "/System/Library/Frameworks/UniformTypeIdentifiers.framework/UniformTypeIdentifiers",
+      "/System/Library/Frameworks/GameController.framework/GameController",
+      "/System/Library/Frameworks/QuartzCore.framework/QuartzCore",
+      "/System/Library/Frameworks/CoreGraphics.framework/CoreGraphics",
+      "/usr/lib/libobjc.A.dylib",
+      "/usr/lib/libc++.1.dylib",
+      "/usr/lib/libSystem.B.dylib",
+      "/System/Library/Frameworks/CoreFoundation.framework/CoreFoundation"
+    ],
+    "rpaths": [
+      "@executable_path/Frameworks"
+    ],
+    "guest_code_bytes": 37256020,
+    "platform": 2,
+    "minimum_ios": "17.0.0"
+  },
+  "frameworks": {
+    "MoltenVK": {
+      "kind": 6,
+      "dependencies": [
+        "/System/Library/Frameworks/IOSurface.framework/IOSurface",
+        "/System/Library/Frameworks/UIKit.framework/UIKit",
+        "/System/Library/Frameworks/Foundation.framework/Foundation",
+        "/System/Library/Frameworks/CoreGraphics.framework/CoreGraphics",
+        "/System/Library/Frameworks/Metal.framework/Metal",
+        "/usr/lib/libc++.1.dylib",
+        "/System/Library/Frameworks/IOKit.framework/Versions/A/IOKit",
+        "/System/Library/Frameworks/QuartzCore.framework/QuartzCore",
+        "/usr/lib/libSystem.B.dylib",
+        "/System/Library/Frameworks/CoreFoundation.framework/CoreFoundation",
+        "/usr/lib/libobjc.A.dylib"
+      ],
+      "rpaths": [
+        "@loader_path/.."
+      ],
+      "guest_code_bytes": 0,
+      "platform": 2,
+      "minimum_ios": "15.0.0"
+    },
+    "SDL3": {
+      "kind": 6,
+      "dependencies": [
+        "/usr/lib/libSystem.B.dylib",
+        "/System/Library/Frameworks/CoreMedia.framework/CoreMedia",
+        "/System/Library/Frameworks/CoreVideo.framework/CoreVideo",
+        "/System/Library/Frameworks/CoreAudio.framework/CoreAudio",
+        "/System/Library/Frameworks/AudioToolbox.framework/AudioToolbox",
+        "/System/Library/Frameworks/AVFoundation.framework/AVFoundation",
+        "/System/Library/Frameworks/CoreBluetooth.framework/CoreBluetooth",
+        "/System/Library/Frameworks/CoreGraphics.framework/CoreGraphics",
+        "/System/Library/Frameworks/CoreMotion.framework/CoreMotion",
+        "/System/Library/Frameworks/Foundation.framework/Foundation",
+        "/System/Library/Frameworks/GameController.framework/GameController",
+        "/System/Library/Frameworks/Metal.framework/Metal",
+        "/System/Library/Frameworks/QuartzCore.framework/QuartzCore",
+        "/System/Library/Frameworks/UIKit.framework/UIKit",
+        "/System/Library/Frameworks/CoreHaptics.framework/CoreHaptics",
+        "/System/Library/Frameworks/AVFAudio.framework/AVFAudio",
+        "/System/Library/Frameworks/CoreFoundation.framework/CoreFoundation",
+        "/usr/lib/libobjc.A.dylib"
+      ],
+      "rpaths": [
+        "@loader_path/.."
+      ],
+      "guest_code_bytes": 0,
+      "platform": 2,
+      "minimum_ios": "17.0.0"
+    },
+    "rexapp": {
+      "kind": 6,
+      "dependencies": [
+        "@rpath/rexkernel.framework/rexkernel",
+        "@rpath/rexppc.framework/rexppc",
+        "@rpath/rexbase.framework/rexbase",
+        "/usr/lib/libiconv.2.dylib",
+        "/usr/lib/libc++.1.dylib",
+        "/usr/lib/libSystem.B.dylib"
+      ],
+      "rpaths": [
+        "@loader_path/.."
+      ],
+      "guest_code_bytes": 0,
+      "platform": 2,
+      "minimum_ios": "17.0.0"
+    },
+    "rexapu-sdl3": {
+      "kind": 6,
+      "dependencies": [
+        "@rpath/rexbase.framework/rexbase",
+        "@rpath/SDL3.framework/SDL3",
+        "/usr/lib/libiconv.2.dylib",
+        "/usr/lib/libc++.1.dylib",
+        "/usr/lib/libSystem.B.dylib"
+      ],
+      "rpaths": [
+        "@loader_path/.."
+      ],
+      "guest_code_bytes": 0,
+      "platform": 2,
+      "minimum_ios": "17.0.0"
+    },
+    "rexapu": {
+      "kind": 6,
+      "dependencies": [
+        "@rpath/rexbase.framework/rexbase",
+        "/usr/lib/libiconv.2.dylib",
+        "/usr/lib/libc++.1.dylib",
+        "/usr/lib/libSystem.B.dylib"
+      ],
+      "rpaths": [
+        "@loader_path/.."
+      ],
+      "guest_code_bytes": 0,
+      "platform": 2,
+      "minimum_ios": "17.0.0"
+    },
+    "rexbase": {
+      "kind": 6,
+      "dependencies": [
+        "/usr/lib/libSystem.B.dylib",
+        "/usr/lib/libiconv.2.dylib",
+        "/usr/lib/libc++.1.dylib"
+      ],
+      "rpaths": [
+        "@loader_path/.."
+      ],
+      "guest_code_bytes": 0,
+      "platform": 2,
+      "minimum_ios": "17.0.0"
+    },
+    "rexfilesystem": {
+      "kind": 6,
+      "dependencies": [
+        "@rpath/rexbase.framework/rexbase",
+        "/usr/lib/libiconv.2.dylib",
+        "/usr/lib/libc++.1.dylib",
+        "/usr/lib/libSystem.B.dylib"
+      ],
+      "rpaths": [
+        "@loader_path/.."
+      ],
+      "guest_code_bytes": 0,
+      "platform": 2,
+      "minimum_ios": "17.0.0"
+    },
+    "rexgpu-xenos-vulkan": {
+      "kind": 6,
+      "dependencies": [
+        "@rpath/rexgpu.framework/rexgpu",
+        "@rpath/rexbase.framework/rexbase",
+        "/usr/lib/libiconv.2.dylib",
+        "/usr/lib/libc++.1.dylib",
+        "/usr/lib/libSystem.B.dylib"
+      ],
+      "rpaths": [
+        "@loader_path/.."
+      ],
+      "guest_code_bytes": 0,
+      "platform": 2,
+      "minimum_ios": "17.0.0"
+    },
+    "rexgpu": {
+      "kind": 6,
+      "dependencies": [
+        "@rpath/rexbase.framework/rexbase",
+        "/usr/lib/libiconv.2.dylib",
+        "/usr/lib/libc++.1.dylib",
+        "/usr/lib/libSystem.B.dylib"
+      ],
+      "rpaths": [
+        "@loader_path/.."
+      ],
+      "guest_code_bytes": 0,
+      "platform": 2,
+      "minimum_ios": "17.0.0"
+    },
+    "rexhid-sdl3": {
+      "kind": 6,
+      "dependencies": [
+        "@rpath/rexbase.framework/rexbase",
+        "@rpath/SDL3.framework/SDL3",
+        "/usr/lib/libiconv.2.dylib",
+        "/usr/lib/libc++.1.dylib",
+        "/usr/lib/libSystem.B.dylib"
+      ],
+      "rpaths": [
+        "@loader_path/.."
+      ],
+      "guest_code_bytes": 0,
+      "platform": 2,
+      "minimum_ios": "17.0.0"
+    },
+    "rexhid": {
+      "kind": 6,
+      "dependencies": [
+        "@rpath/rexbase.framework/rexbase",
+        "/usr/lib/libiconv.2.dylib",
+        "/usr/lib/libc++.1.dylib",
+        "/usr/lib/libSystem.B.dylib"
+      ],
+      "rpaths": [
+        "@loader_path/.."
+      ],
+      "guest_code_bytes": 0,
+      "platform": 2,
+      "minimum_ios": "17.0.0"
+    },
+    "rexkernel": {
+      "kind": 6,
+      "dependencies": [
+        "@rpath/rexppc.framework/rexppc",
+        "@rpath/rexbase.framework/rexbase",
+        "/usr/lib/libiconv.2.dylib",
+        "/usr/lib/libc++.1.dylib",
+        "/usr/lib/libSystem.B.dylib"
+      ],
+      "rpaths": [
+        "@loader_path/.."
+      ],
+      "guest_code_bytes": 0,
+      "platform": 2,
+      "minimum_ios": "17.0.0"
+    },
+    "rexppc": {
+      "kind": 6,
+      "dependencies": [
+        "@rpath/rexbase.framework/rexbase",
+        "/usr/lib/libiconv.2.dylib",
+        "/usr/lib/libc++.1.dylib",
+        "/usr/lib/libSystem.B.dylib"
+      ],
+      "rpaths": [
+        "@loader_path/.."
+      ],
+      "guest_code_bytes": 0,
+      "platform": 2,
+      "minimum_ios": "17.0.0"
+    },
+    "rexui-sdl3": {
+      "kind": 6,
+      "dependencies": [
+        "@rpath/rexbase.framework/rexbase",
+        "@rpath/SDL3.framework/SDL3",
+        "/System/Library/Frameworks/CoreFoundation.framework/CoreFoundation",
+        "/usr/lib/libiconv.2.dylib",
+        "/usr/lib/libc++.1.dylib",
+        "/usr/lib/libSystem.B.dylib"
+      ],
+      "rpaths": [
+        "@loader_path/.."
+      ],
+      "guest_code_bytes": 0,
+      "platform": 2,
+      "minimum_ios": "17.0.0"
+    },
+    "rexui": {
+      "kind": 6,
+      "dependencies": [
+        "@rpath/rexbase.framework/rexbase",
+        "/usr/lib/libiconv.2.dylib",
+        "/usr/lib/libc++.1.dylib",
+        "/usr/lib/libSystem.B.dylib"
+      ],
+      "rpaths": [
+        "@loader_path/.."
+      ],
+      "guest_code_bytes": 0,
+      "platform": 2,
+      "minimum_ios": "17.0.0"
+    },
+    "rexxam": {
+      "kind": 6,
+      "dependencies": [
+        "@rpath/rexppc.framework/rexppc",
+        "@rpath/rexbase.framework/rexbase",
+        "/usr/lib/libiconv.2.dylib",
+        "/usr/lib/libc++.1.dylib",
+        "/usr/lib/libSystem.B.dylib"
+      ],
+      "rpaths": [
+        "@loader_path/.."
+      ],
+      "guest_code_bytes": 0,
+      "platform": 2,
+      "minimum_ios": "17.0.0"
+    },
+    "rexxbdm": {
+      "kind": 6,
+      "dependencies": [
+        "@rpath/rexppc.framework/rexppc",
+        "@rpath/rexbase.framework/rexbase",
+        "/usr/lib/libiconv.2.dylib",
+        "/usr/lib/libc++.1.dylib",
+        "/usr/lib/libSystem.B.dylib"
+      ],
+      "rpaths": [
+        "@loader_path/.."
+      ],
+      "guest_code_bytes": 0,
+      "platform": 2,
+      "minimum_ios": "17.0.0"
+    }
+  },
+  "device_executed": false,
+  "gameplay_verified": false,
+  "version": "0.6.1",
+  "native_runtime_run": 44164692810,
+  "renderer_refresh_run": 44165837354,
+  "publish_run": 44165928216,
+  "main_executable_unchanged": true,
+  "icons_unchanged": true,
+  "other_frameworks_unchanged": true,
+  "unchanged_payload_entries": 79,
+  "changed_entries": [
+    "Payload/StormNative.app/Frameworks/rexgpu-xenos-vulkan.framework/rexgpu-xenos-vulkan",
+    "Payload/StormNative.app/Info.plist"
+  ],
+  "renderer_validation": {
+    "scope": "private_renderer_only_refresh",
+    "runtime_run": "44164692810",
+    "sdk_commit": "a3e1d82678ca20d68d4837a8e9ee4652ff073745",
+    "sdk_patches": [
+      {
+        "path": "tools/recompilation/rexglue_patches/0001-ios-vm-region.patch",
+        "sha256": "47b2af858dc4f76e689fef865534a2639fca4d64a1b0df8f58ae75094750abfa",
+        "files": [
+          {
+            "path": "src/base/memory_posix.cpp",
+            "before_sha256": "4f4035fa73e1382ca2ef60622da667626bb3057da6358fb721eb27b5872e720c",
+            "after_sha256": "a5c545cf234692b38ea7a0f00d2646e49cc8caba06a1c6f28a553bf5869cb7a8"
+          },
+          {
+            "path": "src/base/process_resources_posix.cpp",
+            "before_sha256": "a07b62b1cdfa5ac226bf0e20ae57980b5daf6d2ec13ff2ea5a88ff910e8aa15d",
+            "after_sha256": "bb6c506762177803f80f5ff3d8cc12beaf2168d837250e653c3d016c7f8b27ee"
+          }
+        ]
+      },
+      {
+        "path": "tools/recompilation/rexglue_patches/0002-sdl-uikit-metal-surface.patch",
+        "sha256": "69da16627738338eb3b6c24a8794d5512cc3a65f876701397666be111f322499",
+        "files": [
+          {
+            "path": "include/rex/platform/native_window.h",
+            "before_sha256": "c4e0a341c52eb32de752022f5fc66f38d39cb4f1170c3447f83a6f03b8aa79b1",
+            "after_sha256": "4d252caaf9f1edaa7009430915a48aaf326534baabed60b259f691068aaf248f"
+          },
+          {
+            "path": "src/gpu/xenos/host/surface.cpp",
+            "before_sha256": "8fa4fd9498d6fcef27385c6555ca818fddd468680a4fd1bcf60f3cc20c100363",
+            "after_sha256": "ebb23f3a40afe5663eecdcb8e84e6b5f0b0057b0b0cac024bd2ba1899e8568a3"
+          },
+          {
+            "path": "src/ui/sdl3/sdl3_ui_driver.cpp",
+            "before_sha256": "b90a05d281cb1f091dc0a2a5efbc87aa72f1a885ec3f1abd23efad950d2a20ef",
+            "after_sha256": "f07ddfb8607aeddb2b8f939664e3d50c9701668b5fcd89a3ee6c42e3766677dd"
+          }
+        ]
+      },
+      {
+        "path": "tools/recompilation/rexglue_patches/0003-appleclang-aes-schedule-extent.patch",
+        "sha256": "e7ed2c51c5889c9716b920733b1041d3a45a94b273b5a51d7aaebb1b73b63b15",
+        "files": [
+          {
+            "path": "src/kernel/xboxkrnl/xboxkrnl_crypt.cpp",
+            "before_sha256": "5b9e7d44ba521d0c83684bb01c8d8794ef16194248bd82837cf855dc2eec3f81",
+            "after_sha256": "d84a2ea3973c42f990f635a2f24446e6c1052936c96ab8a67ea63228976c4d81"
+          }
+        ]
+      },
+      {
+        "path": "tools/recompilation/rexglue_patches/0004-ios-framework-loading.patch",
+        "sha256": "49abf27e74fb48cc1f3650d3b8fc74727a59744c697b420e7e44aa7c469d4fde",
+        "files": [
+          {
+            "path": "src/base/library_name.cpp",
+            "before_sha256": "38ada5d989bdf79dbb94f7dfaf10d7014d5862829eb075d6d8860b9cd1f6f571",
+            "after_sha256": "ba60d29ab96317b9f028d4c923d9f1b33ba682348bd62d4fe4c8748779a5492c"
+          },
+          {
+            "path": "src/gpu/xenos/host/vulkan/vulkan_instance.cpp",
+            "before_sha256": "3fe3e82abfed8a075f3060bb57210341ecdaac5713abcacf20802263fb3da1a8",
+            "after_sha256": "c9844e27b5862be500c1d2b625a188415581d4a9a56ff039c8d63e6432d572cf"
+          }
+        ]
+      },
+      {
+        "path": "tools/recompilation/rexglue_patches/0005-ios-private-mapping-file.patch",
+        "sha256": "23863d6403114554a8f562e77d6e757d155dd6de94b8ee332e0585fbec94c9b7",
+        "files": [
+          {
+            "path": "src/base/memory_posix.h",
+            "before_sha256": "74d872ce4a90dd3466cb0a39df71e806b84005f8ca3227dc9ba8f69450a1ae91",
+            "after_sha256": "ec28473ac4aaa9a64d9a1a16748f773cf994d17fd0003ccacb9afefd9f9bb77e"
+          },
+          {
+            "path": "src/base/memory_posix.cpp",
+            "before_sha256": "a5c545cf234692b38ea7a0f00d2646e49cc8caba06a1c6f28a553bf5869cb7a8",
+            "after_sha256": "e57d3e770c0cd56873654f11d61902addaf93017716329900f029d4d8cf5cb46"
+          }
+        ]
+      },
+      {
+        "path": "tools/recompilation/rexglue_patches/0006-ios-pooled-full-readback.patch",
+        "sha256": "620d4a2cec79b1fc362ae39f23b712de57bce5285a86aa963795bd947ac504ef",
+        "files": [
+          {
+            "path": "src/gpu/xenos/vulkan/command_processor.cpp",
+            "before_sha256": "baae7b1e8e448d4332861ee079e7b763d29d801ffede7985a6e9d5c14573f580",
+            "after_sha256": "51a816d9bb6dbef081aa4605f6314ec73c400416a37a90014bef52f6a6006e46"
+          },
+          {
+            "path": "src/gpu/xenos/vulkan/command_processor.h",
+            "before_sha256": "d8f3f3325167b7f3b4b31cda9451d669d20c85a93859181efbb3d6a58f7d228c",
+            "after_sha256": "8e07225d87b1850403f50f5d2133863acea644c47164a3a16d2e788cbfbff6a5"
+          }
+        ]
+      }
+    ],
+    "public_headers_identical": 924,
+    "exported_abi_preserved": true,
+    "main_executable_unchanged": true,
+    "icons_unchanged": true,
+    "other_frameworks_unchanged": true,
+    "unchanged_payload_entries": 79,
+    "changed_entries": [
+      "Payload/StormNative.app/Frameworks/rexgpu-xenos-vulkan.framework/rexgpu-xenos-vulkan",
+      "Payload/StormNative.app/Info.plist"
+    ],
+    "renderer_sha256": "8f472aa7387a77801569c2ccec3db8c149fe39d8858cc673786ea9b4a7a2f78e",
+    "source_ipa_sha256": "6a49c23f688eef6e7075d8f6237e3b43947ba6b5606e8acef50cc61660d290c6",
+    "device_executed": false,
+    "fps_gain_verified": false
+  },
+  "fps_gain_verified": false
+}

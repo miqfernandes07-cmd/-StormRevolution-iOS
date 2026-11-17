@@ -1,0 +1,15 @@
+{
+  "scope": "Actual patched full-readback implementation and cleanup extracted into deterministic Vulkan/fence model",
+  "source_runtime_run": 44164692810,
+  "macos_ci_checks": 20109,
+  "local_aligned_copy_checks": 22115,
+  "changing_payloads": 1000,
+  "same_capacity_allocations": 1,
+  "gpu_copy_alignment_checked": true,
+  "undefined_behavior_sanitizer": true,
+  "failed_allocation_map_wait_invalidation_and_shutdown_tested": true,
+  "packaging_guard_tests": 5,
+  "game_executed": false,
+  "physical_gpu_executed": false,
+  "fps_gain_measured": false
+}

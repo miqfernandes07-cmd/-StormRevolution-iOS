@@ -1,29 +1,29 @@
 # Aplicativo nativo experimental
 
-Versão atual publicada: **0.6.0 / build 7**, [download privado](https://github.com/miqfernandes07-cmd/StormRevolution-iPhone-Private/releases/tag/native-iphone-run-44082240260).
-O build nativo 44079853215, a configuração final 44082240260 e a publicação
-44082291246 passaram. O IPA tem 22.794.234 bytes e SHA-256
-`6a49c23f688eef6e7075d8f6237e3b43947ba6b5606e8acef50cc61660d290c6`.
+Versão atual publicada: **0.6.1 / build 8**, [download privado](https://github.com/miqfernandes07-cmd/StormRevolution-iPhone-Private/releases/tag/native-iphone-run-44165837354).
+O renderizador agora reaproveita o buffer de leitura síncrona de memexport,
+em vez de criar, mapear, desmapear e destruir uma alocação por leitura. A espera
+pelos dados da submissão atual e a invalidação da memória permanecem. Novos logs
+`Native GPU timing` medem os tempos inclusivos de desenhos/leituras e as esperas.
 
-A interface oferece português, inglês, espanhol, francês, alemão, italiano e
-japonês sem alterar o idioma do jogo. A instalação migra para Documents/Game,
-visível no Arquivos, por uma renomeação atômica sem duplicar os arquivos.
-Memória ampliada remove o teto de alocação do runtime e amplia o cache;
-o iOS mantém seus limites. O pacote declara as chaves atual e antiga do Modo
-Jogo. A configuração final altera só Info.plist; outros 80 itens do pacote
-permanecem idênticos ao build ligado, inclusive executável, frameworks e ícone.
+O proprietário relata até 18 FPS nos menus e jogabilidade travada no build
+anterior. O log enviado não mede CPU/GPU nem identifica o perfil ativo.
+O ganho do build 8 ainda precisa ser medido no iPhone. Use Seguro, 1×, 30 FPS,
+FXAA desligado, reabra o aplicativo e exporte logs + native-session.json após
+comparar a mesma arena e personagens. Rápido continua experimental.
 
-Há um contorno específico para o abort na notificação opcional de renomear
-threads. Uma segunda falha por recurso nulo continua em investigação, com
-novos logs. Os dados enviados eram do perfil Seguro e registravam média de
-14,12 FPS; não há medição física de ganho ou confirmação de estabilidade do
-build 7. Não atribuir o crash ao Rápido com base nesses dados.
+O build do runtime 44164692810, o refresh 44165837354 e a publicação 44165928216
+passaram. O pacote tem 22.795.253 bytes e SHA-256
+`157a57b769403c90f883fc1c058c40109891e202149f2d02f75ead9f5366cb86`.
+Todos os 924 headers públicos são idênticos ao SDK anterior. Só o binário do
+renderizador Vulkan e Info.plist mudaram; os outros 79 itens, incluindo o
+executável principal, ícones e demais frameworks, são idênticos ao build 7.
+Preserva idiomas, controles, memória ampliada, Modo Jogo, importação e saves.
+Não apague o app para atualizar.
 
-Validação: [255 checks UIKit](validation/native-app-ui-build7-2026-11-17.json),
-15 casos do wrapper real com contexto sintético, frontend ARM64, link completo
-e [auditoria do IPA](validation/native-iphone-ipa-v7-2026-11-17.json).
-[Idiomas, Arquivos e memória](APP_LANGUAGES_AND_FILES.md).
-[Controles e perfis](MOBILE_CONTROLS.md).
+[Detalhes da otimização e limitações](GPU_READBACK_PERFORMANCE.md).
+[Testes do caminho de leitura](validation/pooled-readback-2026-11-17.json).
+[Auditoria do IPA](validation/native-iphone-ipa-v8-2026-11-17.json).
 
 O alvo `StormNative` integra ReXGlue e o código recompilado do título. É
 separado do aplicativo UIKit de infraestrutura `StormRevolution`. O proprietário

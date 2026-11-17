@@ -57,7 +57,7 @@ bool CreateDedicatedAllocationBuffer(const VulkanDevice*,u32 size,int,MemoryPurp
 }
 namespace draw_state {struct MemExportRange{u32 base_address_dwords,size_bytes;};}
 struct VulkanSharedMemory {enum class Usage{kRead};void Use(Usage){} VkBuffer GetBuffer()const{return 1;}};
-struct Deferred {void CmdVkCopyBuffer(VkBuffer src,VkBuffer dst,u32 count,const VkBufferCopy* region){CHECK(src==1&&count==1);CHECK(model.buffers.count(dst));model.pending.push_back({dst,*region});}};
+struct Deferred {void CmdVkCopyBuffer(VkBuffer src,VkBuffer dst,u32 count,const VkBufferCopy* region){CHECK(src==1&&count==1);CHECK(((region->srcOffset|region->dstOffset|region->size)&3)==0);CHECK(model.buffers.count(dst));model.pending.push_back({dst,*region});}};
 static u8* GetPhysicalForWrite(void*,u32 addr,u32 length){CHECK(model.pending.empty());CHECK(model.invalidated==model.generation);return u64(addr)+length<=model.physical.size()?model.physical.data()+addr:nullptr;}
 class VulkanCommandProcessor {
  public:
@@ -81,8 +81,8 @@ class VulkanCommandProcessor {
 int main(){try{
  VulkanCommandProcessor processor;
  CHECK(processor.IssueDrawMemexportReadbackFullPath(0));CHECK(model.creates==0);
- processor.memexport_ranges_={{0x100/4,17},{0x1000/4,31}};
- for(u32 frame=0;frame<1000;++frame){model.Seed(frame);CHECK(processor.IssueDrawMemexportReadbackFullPath(48));CHECK(!std::memcmp(model.gpu.data()+0x100,model.physical.data()+0x100,17));CHECK(!std::memcmp(model.gpu.data()+0x1000,model.physical.data()+0x1000,31));}
+ processor.memexport_ranges_={{0x100/4,16},{0x1000/4,32}};
+ for(u32 frame=0;frame<1000;++frame){model.Seed(frame);CHECK(processor.IssueDrawMemexportReadbackFullPath(48));CHECK(!std::memcmp(model.gpu.data()+0x100,model.physical.data()+0x100,16));CHECK(!std::memcmp(model.gpu.data()+0x1000,model.physical.data()+0x1000,32));}
  CHECK(model.creates==1&&model.maps==1&&model.destroys==0&&model.unmaps==0);CHECK(model.waits==1000&&model.invalidates==1000);
  auto old=processor.memexport_full_readback_.memories[0];
  processor.memexport_ranges_={{0x1000/4,300*1024}};
