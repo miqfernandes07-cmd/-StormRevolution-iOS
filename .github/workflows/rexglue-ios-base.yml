@@ -20,6 +20,9 @@ jobs:
     timeout-minutes: 40
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
       - uses: actions/checkout@v4
         with:
           repository: rexglue/rexglue-sdk
@@ -68,9 +71,11 @@ jobs:
           set -o pipefail
           cmake -S sdk-source -B build-rex-ios \
             -DCMAKE_SYSTEM_NAME=iOS -DCMAKE_OSX_SYSROOT=iphoneos \
+            -DCMAKE_PROJECT_TOP_LEVEL_INCLUDES="$PWD/tools/recompilation/rexglue_ios_artifacts.cmake" \
             -DCMAKE_OSX_ARCHITECTURES=arm64 -DCMAKE_OSX_DEPLOYMENT_TARGET=17.0 \
             -DCMAKE_MACOSX_BUNDLE=OFF \
             -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_SHARED_LINKER_FLAGS=-Wl,-headerpad_max_install_names \
             -DCMAKE_C_COMPILER="$(xcrun --sdk iphoneos --find clang)" \
             -DCMAKE_CXX_COMPILER="$(xcrun --sdk iphoneos --find clang++)" \
             -DCMAKE_XCODE_ATTRIBUTE_CODE_SIGNING_ALLOWED=NO \
@@ -145,6 +150,48 @@ jobs:
                   'ios_runtime_qualified':False}
           pathlib.Path('out/ios-base/drivers-report.json').write_text(json.dumps(report,indent=2)+'\n')
           PY
+      - name: Package unsigned open source iPhone frameworks
+        if: github.event_name == 'push' || inputs.stage == 'drivers'
+        run: |
+          python3 - <<'PY'
+          import hashlib,json,pathlib,urllib.request
+          ref=json.loads(pathlib.Path('config/rexglue_reference.json').read_text())['moltenvk_ios']
+          dest=pathlib.Path('out/MoltenVK-ios.tar')
+          with urllib.request.urlopen(ref['archive_url'],timeout=60) as source,dest.open('wb') as target:
+              while block:=source.read(1024*1024):
+                  target.write(block)
+          assert dest.stat().st_size==ref['archive_size'],'MoltenVK size mismatch'
+          with dest.open('rb') as stream:
+              assert hashlib.file_digest(stream,'sha256').hexdigest()==ref['archive_sha256'],'MoltenVK digest mismatch'
+          PY
+          python3 tools/recompilation/package_rexglue_ios.py \
+            --sdk-source sdk-source --build build-rex-ios \
+            --moltenvk-archive out/MoltenVK-ios.tar --output out/ios-runtime-package
+      - name: Link own fixture against packaged iPhone frameworks
+        if: github.event_name == 'push' || inputs.stage == 'drivers'
+        run: |
+          set -o pipefail
+          xcrun --sdk iphoneos clang++ -target arm64-apple-ios17.0 \
+            -isysroot "$(xcrun --sdk iphoneos --show-sdk-path)" \
+            -std=c++23 -fexperimental-library -fno-char8_t \
+            -I out/ios-runtime-package/runtime/include \
+            -F out/ios-runtime-package/runtime/Frameworks \
+            tests/integration/rexglue_ios_link.cpp \
+            -framework rexapp -framework rexbase -framework rexppc -framework rexkernel \
+            -Wl,-rpath,@executable_path/Frameworks \
+            -o out/ios-base/SDKLinkProbe 2>&1 | tee out/ios-base/link-fixture.txt
+          xcrun vtool -show-build out/ios-base/SDKLinkProbe | tee out/ios-base/link-fixture-platform.txt
+      - name: Preserve rebuildable open source runtime package
+        if: success() && (github.event_name == 'push' || inputs.stage == 'drivers')
+        uses: actions/upload-artifact@v4
+        with:
+          name: experimental-iphone-runtime-no-game
+          path: |
+            out/ios-runtime-package/*.zip
+            out/ios-runtime-package/*.tar
+            out/ios-runtime-package/*.tar.gz
+            out/ios-runtime-package/SHA256SUMS.txt
+          retention-days: 7
       - name: Upload compilation diagnostics only
         if: always()
         uses: actions/upload-artifact@v4

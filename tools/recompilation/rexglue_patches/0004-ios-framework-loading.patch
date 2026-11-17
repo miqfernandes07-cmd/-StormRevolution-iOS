@@ -1,0 +1,40 @@
+--- a/src/base/library_name.cpp
++++ b/src/base/library_name.cpp
+@@ -28,6 +28,8 @@
+ std::filesystem::path LibraryFileName(std::string_view name) {
+ #if REX_PLATFORM_WIN32
+   return std::format("{}.dll", name);
++#elif REX_PLATFORM_MAC && TARGET_OS_IPHONE
++  return std::format("Frameworks/{0}.framework/{0}", name);
+ #elif REX_PLATFORM_MAC
+   return std::format("lib{}.dylib", name);
+ #else
+--- a/src/gpu/xenos/host/vulkan/vulkan_instance.cpp
++++ b/src/gpu/xenos/host/vulkan/vulkan_instance.cpp
+@@ -17,6 +17,7 @@
+ 
+ #include <rex/logging/log_category.h>
+ #include <rex/platform.h>
++#include <rex/platform/file.h>
+ #include "gpu/xenos/host/library_name.h"
+ #include "gpu/xenos/host/vulkan/vulkan_instance.h"
+ #include "gpu/xenos/host/vulkan/vulkan_presenter.h"
+@@ -42,7 +43,17 @@
+ 
+   bool functions_loaded = true;
+   bool loader_loaded = false;
+-#if REX_PLATFORM_MAC
++#if REX_PLATFORM_MAC && TARGET_OS_IPHONE
++  const std::filesystem::path ios_runtime =
++      platform::GetExecutableFolder() / "Frameworks/MoltenVK.framework/MoltenVK";
++  loader_loaded = vulkan_instance->loader_.Load(ios_runtime);
++  if (!loader_loaded) {
++    REXUI_ERROR("Failed to load the iOS MoltenVK framework: {}",
++                vulkan_instance->loader_.GetLastError());
++    return nullptr;
++  }
++  REXUI_INFO("Loaded iOS Vulkan runtime from {}", ios_runtime.string());
++#elif REX_PLATFORM_MAC
+   const MacOSVulkanRuntimePaths macos_runtime_paths = DetectMacOSVulkanRuntimePaths();
+   ConfigureMacOSVulkanEnvironment(macos_runtime_paths);
+ 

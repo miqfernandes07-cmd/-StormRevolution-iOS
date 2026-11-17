@@ -57,6 +57,29 @@
           "after_sha256": "d84a2ea3973c42f990f635a2f24446e6c1052936c96ab8a67ea63228976c4d81"
         }
       ]
+    },
+    {
+      "path": "tools/recompilation/rexglue_patches/0004-ios-framework-loading.patch",
+      "sha256": "49abf27e74fb48cc1f3650d3b8fc74727a59744c697b420e7e44aa7c469d4fde",
+      "files": [
+        {
+          "path": "src/base/library_name.cpp",
+          "before_sha256": "38ada5d989bdf79dbb94f7dfaf10d7014d5862829eb075d6d8860b9cd1f6f571",
+          "after_sha256": "ba60d29ab96317b9f028d4c923d9f1b33ba682348bd62d4fe4c8748779a5492c"
+        },
+        {
+          "path": "src/gpu/xenos/host/vulkan/vulkan_instance.cpp",
+          "before_sha256": "3fe3e82abfed8a075f3060bb57210341ecdaac5713abcacf20802263fb3da1a8",
+          "after_sha256": "c9844e27b5862be500c1d2b625a188415581d4a9a56ff039c8d63e6432d572cf"
+        }
+      ]
     }
-  ]
+  ],
+  "moltenvk_ios": {
+    "version": "1.4.2",
+    "archive_url": "https://github.com/KhronosGroup/MoltenVK/releases/download/v1.4.2/MoltenVK-ios.tar",
+    "archive_sha256": "b5d947b1660e6e9fed40b9cd2387e160aaab9e80b775c0cef7e14059405178c1",
+    "archive_size": 34535424,
+    "framework_member": "MoltenVK/MoltenVK/dynamic/MoltenVK.xcframework/ios-arm64/MoltenVK.framework"
+  }
 }
