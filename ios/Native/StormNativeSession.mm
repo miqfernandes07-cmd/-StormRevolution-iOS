@@ -27,6 +27,7 @@
 @property(nonatomic) BOOL fatalFailure;
 @property(nonatomic) BOOL inputBlocked;
 @property(nonatomic) BOOL editingPreview;
+@property(nonatomic) NSUInteger memoryWarningCount;
 @end
 
 @implementation StormNativeSession {
@@ -299,6 +300,7 @@
   NSDictionary *report = @{@"phase":phase, @"os":UIDevice.currentDevice.systemVersion,
     @"appBuild":[NSBundle.mainBundle objectForInfoDictionaryKey:@"CFBundleVersion"] ?: @"unknown",
     @"memoryAvailableMB":@(os_proc_available_memory() / (1024 * 1024)),
+    @"memoryWarnings":@(self.memoryWarningCount),
     @"preferences":StormNativePreferences.values, @"runtimeRequested":StormNativePreferences.runtimeValues,
     @"updatedAt":NSDate.date.description};
   NSData *data = [NSJSONSerialization dataWithJSONObject:report options:NSJSONWritingPrettyPrinted error:nil];
@@ -312,7 +314,7 @@
   }
   [self writeSessionReport:self.launchRequested ? @"title-running" : @"home"];
 }
-- (void)memoryWarning:(NSNotification *)notification { [self writeSessionReport:@"memory-warning"]; }
+- (void)memoryWarning:(NSNotification *)notification { self.memoryWarningCount += 1; [self writeSessionReport:@"memory-warning"]; }
 - (void)shareLogsFrom:(UIViewController *)presenter {
   [self writeSessionReport:@"export"];
   NSArray<NSURL *> *files = [NSFileManager.defaultManager contentsOfDirectoryAtURL:[self logsURL] includingPropertiesForKeys:nil options:0 error:nil];

@@ -1,8 +1,10 @@
 # Aplicativo nativo experimental
 
 O alvo `StormNative` integra ReXGlue e o código recompilado do título. É
-separado do aplicativo UIKit de infraestrutura `StormRevolution`. Ainda não há
-execução comprovada em iPhone físico nem validação de gameplay.
+separado do aplicativo UIKit de infraestrutura `StormRevolution`. O proprietário
+executou o build 2 em um iPhone 15 Pro: abriu o jogo, selecionou personagens e
+chegou a uma luta. Há crashes no carregamento e casos de tela preta; uma sessão
+de gameplay estável ainda não foi validada.
 
 O SDK aberto com 17 frameworks iPhone ARM64 passou pelo link de um fixture e
 pela compilação do frontend no run público
@@ -34,13 +36,39 @@ close-on-exec, restrição de escrita no descriptor somente leitura, validade do
 views depois de fechar o descriptor e rejeição de tamanhos inválidos. A
 compilação e o link do SDK completo para iPhone passaram no
 [run 44020335898](https://github.com/miqfernandes07-cmd/-StormRevolution-iOS/actions/runs/44020335898).
-Não houve execução desse backend em aparelho físico.
+Os logs enviados pelo proprietário confirmam execução desse backend em aparelho
+físico. A proteção da página zero permanece ativa.
 
 O reempacotamento mantém o executável comercial já vinculado apenas quando
 todos os headers públicos do SDK são idênticos aos usados nessa compilação.
 O pacote contém o quinto adaptador e passou de novo pela inspeção do
 executável, dos frameworks, das dependências, das licenças e do SHA-256.
 A publicação privada oferece o IPA não assinado para teste no aparelho.
+
+## Ajustes após o teste físico
+
+O frontend 0.4.0 mantém o bundle ID e os dados importados. Inclui botões
+PlayStation/Xbox, disposição para celular/clássica, edição de posições, tamanho,
+opacidade, vibração opcional, controle externo e crédito para MiquéiasF07.
+A engrenagem abre os ajustes e permite compartilhar os logs. Abrir os ajustes
+bloqueia o controle virtual, mas a pausa deve ser acionada com OPTIONS no jogo.
+
+O perfil Compatível solicita FSI, espera a compilação dos shaders, mantém
+readback de recursos, limita caches e usa o teto de memória de título de 512 MiB
+suportado pelo SDK. São medidas de compatibilidade que precisam de novo teste
+físico. O perfil Padrão continua disponível. Tela preenchida pode alterar a
+proporção; Original preserva a proporção do jogo. Mudanças no renderizador,
+resolução, escala e FXAA exigem reabrir o aplicativo.
+
+Os dois crashes foram localizados na cópia de recursos, com destino inválido.
+Uma instrumentação privada registra falhas do alocador e os argumentos antes
+da cópia, sem ignorar erros nem alterar os retornos. Os logs também contêm
+limitações do caminho gráfico de render targets host. Essas observações não
+comprovam que o novo perfil resolveu os crashes ou a tela preta.
+
+O workflow `Native controls and settings` testa os controles UIKit e a
+persistência dos ajustes com eventos programáticos no simulador, sem executar
+o jogo. O gameplay e os toques físicos dependem de validação no aparelho.
 
 ## Build privado
 
