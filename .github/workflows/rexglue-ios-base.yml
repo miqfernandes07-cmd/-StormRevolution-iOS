@@ -72,6 +72,8 @@ jobs:
           xcrun clang++ -std=c++17 -Wall -Wextra -Werror -I sdk-source/src \
             tests/integration/rexglue_private_mapping.cpp -o out/private-mapping-test
           out/private-mapping-test
+      - name: Exercise actual pooled readback with deterministic GPU failures
+        run: python3 tools/recompilation/test_full_readback.py --sdk-source sdk-source
       - name: Configure upstream for iPhone ARM64
         run: |
           set -o pipefail

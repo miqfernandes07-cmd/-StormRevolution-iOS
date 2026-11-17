@@ -89,6 +89,22 @@
           "after_sha256": "e57d3e770c0cd56873654f11d61902addaf93017716329900f029d4d8cf5cb46"
         }
       ]
+    },
+    {
+      "path": "tools/recompilation/rexglue_patches/0006-ios-pooled-full-readback.patch",
+      "sha256": "620d4a2cec79b1fc362ae39f23b712de57bce5285a86aa963795bd947ac504ef",
+      "files": [
+        {
+          "path": "src/gpu/xenos/vulkan/command_processor.cpp",
+          "before_sha256": "baae7b1e8e448d4332861ee079e7b763d29d801ffede7985a6e9d5c14573f580",
+          "after_sha256": "51a816d9bb6dbef081aa4605f6314ec73c400416a37a90014bef52f6a6006e46"
+        },
+        {
+          "path": "src/gpu/xenos/vulkan/command_processor.h",
+          "before_sha256": "d8f3f3325167b7f3b4b31cda9451d669d20c85a93859181efbb3d6a58f7d228c",
+          "after_sha256": "8e07225d87b1850403f50f5d2133863acea644c47164a3a16d2e788cbfbff6a5"
+        }
+      ]
     }
   ],
   "moltenvk_ios": {

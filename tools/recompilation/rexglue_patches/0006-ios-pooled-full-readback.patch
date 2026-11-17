@@ -1,0 +1,311 @@
+--- a/src/gpu/xenos/vulkan/command_processor.cpp
++++ b/src/gpu/xenos/vulkan/command_processor.cpp
+@@ -13,6 +13,7 @@
+ #include <array>
+ #include <bit>
+ #include <cstdint>
++#include <chrono>
+ #include <cstring>
+ #include <iterator>
+ #include <mutex>
+@@ -55,6 +56,59 @@
+ namespace rex::gpu::vulkan {
+ 
+ namespace {
++
++// Native readback diagnostics use wall time, not hardware CPU/GPU utilization.
++// Inclusive draw time can contain resolve/memexport. Wait time is measured once
++// at the synchronous call sites. One line per >=5 seconds, no per-draw logging.
++enum class NativeReadbackKind : size_t { kDraw, kResolve, kMemexport, kCount };
++struct NativeReadbackWindow {
++  using Clock = std::chrono::steady_clock;
++  Clock::time_point start = Clock::now();
++  std::array<u64, 3> calls{}, nanoseconds{};
++  u64 bytes = 0, allocations = 0, wait_calls = 0, wait_nanoseconds = 0;
++  u32 depth = 0;
++};
++static NativeReadbackWindow& NativeReadbackCounters() {
++  static thread_local NativeReadbackWindow counters;
++  return counters;
++}
++class NativeReadbackScope {
++ public:
++  explicit NativeReadbackScope(NativeReadbackKind kind, u64 bytes = 0)
++      : counters_(NativeReadbackCounters()), kind_(static_cast<size_t>(kind)),
++        start_(NativeReadbackWindow::Clock::now()) {
++    ++counters_.depth;
++    counters_.bytes += bytes;
++  }
++  ~NativeReadbackScope() {
++    const auto now = NativeReadbackWindow::Clock::now();
++    ++counters_.calls[kind_];
++    counters_.nanoseconds[kind_] += std::chrono::duration_cast<std::chrono::nanoseconds>(now - start_).count();
++    const auto window_ms = std::chrono::duration_cast<std::chrono::milliseconds>(now - counters_.start).count();
++    if (--counters_.depth == 0 && window_ms >= 5000) {
++      REXGPU_INFO("Native GPU timing: window_ms={} draw_calls={} draw_inclusive_ms={} resolve_calls={} resolve_inclusive_ms={} memexport_calls={} memexport_inclusive_ms={} wait_calls={} wait_ms={} readback_allocations={} readback_bytes={}",
++                  window_ms, counters_.calls[0], counters_.nanoseconds[0] / 1000000,
++                  counters_.calls[1], counters_.nanoseconds[1] / 1000000,
++                  counters_.calls[2], counters_.nanoseconds[2] / 1000000,
++                  counters_.wait_calls, counters_.wait_nanoseconds / 1000000,
++                  counters_.allocations, counters_.bytes);
++      counters_ = NativeReadbackWindow{};
++    }
++  }
++  void Allocation() { ++counters_.allocations; }
++  template <typename F> bool Wait(F&& wait) {
++    const auto start = NativeReadbackWindow::Clock::now();
++    const bool result = wait();
++    ++counters_.wait_calls;
++    counters_.wait_nanoseconds += std::chrono::duration_cast<std::chrono::nanoseconds>(NativeReadbackWindow::Clock::now() - start).count();
++    return result;
++  }
++ private:
++  NativeReadbackWindow& counters_;
++  size_t kind_;
++  NativeReadbackWindow::Clock::time_point start_;
++};
++// End native readback diagnostics.
+ 
+ constexpr TBuiltInResource kGlslangDefaultTBuiltInResource = {
+     /* .maxLights = */ 32,
+@@ -1775,6 +1829,16 @@
+     }
+   }
+   readback_buffers_.clear();
++  for (u32 i = 0; i < 2; ++i) {
++    if (memexport_full_readback_.mapped_data[i] && memexport_full_readback_.memories[i] != VK_NULL_HANDLE)
++      dfn.vkUnmapMemory(device, memexport_full_readback_.memories[i]);
++    if (memexport_full_readback_.buffers[i] != VK_NULL_HANDLE)
++      dfn.vkDestroyBuffer(device, memexport_full_readback_.buffers[i], nullptr);
++    if (memexport_full_readback_.memories[i] != VK_NULL_HANDLE)
++      dfn.vkFreeMemory(device, memexport_full_readback_.memories[i], nullptr);
++  }
++  memexport_full_readback_ = {};
++
+   for (auto& readback_pair : memexport_readback_buffers_) {
+     ReadbackBuffer& readback = readback_pair.second;
+     for (u32 i = 0; i < 2; ++i) {
+@@ -3404,6 +3468,7 @@
+ 
+ bool VulkanCommandProcessor::IssueDraw(xenos::PrimitiveType prim_type, u32 index_count,
+                                        IndexBuffer* index_buffer_info, bool major_mode_explicit) {
++  NativeReadbackScope draw_profile(NativeReadbackKind::kDraw);
+ #if REXGPU_FINE_GRAINED_DRAW_SCOPES
+   REX_PROFILE_SCOPE("gpu");
+ #endif  // REXGPU_FINE_GRAINED_DRAW_SCOPES
+@@ -3912,80 +3977,96 @@
+   if (!total_size || memexport_ranges_.empty()) {
+     return true;
+   }
+-
++  NativeReadbackScope profile(NativeReadbackKind::kMemexport, total_size);
+   const gpu::vulkan::VulkanDevice* const vulkan_device = GetVulkanDevice();
+   const gpu::vulkan::VulkanDevice::Functions& dfn = vulkan_device->GetFunctions();
+   const VkDevice device = vulkan_device->GetDevice();
+ 
+-  VkBuffer readback_buffer = VK_NULL_HANDLE;
+-  VkDeviceMemory readback_memory = VK_NULL_HANDLE;
+-  u32 readback_memory_type = UINT32_MAX;
+-  VkDeviceSize readback_memory_size = 0;
+-  if (!gpu::vulkan::objects::CreateDedicatedAllocationBuffer(
+-          vulkan_device, total_size, VK_BUFFER_USAGE_TRANSFER_DST_BIT,
+-          gpu::vulkan::objects::MemoryPurpose::kReadback, readback_buffer, readback_memory,
+-          &readback_memory_type, &readback_memory_size)) {
+-    REXGPU_FAIL(true, "Failed to create a Vulkan memexport readback buffer");
++  // Dedicated full-readback storage: no address-keyed map growth, no eviction
++  // while a fence wait reclaims fast-path buffers. Only one slot is needed:
++  // every CPU copy below waits for THIS submission, never a previous frame.
++  ReadbackBuffer& readback = memexport_full_readback_;
++  if (readback.buffers[0] == VK_NULL_HANDLE || readback.mapped_data[0] == nullptr ||
++      total_size > readback.sizes[0]) {
++    const u32 capacity = AlignReadbackBufferSize(total_size);
++    if (capacity < total_size) {
++      REXGPU_FAIL(true, "Vulkan memexport readback size overflow");
++    }
++    VkBuffer new_buffer = VK_NULL_HANDLE;
++    VkDeviceMemory new_memory = VK_NULL_HANDLE;
++    profile.Allocation();
++    if (!gpu::vulkan::objects::CreateDedicatedAllocationBuffer(
++            vulkan_device, capacity, VK_BUFFER_USAGE_TRANSFER_DST_BIT,
++            gpu::vulkan::objects::MemoryPurpose::kReadback, new_buffer, new_memory)) {
++      REXGPU_FAIL(true, "Failed to create a Vulkan memexport readback buffer");
++    }
++    void* new_mapping = nullptr;
++    if (dfn.vkMapMemory(device, new_memory, 0, VK_WHOLE_SIZE, 0, &new_mapping) != VK_SUCCESS) {
++      REXGPU_ERROR("Failed to map a Vulkan memexport readback buffer");
++      dfn.vkDestroyBuffer(device, new_buffer, nullptr);
++      dfn.vkFreeMemory(device, new_memory, nullptr);
++      return true;
++    }
++    if (readback.buffers[0] != VK_NULL_HANDLE || readback.memories[0] != VK_NULL_HANDLE) {
++      // Preserve the old allocation if queue completion fails. It may still be
++      // referenced by an earlier submission, including after a failed readback.
++      if (!profile.Wait([&] { return AwaitAllQueueOperationsCompletion(); })) {
++        dfn.vkUnmapMemory(device, new_memory);
++        dfn.vkDestroyBuffer(device, new_buffer, nullptr);
++        dfn.vkFreeMemory(device, new_memory, nullptr);
++        return true;
++      }
++      if (readback.mapped_data[0] && readback.memories[0] != VK_NULL_HANDLE)
++        dfn.vkUnmapMemory(device, readback.memories[0]);
++      if (readback.buffers[0] != VK_NULL_HANDLE)
++        dfn.vkDestroyBuffer(device, readback.buffers[0], nullptr);
++      if (readback.memories[0] != VK_NULL_HANDLE)
++        dfn.vkFreeMemory(device, readback.memories[0], nullptr);
++    }
++    readback.buffers[0] = new_buffer;
++    readback.memories[0] = new_memory;
++    readback.mapped_data[0] = new_mapping;
++    readback.sizes[0] = capacity;
+   }
+ 
+   shared_memory_->Use(VulkanSharedMemory::Usage::kRead);
+   SubmitBarriers(true);
+-
+   u32 readback_offset = 0;
+   for (const draw_state::MemExportRange& memexport_range : memexport_ranges_) {
+     VkBufferCopy readback_region = {};
+     readback_region.srcOffset = memexport_range.base_address_dwords << 2;
+     readback_region.dstOffset = readback_offset;
+     readback_region.size = memexport_range.size_bytes;
+-    deferred_command_buffer_.CmdVkCopyBuffer(shared_memory_->GetBuffer(), readback_buffer, 1,
+-                                             &readback_region);
++    deferred_command_buffer_.CmdVkCopyBuffer(shared_memory_->GetBuffer(), readback.buffers[0],
++                                             1, &readback_region);
+     readback_offset += memexport_range.size_bytes;
+   }
+-  PushBufferMemoryBarrier(readback_buffer, 0, total_size, VK_PIPELINE_STAGE_TRANSFER_BIT,
++  PushBufferMemoryBarrier(readback.buffers[0], 0, total_size, VK_PIPELINE_STAGE_TRANSFER_BIT,
+                           VK_PIPELINE_STAGE_HOST_BIT, VK_ACCESS_TRANSFER_WRITE_BIT,
+                           VK_ACCESS_HOST_READ_BIT);
+-
+-  if (!AwaitAllQueueOperationsCompletion()) {
++  if (!profile.Wait([&] { return AwaitAllQueueOperationsCompletion(); })) {
+     REXGPU_ERROR("Failed to await completion of Vulkan memexport readback");
+-    dfn.vkDestroyBuffer(device, readback_buffer, nullptr);
+-    dfn.vkFreeMemory(device, readback_memory, nullptr);
+     return true;
+   }
+ 
+-  void* readback_mapping = nullptr;
+-  if (dfn.vkMapMemory(device, readback_memory, 0, VK_WHOLE_SIZE, 0, &readback_mapping) !=
+-      VK_SUCCESS) {
+-    REXGPU_ERROR("Failed to map a Vulkan memexport readback buffer");
+-    dfn.vkDestroyBuffer(device, readback_buffer, nullptr);
+-    dfn.vkFreeMemory(device, readback_memory, nullptr);
++  // Whole-allocation invalidation is valid for both coherent and noncoherent
++  // HOST_VISIBLE memory. The allocation is persistently mapped in its entirety.
++  VkMappedMemoryRange range = {};
++  range.sType = VK_STRUCTURE_TYPE_MAPPED_MEMORY_RANGE;
++  range.memory = readback.memories[0];
++  range.size = VK_WHOLE_SIZE;
++  if (dfn.vkInvalidateMappedMemoryRanges(device, 1, &range) != VK_SUCCESS) {
++    REXGPU_ERROR("Failed to invalidate a Vulkan memexport readback buffer");
+     return true;
+   }
+-
+-  if (!(vulkan_device->GetMemoryTypes().host_coherent &
+-        (static_cast<u32>(1) << readback_memory_type))) {
+-    VkMappedMemoryRange readback_memory_range = {};
+-    readback_memory_range.sType = VK_STRUCTURE_TYPE_MAPPED_MEMORY_RANGE;
+-    readback_memory_range.memory = readback_memory;
+-    readback_memory_range.offset = 0;
+-    readback_memory_range.size =
+-        std::min(rex::RoundUpNonZero(static_cast<VkDeviceSize>(total_size),
+-                                     vulkan_device->GetProperties().nonCoherentAtomSize),
+-                 readback_memory_size);
+-    dfn.vkInvalidateMappedMemoryRanges(device, 1, &readback_memory_range);
+-  }
+-
+-  const u8* readback_bytes = reinterpret_cast<const u8*>(readback_mapping);
++  const u8* readback_bytes = reinterpret_cast<const u8*>(readback.mapped_data[0]);
+   for (const draw_state::MemExportRange& memexport_range : memexport_ranges_) {
+-    if (u8* memexport_destination =
+-            GetPhysicalForWrite(physical_memory_, memexport_range.base_address_dwords << 2,
+-                                memexport_range.size_bytes)) {
+-      std::memcpy(memexport_destination, readback_bytes, memexport_range.size_bytes);
++    if (u8* destination = GetPhysicalForWrite(physical_memory_,
++              memexport_range.base_address_dwords << 2, memexport_range.size_bytes)) {
++      std::memcpy(destination, readback_bytes, memexport_range.size_bytes);
+     }
+     readback_bytes += memexport_range.size_bytes;
+   }
+-  dfn.vkUnmapMemory(device, readback_memory);
+-  dfn.vkDestroyBuffer(device, readback_buffer, nullptr);
+-  dfn.vkFreeMemory(device, readback_memory, nullptr);
+   return true;
+ }
+ 
+@@ -4156,6 +4237,8 @@
+     return true;
+   }
+ 
++  NativeReadbackScope profile(NativeReadbackKind::kResolve, written_length);
++
+   auto acquire_readback_slot = [&](ReadbackBuffer& readback, u32 index, u32 size) -> bool {
+     if (readback.buffers[index] != VK_NULL_HANDLE && size <= readback.sizes[index] &&
+         readback.mapped_data[index] != nullptr) {
+@@ -4164,6 +4247,7 @@
+ 
+     VkBuffer new_buffer = VK_NULL_HANDLE;
+     VkDeviceMemory new_memory = VK_NULL_HANDLE;
++    profile.Allocation();
+     if (!gpu::vulkan::objects::CreateDedicatedAllocationBuffer(
+             vulkan_device, size, VK_BUFFER_USAGE_TRANSFER_DST_BIT,
+             gpu::vulkan::objects::MemoryPurpose::kReadback, new_buffer, new_memory)) {
+@@ -4179,7 +4263,7 @@
+     }
+ 
+     if (readback.buffers[index] != VK_NULL_HANDLE || readback.memories[index] != VK_NULL_HANDLE) {
+-      if (!AwaitAllQueueOperationsCompletion()) {
++      if (!profile.Wait([&] { return AwaitAllQueueOperationsCompletion(); })) {
+         dfn.vkUnmapMemory(device, new_memory);
+         dfn.vkDestroyBuffer(device, new_buffer, nullptr);
+         dfn.vkFreeMemory(device, new_memory, nullptr);
+@@ -4256,7 +4340,8 @@
+     if (downscale_buffer_size > resolve_downscale_buffer_size_) {
+       VkBuffer new_buffer = VK_NULL_HANDLE;
+       VkDeviceMemory new_memory = VK_NULL_HANDLE;
+-      if (!gpu::vulkan::objects::CreateDedicatedAllocationBuffer(
++      profile.Allocation();
++    if (!gpu::vulkan::objects::CreateDedicatedAllocationBuffer(
+               vulkan_device, downscale_buffer_size,
+               VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+               gpu::vulkan::objects::MemoryPurpose::kDeviceLocal, new_buffer, new_memory)) {
+@@ -4265,7 +4350,7 @@
+       }
+       if (resolve_downscale_buffer_ != VK_NULL_HANDLE ||
+           resolve_downscale_buffer_memory_ != VK_NULL_HANDLE) {
+-        if (!AwaitAllQueueOperationsCompletion()) {
++        if (!profile.Wait([&] { return AwaitAllQueueOperationsCompletion(); })) {
+           dfn.vkDestroyBuffer(device, new_buffer, nullptr);
+           dfn.vkFreeMemory(device, new_memory, nullptr);
+           return true;
+@@ -4386,7 +4471,7 @@
+   u32 read_index = write_index;
+   if (use_delayed_sync) {
+     read_index = 1 - write_index;
+-  } else if (!AwaitAllQueueOperationsCompletion()) {
++  } else if (!profile.Wait([&] { return AwaitAllQueueOperationsCompletion(); })) {
+     return true;
+   }
+ 
+@@ -4396,7 +4481,7 @@
+                            readback.mapped_data[read_index] == nullptr)) {
+     is_cache_miss = true;
+     read_index = write_index;
+-    if (!AwaitAllQueueOperationsCompletion()) {
++    if (!profile.Wait([&] { return AwaitAllQueueOperationsCompletion(); })) {
+       return true;
+     }
+   }
+--- a/src/gpu/xenos/vulkan/command_processor.h
++++ b/src/gpu/xenos/vulkan/command_processor.h
+@@ -724,6 +724,7 @@
+   } active_occlusion_query_;
+   std::unordered_map<u64, ReadbackBuffer> readback_buffers_;
+   std::unordered_map<u64, ReadbackBuffer> memexport_readback_buffers_;
++  ReadbackBuffer memexport_full_readback_;
+ 
+   /** Binding any pipeline with static state invalidates the dynamic state, even unused values. */
+   VkViewport dynamic_viewport_;

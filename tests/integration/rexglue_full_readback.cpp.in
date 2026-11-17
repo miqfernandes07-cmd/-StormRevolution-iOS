@@ -1,0 +1,103 @@
+// The implementation and shutdown fragment below are extracted from the patched
+// SDK, not reimplemented. A deterministic GPU model detects premature host reads
+// and freeing of buffers referenced by queued copies, including failed waits.
+#include <algorithm>
+#include <array>
+#include <chrono>
+#include <cstdint>
+#include <cstdio>
+#include <cstring>
+#include <stdexcept>
+#include <unordered_map>
+#include <vector>
+using u8=uint8_t;using u32=uint32_t;using u64=uint64_t;
+using VkBuffer=u64;using VkDeviceMemory=u64;using VkDevice=u64;using VkDeviceSize=u64;
+constexpr u64 VK_NULL_HANDLE=0,VK_WHOLE_SIZE=~u64{0};
+constexpr int VK_SUCCESS=0,VK_BUFFER_USAGE_TRANSFER_DST_BIT=1,VK_PIPELINE_STAGE_TRANSFER_BIT=2,VK_PIPELINE_STAGE_HOST_BIT=4,VK_ACCESS_TRANSFER_WRITE_BIT=8,VK_ACCESS_HOST_READ_BIT=16,VK_STRUCTURE_TYPE_MAPPED_MEMORY_RANGE=1;
+struct VkBufferCopy {u64 srcOffset=0,dstOffset=0,size=0;};
+struct VkMappedMemoryRange {int sType=0;u64 memory=0,offset=0,size=0;};
+static unsigned checks;
+#define CHECK(x) do { ++checks; if(!(x)) throw std::runtime_error("line " + std::to_string(__LINE__) + ": " #x); } while(false)
+struct Model {
+ struct Allocation {std::vector<u8> bytes;bool mapped=false;};
+ struct Pending {u64 buffer;VkBufferCopy region;};
+ std::unordered_map<u64,Allocation> memories;
+ std::unordered_map<u64,u64> buffers;
+ std::vector<Pending> pending;
+ std::vector<u8> gpu=std::vector<u8>(2*1024*1024),physical=std::vector<u8>(2*1024*1024,0xCD);
+ u64 next=10,generation=0,invalidated=~u64{0};
+ unsigned creates=0,maps=0,unmaps=0,destroys=0,frees=0,waits=0,invalidates=0,logs=0;
+ bool fail_create=false,fail_map=false,fail_wait=false,fail_invalidate=false;
+ bool Wait() {
+  ++waits;if(fail_wait){fail_wait=false;return false;}
+  for(auto& p:pending){auto& memory=memories.at(buffers.at(p.buffer));CHECK(memory.mapped);CHECK(p.region.dstOffset+p.region.size<=memory.bytes.size());CHECK(p.region.srcOffset+p.region.size<=gpu.size());std::memcpy(memory.bytes.data()+p.region.dstOffset,gpu.data()+p.region.srcOffset,p.region.size);}
+  pending.clear();++generation;return true;
+ }
+ void Seed(u32 seed){for(size_t i=0;i<gpu.size();++i)gpu[i]=u8(i*13+seed);}
+} model;
+#define REXGPU_INFO(...) do {++model.logs;} while(false)
+#define REXGPU_ERROR(...) do {} while(false)
+#define REXGPU_FAIL(result,...) do {return result;} while(false)
+/*PROFILE*/
+namespace gpu::vulkan {
+struct VulkanDevice {
+ struct Functions {
+  int vkMapMemory(VkDevice,VkDeviceMemory memory,u64,u64,int,void** pointer) const {if(model.fail_map){model.fail_map=false;return -1;}auto& m=model.memories.at(memory);CHECK(!m.mapped);m.mapped=true;*pointer=m.bytes.data();++model.maps;return VK_SUCCESS;}
+  void vkUnmapMemory(VkDevice,VkDeviceMemory memory) const {auto& m=model.memories.at(memory);CHECK(m.mapped);m.mapped=false;++model.unmaps;}
+  void vkDestroyBuffer(VkDevice,VkBuffer buffer,void*) const {for(auto& p:model.pending)CHECK(p.buffer!=buffer);CHECK(model.buffers.erase(buffer)==1);++model.destroys;}
+  void vkFreeMemory(VkDevice,VkDeviceMemory memory,void*) const {CHECK(!model.memories.at(memory).mapped);for(auto& b:model.buffers)CHECK(b.second!=memory);CHECK(model.memories.erase(memory)==1);++model.frees;}
+  int vkInvalidateMappedMemoryRanges(VkDevice,u32 count,const VkMappedMemoryRange* r) const {CHECK(count==1&&r->offset==0&&r->size==VK_WHOLE_SIZE);CHECK(model.pending.empty());CHECK(model.memories.at(r->memory).mapped);++model.invalidates;if(model.fail_invalidate){model.fail_invalidate=false;return -1;}model.invalidated=model.generation;return VK_SUCCESS;}
+ } functions;
+ const Functions& GetFunctions() const{return functions;} VkDevice GetDevice() const{return 1;}
+};
+namespace objects {
+enum class MemoryPurpose{kReadback};
+bool CreateDedicatedAllocationBuffer(const VulkanDevice*,u32 size,int,MemoryPurpose,VkBuffer& buffer,VkDeviceMemory& memory) {if(model.fail_create){model.fail_create=false;return false;}buffer=model.next++;memory=model.next++;model.buffers[buffer]=memory;model.memories[memory].bytes.resize(size);++model.creates;return true;}
+}
+}
+namespace draw_state {struct MemExportRange{u32 base_address_dwords,size_bytes;};}
+struct VulkanSharedMemory {enum class Usage{kRead};void Use(Usage){} VkBuffer GetBuffer()const{return 1;}};
+struct Deferred {void CmdVkCopyBuffer(VkBuffer src,VkBuffer dst,u32 count,const VkBufferCopy* region){CHECK(src==1&&count==1);CHECK(model.buffers.count(dst));model.pending.push_back({dst,*region});}};
+static u8* GetPhysicalForWrite(void*,u32 addr,u32 length){CHECK(model.pending.empty());CHECK(model.invalidated==model.generation);return u64(addr)+length<=model.physical.size()?model.physical.data()+addr:nullptr;}
+class VulkanCommandProcessor {
+ public:
+ struct ReadbackBuffer {VkBuffer buffers[2]={};VkDeviceMemory memories[2]={};void* mapped_data[2]={};u32 sizes[2]={};u64 submission_written[2]={};u32 written_size[2]={};u32 current_index=0;u64 last_used_frame=0;};
+ ReadbackBuffer memexport_full_readback_;
+ std::vector<draw_state::MemExportRange> memexport_ranges_;
+ gpu::vulkan::VulkanDevice device;
+ VulkanSharedMemory shared;VulkanSharedMemory* shared_memory_=&shared;
+ Deferred deferred_command_buffer_;void* physical_memory_=nullptr;
+ const gpu::vulkan::VulkanDevice* GetVulkanDevice()const{return &device;}
+ bool AwaitAllQueueOperationsCompletion(){return model.Wait();}
+ void SubmitBarriers(bool){}
+ void PushBufferMemoryBarrier(VkBuffer,u32,u32,int,int,int,int){}
+ static u32 AlignReadbackBufferSize(u32 size){u32 alignment=size<1024*1024?256*1024:size<4*1024*1024?1024*1024:16*1024*1024;return (size+alignment-1)&~(alignment-1);}
+ bool IssueDrawMemexportReadbackFullPath(u32 total_size);
+ void Shutdown(){CHECK(AwaitAllQueueOperationsCompletion());auto& dfn=device.GetFunctions();VkDevice device=1;
+/*CLEANUP*/
+ }
+};
+/*IMPLEMENTATION*/
+int main(){try{
+ VulkanCommandProcessor processor;
+ CHECK(processor.IssueDrawMemexportReadbackFullPath(0));CHECK(model.creates==0);
+ processor.memexport_ranges_={{0x100/4,17},{0x1000/4,31}};
+ for(u32 frame=0;frame<1000;++frame){model.Seed(frame);CHECK(processor.IssueDrawMemexportReadbackFullPath(48));CHECK(!std::memcmp(model.gpu.data()+0x100,model.physical.data()+0x100,17));CHECK(!std::memcmp(model.gpu.data()+0x1000,model.physical.data()+0x1000,31));}
+ CHECK(model.creates==1&&model.maps==1&&model.destroys==0&&model.unmaps==0);CHECK(model.waits==1000&&model.invalidates==1000);
+ auto old=processor.memexport_full_readback_.memories[0];
+ processor.memexport_ranges_={{0x1000/4,300*1024}};
+ model.fail_wait=true;CHECK(processor.IssueDrawMemexportReadbackFullPath(300*1024));CHECK(processor.memexport_full_readback_.memories[0]==old);CHECK(model.memories.at(old).mapped);CHECK(model.memories.size()==1);
+ model.fail_map=true;CHECK(processor.IssueDrawMemexportReadbackFullPath(300*1024));CHECK(processor.memexport_full_readback_.memories[0]==old);CHECK(model.memories.size()==1);
+ model.fail_create=true;CHECK(processor.IssueDrawMemexportReadbackFullPath(300*1024));CHECK(processor.memexport_full_readback_.memories[0]==old);
+ model.Seed(71);CHECK(processor.IssueDrawMemexportReadbackFullPath(300*1024));CHECK(!model.memories.count(old));CHECK(!std::memcmp(model.gpu.data()+0x1000,model.physical.data()+0x1000,300*1024));CHECK(model.memories.size()==1);
+ std::fill(model.physical.begin(),model.physical.end(),0xCD);model.fail_wait=true;auto invalidates=model.invalidates;CHECK(processor.IssueDrawMemexportReadbackFullPath(300*1024));CHECK(model.invalidates==invalidates);CHECK(model.physical[0x1000]==0xCD);CHECK(!model.pending.empty());
+ model.Seed(92);CHECK(processor.IssueDrawMemexportReadbackFullPath(300*1024));CHECK(!std::memcmp(model.gpu.data()+0x1000,model.physical.data()+0x1000,300*1024));
+ std::fill(model.physical.begin(),model.physical.end(),0xCD);model.fail_invalidate=true;CHECK(processor.IssueDrawMemexportReadbackFullPath(300*1024));CHECK(model.physical[0x1000]==0xCD);CHECK(processor.IssueDrawMemexportReadbackFullPath(300*1024));CHECK(!std::memcmp(model.gpu.data()+0x1000,model.physical.data()+0x1000,300*1024));
+ processor.memexport_ranges_={{u32(model.physical.size()/4),16}}; // invalid destination is skipped as before; fake GPU source extends only for this case.
+ model.gpu.resize(model.gpu.size()+16);CHECK(processor.IssueDrawMemexportReadbackFullPath(16));
+ auto& counters=NativeReadbackCounters();counters.start=NativeReadbackWindow::Clock::now()-std::chrono::seconds(6);auto logs=model.logs;
+ {NativeReadbackScope outer(NativeReadbackKind::kDraw);{NativeReadbackScope inner(NativeReadbackKind::kResolve);CHECK(model.logs==logs);}CHECK(model.logs==logs);}
+ CHECK(model.logs==logs+1&&NativeReadbackCounters().depth==0);
+ processor.Shutdown();CHECK(model.memories.empty()&&model.buffers.empty());CHECK(model.unmaps==model.maps);CHECK(model.destroys==model.creates&&model.frees==model.creates);
+ std::printf("Pooled full GPU readback: %u checks passed; 1000 changing frames, 1 allocation; fence/invalidation ordering, growth, failures, shutdown verified\n",checks);
+}catch(const std::exception& e){std::fprintf(stderr,"FAIL %s\n",e.what());return 1;}}
