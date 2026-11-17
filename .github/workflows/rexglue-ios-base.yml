@@ -64,6 +64,7 @@ jobs:
           cmake -S sdk-source -B build-rex-ios \
             -DCMAKE_SYSTEM_NAME=iOS -DCMAKE_OSX_SYSROOT=iphoneos \
             -DCMAKE_OSX_ARCHITECTURES=arm64 -DCMAKE_OSX_DEPLOYMENT_TARGET=17.0 \
+            -DCMAKE_MACOSX_BUNDLE=OFF \
             -DCMAKE_BUILD_TYPE=Release \
             -DCMAKE_C_COMPILER="$(xcrun --sdk iphoneos --find clang)" \
             -DCMAKE_CXX_COMPILER="$(xcrun --sdk iphoneos --find clang++)" \
