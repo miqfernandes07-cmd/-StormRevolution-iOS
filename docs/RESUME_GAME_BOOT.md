@@ -1,8 +1,11 @@
 # Retomada direta do boot comercial
 
 Estado mais recente: [boot privado completo com ReXGlue](REXGLUE_BOOT_2026_11_16.md).
-O protótipo Linux exibiu telas reais de inicialização; ainda não há gameplay
-comprovado ou runtime ReXGlue integrado no aplicativo iOS. Os recursos completos
+O protótipo Linux chegou ao menu de modos e criou um save real; ainda não há
+combate comprovado ou execução do runtime ReXGlue no aplicativo iOS.
+A integração atual está em `ios/Native/`; o build privado preparado está em
+`private/iphone-build/`. A criação do repositório privado foi recusada pelo
+GitHub e depende do proprietário. Não enviar o título à CI pública. Os recursos completos
 foram extraídos privadamente. O importador iOS recebeu uma correção de lifetime
 do callback de progresso após crash comprovado no simulador.
 

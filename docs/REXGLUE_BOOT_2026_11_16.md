@@ -4,8 +4,9 @@ Ainda não há versão jogável no iPhone. O aplicativo UIKit não incorpora o
 ReXGlue nem o código comercial recompilado. O novo experimento privado Linux
 compilou e vinculou o título completo e exibiu gráficos reais de inicialização:
 indicador de carregamento, logotipos, vídeo de abertura, tela de título e diálogos
-de salvamento. O START respondeu. Ainda não se comprovou carregamento do menu
-de modos, combate ou desempenho jogável. As capturas correspondem à cópia
+de salvamento e o menu principal de modos. START, seleção pelo analógico e A
+responderam; foi criado um save de 316.128 bytes. Ainda não se comprovou
+combate ou desempenho jogável. As capturas correspondem à cópia
 fornecida pelo usuário.
 
 ## Runtime alternativo e recursos
@@ -45,8 +46,9 @@ as telas iniciais, sem comprovação de gameplay. Avisos de falha de pacotes GPU
 durante o encerramento não foram confundidos com a causa da inicialização.
 O run otimizado foi estendido manualmente até cerca de 23 minutos e terminou
 por timeout, após título/diálogos de save. Não foi chamado de teste de gameplay.
-Um novo run usa o modo de vídeo 640×480 e limite de apresentação de 30 Hz;
-esse limite configurado não é um FPS medido.
+O run seguinte usou vídeo 640×480 e limite de apresentação de 30 Hz, chegou
+ao menu principal e gravou o save; foi encerrado por timeout após cerca de
+39 minutos. Esse limite configurado não é um FPS medido.
 
 ## Correção do importador iOS
 
@@ -111,11 +113,36 @@ concluiu configuração, compilação e link de `rexbase`; a inspeção Mach-O c
 plataforma iOS. [Relatório da base](validation/rexglue-ios-base-2026-11-17.json).
 Isso qualifica o build dessa biblioteca, não sua execução ou o SDK completo.
 O workflow foi ampliado para compilar os módulos PPC, kernel, XAM e XBDM e os
-formatos Xenos; os resultados dessa ampliação ainda estão pendentes.
+formatos Xenos. O run
+[43988671967](https://github.com/miqfernandes07-cmd/-StormRevolution-iOS/actions/runs/43988671967)
+aprovou também os drivers SDL UIKit de UI, áudio e controles e o driver
+Xenos/Vulkan, com plataforma iOS conferida nos Mach-O. Essa etapa não
+incluía todos os módulos carregados dinamicamente nem um app vinculado.
 
 Os pacotes Vulkan/macOS servem à descoberta de headers na configuração; não
 são bibliotecas iPhone e não entram no alvo base. Um resultado válido precisa
 mostrar a plataforma iOS no Mach-O, não apenas arquitetura ARM64.
+
+## Aplicativo nativo em integração
+
+`ios/Native/` contém um frontend separado, opcional, baseado em `TitleApp`.
+Usa a imagem ReXGlue gerada privadamente, o importador ZIP existente e um
+controle SDL virtual alimentado por `StormControls`. Define saves, caches,
+configuração e logs em diretórios graváveis do sandbox. SDL possui o delegate
+UIKit. Não usa o executável UIKit diagnóstico como se fosse o jogo.
+
+O pacote experimental converte as bibliotecas abertas em frameworks iPhone,
+reescreve seus install names e inclui MoltenVK dinâmico para iOS 1.4.2,
+verificado por SHA-256. A ABI exige `REX_PHYSICAL_OFFSET_IN_CODE=1` devido às
+páginas ARM64 de 16 KiB. O pacote, o link do fixture e a compilação do frontend
+ainda estão em verificação. Os resultados não comprovam execução no aparelho.
+
+A compilação privada preparada está em `private/iphone-build/`, com os 253
+fontes/headers derivados e nenhum XEX ou recurso do jogo. A tentativa de criar
+`miqfernandes07-cmd/StormRevolution-iPhone-Private` foi recusada pelo GitHub:
+`Resource not accessible by integration (createRepository)`. A criação e a
+liberação de acesso desse repositório privado dependem do proprietário.
+Nunca usar a CI pública como substituição para compilar o título comercial.
 
 ## Retomar neste workspace
 
