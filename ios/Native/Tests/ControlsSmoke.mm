@@ -26,11 +26,17 @@
   };
   NSUserDefaults *defaults = NSUserDefaults.standardUserDefaults;
   for (NSString *key in @[@"StormNativePreferencesV3", @"touchPositionsMobileV3", @"touchPositionsXbox360V2"]) [defaults removeObjectForKey:key];
-  StormControls *controls = [[StormControls alloc] initWithFrame:root.view.bounds];
-  controls.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+  StormControls *controls = [StormControls new];
+  controls.translatesAutoresizingMaskIntoConstraints = NO;
   controls.playStationLabels = YES; controls.mobileLayout = YES; controls.hapticsEnabled = NO;
   controls.backgroundColor = [UIColor colorWithRed:.04 green:.06 blue:.10 alpha:1];
   [root.view addSubview:controls];
+  [NSLayoutConstraint activateConstraints:@[
+    [controls.leadingAnchor constraintEqualToAnchor:root.view.safeAreaLayoutGuide.leadingAnchor],
+    [controls.trailingAnchor constraintEqualToAnchor:root.view.safeAreaLayoutGuide.trailingAnchor],
+    [controls.topAnchor constraintEqualToAnchor:root.view.safeAreaLayoutGuide.topAnchor],
+    [controls.bottomAnchor constraintEqualToAnchor:root.view.safeAreaLayoutGuide.bottomAnchor]]];
+  [root.view layoutIfNeeded];
   __block uint32_t bits = 0; __block float leftTrigger = 0;
   controls.inputChanged = ^(uint32_t b,float lx,float ly,float rx,float ry,float lt,float rt) { bits = b; leftTrigger = lt; };
   UIButton *cross = (UIButton *)[controls viewWithTag:1];
@@ -80,7 +86,10 @@
   if ([NSProcessInfo.processInfo.arguments containsObject:@"--options"]) {
     UINavigationController *nav = [[UINavigationController alloc] initWithRootViewController:settings];
     nav.modalPresentationStyle = UIModalPresentationFullScreen;
-    [root presentViewController:nav animated:NO completion:nil];
+    [root presentViewController:nav animated:NO completion:^{
+      NSString *ready = [path.stringByDeletingLastPathComponent stringByAppendingPathComponent:@"options-ready.txt"];
+      [@"Settings presentation completed" writeToFile:ready atomically:YES encoding:NSUTF8StringEncoding error:nil];
+    }];
   }
 }
 @end

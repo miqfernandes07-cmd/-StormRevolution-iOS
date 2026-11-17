@@ -56,7 +56,11 @@ jobs:
           xcrun simctl io "$device_id" screenshot out/controls.png
           xcrun simctl terminate "$device_id" org.stormrevolution.controlsmoke
           xcrun simctl launch "$device_id" org.stormrevolution.controlsmoke --options
-          sleep 3
+          for attempt in $(seq 1 60); do
+            if [ -f "$data_path/Documents/options-ready.txt" ]; then break; fi
+            sleep 1
+          done
+          test -f "$data_path/Documents/options-ready.txt"
           xcrun simctl io "$device_id" screenshot out/options.png
       - uses: actions/upload-artifact@v4
         if: always()
