@@ -1,4 +1,4 @@
-name: ReXGlue iPhone base library (experimental)
+name: ReXGlue iPhone runtime libraries (experimental)
 on:
   push:
     branches: [codex/rexglue-ios-feasibility]
@@ -7,6 +7,11 @@ on:
       - 'tools/recompilation/rexglue_patches/**'
       - 'config/rexglue_reference.json'
   workflow_dispatch:
+    inputs:
+      stage:
+        type: choice
+        default: core
+        options: [base, core]
 permissions:
   contents: read
 jobs:
@@ -96,6 +101,27 @@ jobs:
                   'gpu_linked':False,'device_executed':False,'game_executed':False,
                   'ios_runtime_qualified':False}
           pathlib.Path('out/ios-base/report.json').write_text(json.dumps(report,indent=2)+'\n')
+          PY
+      - name: Compile and link Xbox runtime modules
+        if: github.event_name == 'push' || inputs.stage == 'core'
+        run: |
+          set -o pipefail
+          cmake --build build-rex-ios --target rexppc rexkernel rexxam rexxbdm rexxenos \
+            --parallel 3 2>&1 | tee out/ios-base/core-build.txt
+          python3 - <<'PY'
+          import json,pathlib,subprocess
+          root=pathlib.Path('sdk-source/out')
+          targets=['rexppc','rexkernel','rexxam','rexxbdm']
+          for target in targets:
+              libraries=list(root.rglob('lib'+target+'.dylib'))
+              assert len(libraries)==1,(target,libraries)
+              info=subprocess.check_output(['xcrun','vtool','-show-build',str(libraries[0])],text=True)
+              assert 'platform IOS' in info,info
+              print(info)
+          report={'scope':'core_runtime_modules_only','linked_iOS_modules':targets,
+                  'static_xenos_built':True,'gpu_driver_linked':False,
+                  'device_executed':False,'game_executed':False,'ios_runtime_qualified':False}
+          pathlib.Path('out/ios-base/core-report.json').write_text(json.dumps(report,indent=2)+'\n')
           PY
       - name: Upload compilation diagnostics only
         if: always()
