@@ -70,7 +70,7 @@ jobs:
             -DCMAKE_CXX_COMPILER="$(xcrun --sdk iphoneos --find clang++)" \
             -DCMAKE_XCODE_ATTRIBUTE_CODE_SIGNING_ALLOWED=NO \
             -DREXGLUE_BUILD_TESTS=OFF -DREXGLUE_ENABLE_TRACY=OFF \
-            -DREXGLUE_ENABLE_PERF_COUNTERS=OFF \
+            -DREXGLUE_ENABLE_PERF_COUNTERS=ON \
             -DVulkan_INCLUDE_DIR="$(brew --prefix vulkan-headers)/include" \
             -DVulkan_LIBRARY="$(brew --prefix vulkan-loader)/lib/libvulkan.dylib" \
             -DVulkan_MoltenVK_INCLUDE_DIR="$(brew --prefix molten-vk)/include" \
@@ -82,11 +82,11 @@ jobs:
           set -o pipefail
           cmake --build build-rex-ios --target rexbase --parallel 3 \
             2>&1 | tee out/ios-base/build.txt
-          find build-rex-ios -name 'librexbase*.dylib' -exec file {} \; \
+          find sdk-source/out -name 'librexbase*.dylib' -exec file {} \; \
             | tee out/ios-base/mach-o.txt
           python3 - <<'PY'
           import json,pathlib,subprocess
-          libraries=list(pathlib.Path('build-rex-ios').rglob('librexbase*.dylib'))
+          libraries=list(pathlib.Path('sdk-source/out').rglob('librexbase*.dylib'))
           assert libraries,'No base library produced'
           for library in libraries:
               info=subprocess.check_output(['xcrun','vtool','-show-build',str(library)],text=True)
