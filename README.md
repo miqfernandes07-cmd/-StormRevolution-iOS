@@ -3,8 +3,8 @@
 Projeto de port AOT PowerPC → C++ → ARM64 de Naruto Shippuden:
 Ultimate Ninja Storm Revolution, versão Xbox 360. **O jogo ainda não executa no iOS.**
 Em 2026-11-16, um experimento privado com ReXGlue compilou o título completo
-no Linux e exibiu gráficos de inicialização e o aviso de salvamento automático.
-Não há menu/combate comprovado nem integração desse runtime no IPA.
+no Linux e exibiu a abertura, a tela de título e os diálogos de salvamento.
+O START respondeu. Não há combate comprovado nem integração desse runtime no IPA.
 [Estado atual e limites](docs/REXGLUE_BOOT_2026_11_16.md).
 
 A CI produziu um IPA não assinado de infraestrutura; não há instalação no iPhone

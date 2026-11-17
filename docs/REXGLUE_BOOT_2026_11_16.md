@@ -3,8 +3,10 @@
 Ainda não há versão jogável no iPhone. O aplicativo UIKit não incorpora o
 ReXGlue nem o código comercial recompilado. O novo experimento privado Linux
 compilou e vinculou o título completo e exibiu gráficos reais de inicialização:
-indicador de carregamento, logotipo Bandai Namco e aviso de salvamento automático.
-Essas telas não comprovam menu, combate ou desempenho jogável.
+indicador de carregamento, logotipos, vídeo de abertura, tela de título e diálogos
+de salvamento. O START respondeu. Ainda não se comprovou carregamento do menu
+de modos, combate ou desempenho jogável. As capturas correspondem à cópia
+fornecida pelo usuário.
 
 ## Runtime alternativo e recursos
 
@@ -36,10 +38,15 @@ nem evidência sobre memória disponível no iPhone.
 
 O driver foi Vulkan por software, llvmpipe, numa janela Xvfb 1280×720. O áudio
 usou um dispositivo virtual. Não há teste de áudio audível, GPU Apple ou FPS.
-Os testes usaram inicialmente `-O0 -g0`; está em preparação uma compilação `-O1`.
+Os testes usaram inicialmente `-O0 -g0`; a recompilação `-O1 -g0` também terminou
+com link bem-sucedido. Não se deduz desempenho dessa opção de compilador.
 O run de cinco minutos com todos os recursos foi encerrado pelo timeout após
 as telas iniciais, sem comprovação de gameplay. Avisos de falha de pacotes GPU
 durante o encerramento não foram confundidos com a causa da inicialização.
+O run otimizado foi estendido manualmente até cerca de 23 minutos e terminou
+por timeout, após título/diálogos de save. Não foi chamado de teste de gameplay.
+Um novo run usa o modo de vídeo 640×480 e limite de apresentação de 30 Hz;
+esse limite configurado não é um FPS medido.
 
 ## Correção do importador iOS
 
@@ -54,7 +61,12 @@ ela ser destruída. `ReportExtractionProgress` agora cria o bloco fora da lambda
 retendo os valores e o callback que serão entregues à main queue. A lambda
 captura explicitamente o cancelamento e o callback por valor. A regressão é
 verificada pelo mesmo teste real do importador no simulador, sem dados do jogo.
-A validação Apple da correção ainda está em execução; o Linux passou 13/13 CTest.
+A correção passou no
+[run 43980867932](https://github.com/miqfernandes07-cmd/-StormRevolution-iOS/actions/runs/43980867932):
+build iPhone ARM64, build simulador e smoke completo. O relatório real do
+importador registrou três verificações aprovadas: XEX inválido, traversal e
+cancelamento, preservando a instalação anterior. O ZIP comercial completo
+não foi importado no simulador. O Linux passou 13/13 CTest.
 
 A qualificação sintética anterior
 [43922468155](https://github.com/miqfernandes07-cmd/-StormRevolution-iOS/actions/runs/43922468155)
@@ -74,10 +86,29 @@ O caminho SDL atual trata a janela Apple como Cocoa; passar pelo branch `APPLE`
 no CMake não comprova suporte a iOS.
 
 O workflow `rexglue-ios-probe.yml` compila fontes POSIX selecionadas e **sem
-modificações** para `arm64-apple-ios17.0`, usando o Xcode mais novo instalado.
-Registra os erros por fonte sem ignorá-los. Mesmo um resultado verde não
+modificações** para `arm64-apple-ios17.0`, usando o Xcode mais novo instalado,
+e depois repete a compilação com uma adaptação fixada por hashes. A baseline
+permanece registrada como falha esperada; erros na versão adaptada falham o job.
+Mesmo um resultado verde não
 qualifica o SDK inteiro: não faz link, não executa no dispositivo e não contém
 o título. Seu objetivo é obter os primeiros bloqueios reais da adaptação.
+
+Em Xcode 26.3/SDK iPhoneOS 26.2, relógio, fibers e threading compilaram sem
+alteração. Os dois fontes de consulta de memória falharam por usar
+`mach/mach_vm.h`/`mach_vm_region`, indisponíveis no SDK iPhone. A adaptação usa
+`vm_region_64` e os tipos `vm_address_t`/`vm_size_t` no branch iPhone, mantendo
+o caminho macOS. Os cinco fontes adaptados compilaram no
+[run 43983141070](https://github.com/miqfernandes07-cmd/-StormRevolution-iOS/actions/runs/43983141070).
+[Relatório agregado](validation/rexglue-ios-sources-2026-11-17.json).
+
+O workflow `rexglue-ios-base.yml` amplia a verificação para configurar o SDK e
+compilar/linkar `rexbase` inteiro para iPhone. A configuração já passou e os
+fontes compilaram; o primeiro link encontrou `GetPerfSettings` ausente porque
+seu provider tinha sido desativado. A opção necessária foi restabelecida e o
+build está sendo repetido. Ainda não há biblioteca base com link aprovado.
+Os pacotes Vulkan/macOS servem à descoberta de headers na configuração; não
+são bibliotecas iPhone e não entram no alvo base. Um resultado válido precisa
+mostrar a plataforma iOS no Mach-O, não apenas arquitetura ARM64.
 
 ## Retomar neste workspace
 
