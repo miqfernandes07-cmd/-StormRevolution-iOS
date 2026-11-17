@@ -3,6 +3,7 @@
 #import "Import/StormGameImporter.h"
 #import "StormNativePreferences.h"
 #import "StormNativeOptions.h"
+#import "StormNativeHome.h"
 #import <UniformTypeIdentifiers/UniformTypeIdentifiers.h>
 #import <os/proc.h>
 #include <SDL3/SDL.h>
@@ -38,8 +39,8 @@
   if (!(self = [super init])) return nil;
   _window = window;
   _importer = [StormGameImporter new];
-  _panel = [UIView new];
-  _panel.backgroundColor = [UIColor colorWithRed:.035 green:.045 blue:.075 alpha:1];
+  StormNativeHome *home = [StormNativeHome new];
+  _panel = home;
   _panel.translatesAutoresizingMaskIntoConstraints = NO;
   UIView *root = window.rootViewController.view;
   [root addSubview:_panel];
@@ -48,60 +49,19 @@
     [_panel.trailingAnchor constraintEqualToAnchor:root.trailingAnchor],
     [_panel.topAnchor constraintEqualToAnchor:root.topAnchor],
     [_panel.bottomAnchor constraintEqualToAnchor:root.bottomAnchor]]];
-  UILabel *title = [UILabel new];
-  title.text = @"STORM REVOLUTION";
-  title.textColor = UIColor.whiteColor;
-  title.font = [UIFont systemFontOfSize:28 weight:UIFontWeightHeavy];
-  title.adjustsFontSizeToFitWidth = YES;
-  UILabel *subtitle = [UILabel new];
-  subtitle.text = @"Sua arena. Seu controle.";
-  subtitle.font = [UIFont systemFontOfSize:16 weight:UIFontWeightMedium];
-  subtitle.textColor = [UIColor colorWithRed:.59 green:.69 blue:.84 alpha:1];
-  _status = [UILabel new];
-  _status.text = @"Verificando os arquivos instalados…";
-  _status.textColor = [UIColor colorWithWhite:.78 alpha:1];
-  _status.font = [UIFont systemFontOfSize:13];
-  _status.numberOfLines = 0;
-  _importButton = [UIButton buttonWithType:UIButtonTypeSystem];
-  [_importButton setTitle:@"Importar meu ZIP do jogo" forState:UIControlStateNormal];
-  [_importButton addTarget:self action:@selector(chooseZIP) forControlEvents:UIControlEventTouchUpInside];
-  _importButton.enabled = NO;
-  _playButton = [UIButton buttonWithType:UIButtonTypeSystem];
-  UIButtonConfiguration *playConfiguration = [UIButtonConfiguration filledButtonConfiguration];
-  playConfiguration.title = @"Jogar";
-  playConfiguration.image = [UIImage systemImageNamed:@"play.fill"];
-  playConfiguration.imagePadding = 10;
-  playConfiguration.baseBackgroundColor = [UIColor colorWithRed:.42 green:.65 blue:1 alpha:1];
-  playConfiguration.baseForegroundColor = [UIColor colorWithWhite:.04 alpha:1];
-  playConfiguration.cornerStyle = UIButtonConfigurationCornerStyleLarge;
-  _playButton.configuration = playConfiguration;
-  _playButton.enabled = NO;
+  _status = home.statusLabel;
+  _playButton = home.playButton;
+  _importButton = home.importButton;
   [_playButton addTarget:self action:@selector(play) forControlEvents:UIControlEventTouchUpInside];
-  UIButton *options = [UIButton buttonWithType:UIButtonTypeSystem];
-  [options setTitle:@"Controles e gráficos" forState:UIControlStateNormal];
-  [options addTarget:self action:@selector(showOptions) forControlEvents:UIControlEventTouchUpInside];
-  UIStackView *actions = [[UIStackView alloc] initWithArrangedSubviews:@[_playButton,options,_importButton]];
-  actions.axis = UILayoutConstraintAxisHorizontal; actions.spacing = 18;
-  UILabel *credit = [UILabel new];
-  credit.text = @"Créditos • MiquéiasF07";
-  credit.font = [UIFont systemFontOfSize:12 weight:UIFontWeightMedium];
-  credit.textColor = [UIColor colorWithWhite:.55 alpha:1];
-  UIStackView *stack = [[UIStackView alloc] initWithArrangedSubviews:@[title,subtitle,_status,actions,credit]];
-  stack.axis = UILayoutConstraintAxisVertical;
-  stack.spacing = 18;
-  stack.translatesAutoresizingMaskIntoConstraints = NO;
-  [_panel addSubview:stack];
-  [NSLayoutConstraint activateConstraints:@[
-    [stack.centerYAnchor constraintEqualToAnchor:_panel.centerYAnchor],
-    [stack.leadingAnchor constraintEqualToAnchor:_panel.safeAreaLayoutGuide.leadingAnchor constant:32],
-    [stack.trailingAnchor constraintEqualToAnchor:_panel.safeAreaLayoutGuide.trailingAnchor constant:-32]]];
+  [_importButton addTarget:self action:@selector(chooseZIP) forControlEvents:UIControlEventTouchUpInside];
+  [home.optionsButton addTarget:self action:@selector(showOptions) forControlEvents:UIControlEventTouchUpInside];
   __weak StormNativeSession *weakSelf = self;
   [StormGameImporter validateInstalledWithCompletion:^(NSDictionary *validation, NSError *error) {
     StormNativeSession *session = weakSelf;
     if (!session || session.invalidated) return;
     if (session.fatalFailure) return;
     session.ready = !error && [validation[@"reference_matches"] boolValue];
-    session.status.text = session.ready ? @"Jogo instalado. Prepare os ajustes e entre na arena." : @"Importe o ZIP completo da sua cópia para começar.";
+    session.status.text = session.ready ? @"Tudo pronto para jogar. Seus arquivos estão instalados." : @"Importe o ZIP completo da sua cópia para começar.";
     session.playButton.enabled = session.ready;
     session.importButton.enabled = YES;
   }];
@@ -284,7 +244,10 @@
     session.menuButton.hidden = NO;
     [session.menuButton setTitle:@"Concluir" forState:UIControlStateNormal];
   };
-  options.resetControls = ^{ [weakSelf.controls resetLayout]; };
+  options.resetControls = ^{
+    [StormControls resetSavedLayoutForMobile:[StormNativePreferences.values[@"mobile"] boolValue]];
+    [weakSelf.controls setNeedsLayout];
+  };
   options.shareLogs = ^(UIViewController *presenter) { [weakSelf shareLogsFrom:presenter]; };
   UINavigationController *navigation = [[UINavigationController alloc] initWithRootViewController:options];
   navigation.overrideUserInterfaceStyle = UIUserInterfaceStyleDark;
@@ -329,6 +292,7 @@
 - (void)showFailure:(NSString *)message {
   self.ready = NO;
   self.fatalFailure = YES;
+  self.playButton.enabled = NO;
   self.importButton.enabled = NO;
   self.status.text = message;
   [self.controls removeFromSuperview];

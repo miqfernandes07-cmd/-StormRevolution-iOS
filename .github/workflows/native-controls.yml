@@ -34,7 +34,7 @@ jobs:
           xcrun --sdk iphonesimulator clang++ -std=c++23 -fobjc-arc -fblocks \
             -target "$(uname -m)-apple-ios17.0-simulator" -isysroot "$(xcrun --sdk iphonesimulator --show-sdk-path)" \
             -Iios -Iruntime ios/Native/Tests/ControlsSmoke.mm ios/Controls/StormControls.mm \
-            ios/Native/StormNativePreferences.mm ios/Native/StormNativeOptions.mm \
+            ios/Native/StormNativePreferences.mm ios/Native/StormNativeOptions.mm ios/Native/StormNativeHome.mm \
             -framework UIKit -framework Foundation -framework GameController -framework QuartzCore -framework CoreGraphics \
             -o out/ControlsSmoke.app/ControlsSmoke
           codesign --force --sign - out/ControlsSmoke.app
@@ -62,6 +62,14 @@ jobs:
           done
           test -f "$data_path/Documents/options-ready.txt"
           xcrun simctl io "$device_id" screenshot out/options.png
+          xcrun simctl terminate "$device_id" org.stormrevolution.controlsmoke
+          xcrun simctl launch "$device_id" org.stormrevolution.controlsmoke --home
+          for attempt in $(seq 1 60); do
+            if [ -f "$data_path/Documents/home-ready.txt" ]; then break; fi
+            sleep 1
+          done
+          test -f "$data_path/Documents/home-ready.txt"
+          xcrun simctl io "$device_id" screenshot out/home.png
       - uses: actions/upload-artifact@v4
         if: always()
         with:

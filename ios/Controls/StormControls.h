@@ -15,4 +15,5 @@
 @property(nonatomic) BOOL hapticsEnabled;
 - (void)resetInput;
 - (void)resetLayout;
++ (void)resetSavedLayoutForMobile:(BOOL)mobile;
 @end

@@ -21,7 +21,7 @@
 }
 - (NSString *)tableView:(UITableView *)tableView titleForFooterInSection:(NSInteger)section {
   return @[@"✕ confirma e ○ volta. No layout celular, o duplo toque no analógico aciona L3/R3. Pause a luta com OPTIONS antes de ajustar. Na organização, arraste cada botão ou analógico e toque em Concluir.",
-    @"Preencher usa toda a tela. Renderizador, resolução, escala interna e FXAA são aplicados ao reabrir o aplicativo. O modo estável espera os shaders ficarem prontos; a taxa real de quadros depende do jogo.",
+    @"O perfil Seguro usa o renderizador tradicional e evita o caminho experimental que apresentou artefatos. Preencher usa toda a tela. Perfil, resolução, escala e FXAA exigem reabrir o aplicativo. Estável espera os shaders ficarem prontos.",
     @"O cache é limpo na próxima abertura. Compartilhar envia apenas os logs e as configurações de diagnóstico.",
     @"Port nativo experimental. Seus arquivos importados e saves são preservados nas atualizações."][section];
 }
@@ -61,7 +61,7 @@
   } else if (index.section == 1) {
     cell.textLabel.text = @[@"Tela",@"Perfil gráfico",@"Shaders",@"Modo de vídeo",@"Escala interna",@"Limite de quadros",@"Suavização FXAA"][row];
     if (row == 0) cell.accessoryView = [self segments:@[@"Preencher",@"Original"] key:@"fill" selected:[v[@"fill"] boolValue] ? 0 : 1];
-    if (row == 1) cell.accessoryView = [self segments:@[@"Compatível",@"Padrão"] key:@"compatible" selected:[v[@"compatible"] boolValue] ? 0 : 1];
+    if (row == 1) cell.accessoryView = [self segments:@[@"Seguro",@"Padrão"] key:@"compatible" selected:[v[@"compatible"] boolValue] ? 0 : 1];
     if (row == 2) cell.accessoryView = [self segments:@[@"Estável",@"Assíncrono"] key:@"async" selected:[v[@"async"] boolValue] ? 1 : 0];
     if (row == 3) cell.accessoryView = [self segments:@[@"480p",@"720p"] key:@"resolution" selected:[v[@"resolution"] isEqual:@"640x480"] ? 0 : 1];
     if (row == 4) cell.accessoryView = [self segments:@[@"1×",@"2×"] key:@"renderScale" selected:[v[@"renderScale"] integerValue] == 2 ? 1 : 0];

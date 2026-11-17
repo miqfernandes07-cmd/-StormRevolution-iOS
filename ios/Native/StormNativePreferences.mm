@@ -1,6 +1,15 @@
 #import "StormNativePreferences.h"
 
 @implementation StormNativePreferences
++ (void)prepareForLaunch {
+  // Invalidate shader/pipeline caches once when leaving the build-3 FSI profile.
+  // Touch layout, imported files and saves keep their existing namespaces.
+  NSUserDefaults *defaults = NSUserDefaults.standardUserDefaults;
+  if ([defaults integerForKey:@"StormNativeRendererRevision"] < 4) {
+    [self setValue:@YES forKey:@"clearCache"];
+    [defaults setInteger:4 forKey:@"StormNativeRendererRevision"];
+  }
+}
 + (NSDictionary *)values {
   NSMutableDictionary *values = [@{@"playstation":@YES, @"mobile":@YES,
     @"scale":@1.0, @"opacity":@0.55, @"touch":@YES, @"haptics":@NO,
@@ -31,16 +40,18 @@
   return @{
     @"gpu.xenos.present_letterbox": [v[@"fill"] boolValue] ? @"false" : @"true",
     @"gpu.xenos.present_safe_area_x":@"100", @"gpu.xenos.present_safe_area_y":@"100",
-    @"gpu.vulkan.render_target_path": compatible ? @"fsi" : @"",
+    @"gpu.vulkan.render_target_path": @"host",
+    @"gpu.vulkan.dynamic_rendering": compatible ? @"false" : @"true",
+    @"gpu.xenos.direct_host_resolve": compatible ? @"false" : @"true",
     @"runtime.title_memory_mb":compatible ? @"512" : @"480",
     @"gpu.xenos.async_shader_compilation": [v[@"async"] boolValue] ? @"true" : @"false",
     @"gpu.vulkan.async_skip_incomplete_frames":@"false",
     @"gpu.xenos.readback_resolve": compatible ? @"full" : @"none",
     @"gpu.vulkan.readback_resolve": compatible ? @"true" : @"false",
     @"gpu.xenos.readback_memexport":@"true", @"gpu.xenos.readback_memexport_fast":@"false",
-    @"gpu.xenos.force_convert_quad_lists_to_triangle_lists":@"true",
-    @"gpu.xenos.force_convert_triangle_fans_to_lists":@"true",
-    @"gpu.xenos.force_convert_line_loops_to_strips":@"true",
+    @"gpu.xenos.force_convert_quad_lists_to_triangle_lists":@"false",
+    @"gpu.xenos.force_convert_triangle_fans_to_lists":@"false",
+    @"gpu.xenos.force_convert_line_loops_to_strips":@"false",
     @"gpu.xenos.texture_cache_memory_limit_soft":@"256",
     @"gpu.xenos.texture_cache_memory_limit_hard":@"384",
     @"gpu.vulkan.pipeline_creation_threads":@"2",

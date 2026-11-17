@@ -170,8 +170,11 @@ CGFloat ClampCenter(CGFloat value, CGFloat length, CGFloat halfSize) {
   [self resetInput];
 }
 - (void)resetLayout {
-  [NSUserDefaults.standardUserDefaults removeObjectForKey:[self positionsKey]];
+  [StormControls resetSavedLayoutForMobile:_mobileLayout];
   [self setNeedsLayout];
+}
++ (void)resetSavedLayoutForMobile:(BOOL)mobile {
+  [NSUserDefaults.standardUserDefaults removeObjectForKey:mobile ? @"touchPositionsMobileV3" : PositionsKey];
 }
 - (void)layoutSubviews {
   [super layoutSubviews];

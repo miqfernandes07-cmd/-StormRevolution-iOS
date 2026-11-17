@@ -19,6 +19,7 @@ class StormNativeApp final : public rex::app::TitleApp {
   StormNativeApp() : TitleApp("StormNative", kPPCImageConfig) {}
  protected:
   rex::Result<void> OnConfigure(rex::SettingsRegistry& settings) override {
+    [StormNativePreferences prepareForLaunch];
     NSURL *support = [NSFileManager.defaultManager URLsForDirectory:NSApplicationSupportDirectory inDomains:NSUserDomainMask].firstObject;
     NSURL *cache = [NSFileManager.defaultManager URLsForDirectory:NSCachesDirectory inDomains:NSUserDomainMask].firstObject;
     NSURL *documents = [NSFileManager.defaultManager URLsForDirectory:NSDocumentDirectory inDomains:NSUserDomainMask].firstObject;
