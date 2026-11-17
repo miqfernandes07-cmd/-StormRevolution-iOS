@@ -23,6 +23,16 @@ correspondem ao SDK verificado; o executável comercial permaneceu idêntico.
 [Auditoria do IPA atual](validation/native-iphone-ipa-v2-2026-11-17.json).
 [Relatório do link](validation/native-iphone-link-2026-11-17.json).
 
+O build 3 / 0.4.0 foi compilado e publicado no run privado 44029386428
+(publicação 44030836808). Contém os ajustes descritos abaixo e diagnóstico
+privado do alocador/cópia. O IPA de 20.186.253 bytes passou pela auditoria na CI
+e por conferência independente do checksum, identidade do bundle, frameworks
+iOS e ligação dos dois hooks aos originais.
+[Auditoria do build 3](validation/native-iphone-ipa-v3-2026-11-17.json).
+Este build ainda requer teste físico. O teste UIKit do
+[run 44030440277](https://github.com/miqfernandes07-cmd/-StormRevolution-iOS/actions/runs/44030440277)
+passou por 116 verificações programáticas sem executar o jogo.
+
 ## Memória no sandbox
 
 O quinto adaptador substitui `shm_open` no branch iPhone por um arquivo esparso

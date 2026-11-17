@@ -1,7 +1,21 @@
-# Progresso — atualização em 2026-11-13
+# Progresso — atualização em 2026-11-17
+
+## Marco atual: execução física e atualização nativa 0.4.0
+
+O proprietário instalou o build 2 no iPhone 15 Pro, selecionou personagens e
+chegou à luta, mas relatou crashes no carregamento e tela preta. Três logs
+confirmam execução real no A17 Pro e dois erros de escrita na cópia de recursos.
+O perfil gráfico anterior também produziu avisos de render targets e shaders.
+
+O build 3 / 0.4.0 foi compilado, ligado, auditado e publicado privadamente com
+controles PlayStation/celular, ajustes gráficos/de toque, tela preenchida e
+crédito para MiquéiasF07. O perfil Compatível e os diagnósticos precisam de
+novo teste físico. Os controles/ajustes UIKit passaram por 116 verificações
+no simulador, com eventos programáticos; gameplay não foi testado ali.
+[Build e limites atuais](NATIVE_IPA.md).
 
 
-## Marco atual: serviços do processo e retomada do boot
+## Histórico: serviços do processo e retomada do boot
 
 Implementados KeGet/SetCurrentProcessType no modelo de memória guest (PIB+0x2f)
 e inicializadores de critical section, sem simular locks/threads completos.

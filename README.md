@@ -1,25 +1,32 @@
 # Storm Revolution — pesquisa de port nativo para iOS
 
 Projeto de port AOT PowerPC → C++ → ARM64 de Naruto Shippuden:
-Ultimate Ninja Storm Revolution, versão Xbox 360. **Ainda não há gameplay validado no iPhone.**
+Ultimate Ninja Storm Revolution, versão Xbox 360. **O jogo abre no iPhone 15 Pro,
+mas o gameplay ainda apresenta crashes e tela preta.**
 Em 2026-11-16, um experimento privado com ReXGlue compilou o título completo
 no Linux e exibiu abertura, título, diálogos de salvamento e menu de modos.
-START, A e seleção responderam; um save foi gravado. Não há combate comprovado.
+START, A e seleção responderam; um save foi gravado no Linux.
 O alvo iPhone `StormNative` já gerou um IPA ARM64 com os 17 frameworks
-embutidos e dependências conferidas. O build 2 inclui memória respaldada por
-arquivo temporário privado para iOS. Ainda não há execução em aparelho físico
-ou gameplay validados.
+embutidos e dependências conferidas. O proprietário executou o build 2 no
+iPhone 15 Pro, selecionou personagens e chegou a uma luta; forneceu captura e
+três logs. O build 3 / versão 0.4.0 foi publicado privadamente com controles
+PlayStation/celular, ajustes gráficos e de toque, tela preenchida, crédito para
+MiquéiasF07 e diagnóstico de carregamento. A compilação e a auditoria do IPA
+passaram; a estabilidade dessa atualização depende de novo teste físico.
 [Build nativo](docs/NATIVE_IPA.md).
 [Estado atual e limites](docs/REXGLUE_BOOT_2026_11_16.md).
 
-A CI produziu um IPA não assinado de infraestrutura; não há instalação no iPhone
-ou medição de FPS.
+A CI pública também produz um aplicativo de infraestrutura separado. Ele não
+contém o título. O aplicativo nativo e o código recompilado permanecem privados.
+Os controles/ajustes UIKit passaram por 116 verificações programáticas no
+simulador; isso não valida gameplay nem toques no aparelho.
 
 O código original deste repositório é MIT. Não inclui jogo, código comercial
 recompilado, chaves, APKs ou assets. Forneça localmente os arquivos da sua cópia
 em `private/game/`; esse diretório é ignorado pelo Git.
 
-Implementado: analisador de metadados XEX2 com validação de identidade, tradutor
+Histórico do runtime próprio e da análise anterior à integração ReXGlue:
+analisador de metadados XEX2 com validação de identidade, tradutor
 AOT de um subconjunto PPC sintético, inventário de branches/candidatos a funções,
 memória big-endian, fila PCM e serviços básicos C++,
 app UIKit/Objective-C++ com diagnóstico Metal e workflows de host/macOS.
@@ -34,7 +41,7 @@ O runtime já possui dispatch AOT e memória escalar verificados. Um diagnóstic
 privado executou oito funções reais de entrada e avançou até a reserva/commit
 inicial do heap; parou no próximo serviço ausente. A ABI inicial não está
 validada e o jogo não inicializa. [Evidências](docs/KERNEL_BRINGUP.md).
-O app ainda não tem uma imagem do jogo qualificada para executar.
+Essas limitações descrevem o caminho anterior, separado do alvo nativo ReXGlue.
 
 Estado em 2026-11-13: 98 testes Python e oito suítes C++ passaram em
 9/9 grupos CTest no Linux/UBSan, incluindo ZIP64 e mapeamento Xbox 360.
@@ -56,7 +63,8 @@ python3 tools/xex_analysis/xex.py private/game/default.xex \
 Requisitos host: C++17, CMake >=3.20, Python >=3.11, zlib de desenvolvimento
 (`zlib1g-dev` no Debian/Ubuntu) e ferramenta de build.
 WSL/Linux cobre análise e testes; iOS exige macOS/Xcode. O deployment mínimo
-do app é iOS 17; iOS 27 e iPhone 15 Pro são alvos solicitados, ainda sem validação.
+do app é iOS 17; há execução comprovada no iPhone 15 Pro, sem estabilidade de
+gameplay validada. A versão exata de iOS deve ser confirmada pelos diagnósticos.
 
 - [Progresso e evidências](docs/PROGRESS.md)
 - [Compatibilidade por componente e etapa](docs/COMPATIBILITY.md)
@@ -69,9 +77,9 @@ do app é iOS 17; iOS 27 e iPhone 15 Pro são alvos solicitados, ainda sem valid
 - [AOT sintético](docs/AOT.md) e [inventário PPC](docs/PPC_ANALYSIS.md)
 - [Fila PCM](docs/AUDIO.md) e [integração iOS](docs/IOS.md)
 
-Prioridade seguinte: corrigir as variantes rejeitadas, investigar o fluxo indireto
-e as tabelas de salto e validar funções geradas antes da compilação nativa do jogo.
-Também faltam serviços xboxkrnl/XAM, gráficos Xenos/Metal, áudio e os recursos.
+Prioridade seguinte: testar o novo perfil gráfico no aparelho e diagnosticar o
+destino inválido na cópia de recursos durante o carregamento da luta. Não
+desabilitar a proteção da página zero nem ignorar cópias ou alocações com erro.
 O ZIP de 7,43 GB contém 21 arquivos e 8 diretórios. Os 9,43 GB foram extraídos
 privadamente com CRC conferido, usando filesystem e tmpfs separados.
 Ver [inventário de recursos](docs/ASSETS.md). O executável e as saídas derivadas

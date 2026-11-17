@@ -1,14 +1,15 @@
 # Retomada direta do boot comercial
 
-O IPA nativo experimental build 2 está publicado privadamente e auditado:
-`native-iphone-run-44022730725`. O SDK com cinco adaptadores passou no run
-público 44020335898; os 17 frameworks do IPA correspondem a esse SDK. O
-proprietário deve assinar/instalar, importar seu ZIP e fornecer o resultado no
-iPhone físico. Ainda não há gameplay validado no aparelho. Não repetir a
+O IPA nativo experimental build 3 / 0.4.0 está publicado e auditado:
+`native-iphone-run-44029386428`. O proprietário executou o build 2 em iPhone
+15 Pro, selecionou personagens e chegou à luta, mas relatou crashes e tela preta
+e enviou três logs. O build 3 inclui controles PlayStation/celular, ajustes,
+perfil Compatível e diagnóstico de alocação/cópia. Falta testar essa atualização
+no aparelho, preservando a instalação e seus dados. Não repetir a
 geração/extração comercial ou substituir o executável por um diagnóstico.
 Estado operacional: `private/NATIVE_IPA_STATE.json`; guia: [IPA nativo](NATIVE_IPA.md).
 
-Estado mais recente: [boot privado completo com ReXGlue](REXGLUE_BOOT_2026_11_16.md).
+Histórico anterior ao teste físico: [boot privado completo com ReXGlue](REXGLUE_BOOT_2026_11_16.md).
 O protótipo Linux chegou ao menu de modos e criou um save real; ainda não há
 combate comprovado ou execução do runtime ReXGlue no aplicativo iOS.
 A integração atual está em `ios/Native/`; o build privado preparado está em
