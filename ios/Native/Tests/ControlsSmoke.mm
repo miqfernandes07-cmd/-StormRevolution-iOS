@@ -171,12 +171,18 @@
   // Actual UI in each supported language; switching app language must never
   // write the guest console's language setting or alter graphics preferences.
   NSDictionary *beforeLanguage = StormNativePreferences.runtimeValues;
+  NSDictionary *expectedTitles = @{@"pt":@"Ajustes",@"en":@"Settings",@"es":@"Ajustes",@"fr":@"Réglages",@"de":@"Einstellungen",@"it":@"Impostazioni",@"ja":@"設定"};
+  NSDictionary *expectedAttacks = @{@"pt":@"Ataque",@"en":@"Attack",@"es":@"Ataque",@"fr":@"Attaque",@"de":@"Angriff",@"it":@"Attacco",@"ja":@"攻撃"};
+  NSDictionary *expectedPlay = @{@"pt":@"Jogar",@"en":@"Play",@"es":@"Jugar",@"fr":@"Jouer",@"de":@"Spielen",@"it":@"Gioca",@"ja":@"プレイ"};
+  StormNativeHome *languageHome = [StormNativeHome new];
   for (NSString *language in @[@"pt",@"en",@"es",@"fr",@"de",@"it",@"ja"]) {
     [StormNativePreferences setValue:language forKey:@"appLanguage"];
     StormNativeOptions *translated = [StormNativeOptions new]; [translated loadViewIfNeeded];
-    check([translated.title isEqual:SL(@"Ajustes")], @"Settings use selected app language");
+    check([translated.title isEqual:expectedTitles[language]], @"Settings use selected app language");
     controls.mobileActionLabels = YES;
-    check([circle.currentTitle isEqual:SL(@"Ataque")], @"Touch controls use selected app language");
+    check([circle.currentTitle isEqual:expectedAttacks[language]], @"Touch controls use selected app language");
+    [languageHome refreshLanguage];
+    check([languageHome.playButton.configuration.title isEqual:expectedPlay[language]], @"Existing home updates language immediately");
     check([StormNativePreferences.runtimeValues isEqual:beforeLanguage], @"App language leaves guest language and graphics untouched");
   }
   [StormNativePreferences setValue:@"unsupported" forKey:@"appLanguage"];
