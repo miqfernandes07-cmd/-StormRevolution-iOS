@@ -57,6 +57,11 @@ jobs:
           python3 tools/recompilation/rexglue_ios_probe.py \
             --sdk-source sdk-source --output out/rexglue-ios-patched \
             --experimental-ios-patch
+      - name: Verify private sparse mapping aliases on the build host
+        run: |
+          xcrun clang++ -std=c++17 -Wall -Wextra -Werror -I sdk-source/src \
+            tests/integration/rexglue_private_mapping.cpp -o out/private-mapping-test
+          out/private-mapping-test
       - name: Upload open source compilation diagnostics only
         if: always()
         uses: actions/upload-artifact@v4

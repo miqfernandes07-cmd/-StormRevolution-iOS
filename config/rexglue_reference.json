@@ -73,6 +73,22 @@
           "after_sha256": "c9844e27b5862be500c1d2b625a188415581d4a9a56ff039c8d63e6432d572cf"
         }
       ]
+    },
+    {
+      "path": "tools/recompilation/rexglue_patches/0005-ios-private-mapping-file.patch",
+      "sha256": "4d225d47ae2191eefedb2bd7c2b1810514b9af160bab4f578c8195aabf4f0e77",
+      "files": [
+        {
+          "path": "src/base/memory_posix.h",
+          "before_sha256": "74d872ce4a90dd3466cb0a39df71e806b84005f8ca3227dc9ba8f69450a1ae91",
+          "after_sha256": "ec28473ac4aaa9a64d9a1a16748f773cf994d17fd0003ccacb9afefd9f9bb77e"
+        },
+        {
+          "path": "src/base/memory_posix.cpp",
+          "before_sha256": "a5c545cf234692b38ea7a0f00d2646e49cc8caba06a1c6f28a553bf5869cb7a8",
+          "after_sha256": "c47ae27cec2a1de71b5fce11e4a4d2e1ba9cd97b003605247ca5c50aaf864a04"
+        }
+      ]
     }
   ],
   "moltenvk_ios": {

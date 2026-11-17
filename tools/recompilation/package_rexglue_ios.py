@@ -56,12 +56,15 @@ def main():
     reference = json.loads((ROOT / "config/rexglue_reference.json").read_text())
     if run("git", "-C", source, "rev-parse", "HEAD").strip() != reference["commit"]:
         parser.error("SDK revision mismatch")
+    final_files = {}
     for patch in reference["ios_experimental_patches"]:
         if digest(ROOT / patch["path"]) != patch["sha256"]:
             parser.error("Patch digest mismatch")
         for item in patch["files"]:
-            if digest(source / item["path"]) != item["after_sha256"]:
-                parser.error("Patched SDK source digest mismatch: " + item["path"])
+            final_files[item["path"]] = item["after_sha256"]
+    for path, expected in final_files.items():
+        if digest(source / path) != expected:
+            parser.error("Patched SDK source digest mismatch: " + path)
     moltenvk = reference["moltenvk_ios"]
     if (args.moltenvk_archive.stat().st_size != moltenvk["archive_size"] or
             digest(args.moltenvk_archive) != moltenvk["archive_sha256"]):
