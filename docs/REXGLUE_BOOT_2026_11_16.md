@@ -106,6 +106,13 @@ compilar/linkar `rexbase` inteiro para iPhone. A configuração já passou e os
 fontes compilaram; o primeiro link encontrou `GetPerfSettings` ausente porque
 seu provider tinha sido desativado. A opção necessária foi restabelecida e o
 build está sendo repetido. Ainda não há biblioteca base com link aprovado.
+O novo [run 43986089874](https://github.com/miqfernandes07-cmd/-StormRevolution-iOS/actions/runs/43986089874)
+concluiu configuração, compilação e link de `rexbase`; a inspeção Mach-O confirmou
+plataforma iOS. [Relatório da base](validation/rexglue-ios-base-2026-11-17.json).
+Isso qualifica o build dessa biblioteca, não sua execução ou o SDK completo.
+O workflow foi ampliado para compilar os módulos PPC, kernel, XAM e XBDM e os
+formatos Xenos; os resultados dessa ampliação ainda estão pendentes.
+
 Os pacotes Vulkan/macOS servem à descoberta de headers na configuração; não
 são bibliotecas iPhone e não entram no alvo base. Um resultado válido precisa
 mostrar a plataforma iOS no Mach-O, não apenas arquitetura ARM64.
