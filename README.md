@@ -5,8 +5,9 @@ Ultimate Ninja Storm Revolution, versão Xbox 360. **Ainda não há gameplay val
 Em 2026-11-16, um experimento privado com ReXGlue compilou o título completo
 no Linux e exibiu abertura, título, diálogos de salvamento e menu de modos.
 START, A e seleção responderam; um save foi gravado. Não há combate comprovado.
-O alvo iPhone `StormNative` já passou pela compilação e pelo link completos;
-o empacotamento está em correção, sem IPA nativo ou execução no aparelho validados.
+O alvo iPhone `StormNative` já gerou um IPA ARM64 com os 17 frameworks
+embutidos e dependências conferidas. A adaptação de memória ao sandbox está
+em integração; ainda não há execução em aparelho físico validada.
 [Build nativo](docs/NATIVE_IPA.md).
 [Estado atual e limites](docs/REXGLUE_BOOT_2026_11_16.md).
 

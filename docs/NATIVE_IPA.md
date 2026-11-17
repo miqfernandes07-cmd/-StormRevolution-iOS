@@ -11,9 +11,31 @@ A compilação privada seguinte aprovou todos os fontes do título para iPhone;
 o primeiro link completo apontou CoreGraphics ausente, depois incluído no alvo.
 O run privado 44007706307 aprovou a compilação e o link completos. O arquivo
 IPA não foi concluído nesse run porque o script confundiu uma pasta provisória
-do Xcode com o aplicativo final. A seleção da pasta e a inclusão dos frameworks
-foram corrigidas; a nova verificação continua em andamento.
+do Xcode com o aplicativo final. A seleção da pasta e a inclusão dos frameworks foram corrigidas. O run
+privado 44018437659 passou pelo build e archive completos. A auditoria estática
+confirmou ARM64/iOS, 17 frameworks com dependências presentes, rpath do bundle,
+licenças e 37.255.824 bytes na seção de código recompilado. Esse IPA usa a
+versão anterior do backend de memória e será atualizado antes da indicação
+para teste no aparelho.
 [Relatório do link](validation/native-iphone-link-2026-11-17.json).
+
+## Memória no sandbox
+
+O quinto adaptador substitui `shm_open` no branch iPhone por um arquivo esparso
+criado no diretório temporário privado do processo e desvinculado antes de
+retornar o descriptor. Mantém aliases `MAP_SHARED` sem depender de um nome
+POSIX global ou entitlement de grupo. Não torna os bytes PowerPC executáveis.
+
+O teste do helper real passou por 25 verificações no Linux/UBSan e no macOS:
+dois aliases coerentes acima de 4 GiB, tamanho esparso, nome removido, descriptor
+close-on-exec, restrição de escrita no descriptor somente leitura, validade dos
+views depois de fechar o descriptor e rejeição de tamanhos inválidos. A
+compilação para iPhone também passou; o link do SDK completo está em andamento.
+Não houve execução desse backend em aparelho físico.
+
+O reempacotamento mantém o executável comercial já vinculado apenas quando
+todos os headers públicos do SDK são idênticos aos usados nessa compilação.
+O novo pacote precisa conter o quinto adaptador; depois é inspecionado de novo.
 
 ## Build privado
 
