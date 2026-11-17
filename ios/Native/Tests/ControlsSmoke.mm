@@ -4,6 +4,8 @@
 #import "Native/StormNativePreferences.h"
 #import "Native/StormNativeHome.h"
 #import "Native/StormNativeMetrics.h"
+#import "Localization/StormLocalization.h"
+#import "Import/StormGameImporter.h"
 #include <cmath>
 #include "input/xbox360_mapping.h"
 
@@ -30,6 +32,8 @@
   NSUserDefaults *defaults = NSUserDefaults.standardUserDefaults;
   for (NSString *key in @[@"StormNativePreferencesV3", @"touchPositionsMobileV3", @"touchPositionsXbox360V2", @"touchPositionsActionsV1"]) [defaults removeObjectForKey:key];
   [defaults removeObjectForKey:@"StormNativeRendererRevision"];
+  [StormNativePreferences setValue:@"pt" forKey:@"appLanguage"];
+  [StormNativePreferences setValue:@NO forKey:@"expandedMemory"];
   [StormNativePreferences setValue:@.8 forKey:@"opacity"];
   [StormNativePreferences prepareForLaunch];
   check([StormNativePreferences.values[@"clearCache"] boolValue], @"Renderer upgrade schedules cache removal");
@@ -164,6 +168,50 @@
   check([NSJSONSerialization dataWithJSONObject:metrics.report options:0 error:nil]!=nil, @"Performance export is valid JSON");
   UITableViewCell *credit = [settings tableView:settings.tableView cellForRowAtIndexPath:[NSIndexPath indexPathForRow:0 inSection:3]];
   check([credit.textLabel.text containsString:@"MiquéiasF07"], @"Requested credit");
+  // Actual UI in each supported language; switching app language must never
+  // write the guest console's language setting or alter graphics preferences.
+  NSDictionary *beforeLanguage = StormNativePreferences.runtimeValues;
+  for (NSString *language in @[@"pt",@"en",@"es",@"fr",@"de",@"it",@"ja"]) {
+    [StormNativePreferences setValue:language forKey:@"appLanguage"];
+    StormNativeOptions *translated = [StormNativeOptions new]; [translated loadViewIfNeeded];
+    check([translated.title isEqual:SL(@"Ajustes")], @"Settings use selected app language");
+    controls.mobileActionLabels = YES;
+    check([circle.currentTitle isEqual:SL(@"Ataque")], @"Touch controls use selected app language");
+    check([StormNativePreferences.runtimeValues isEqual:beforeLanguage], @"App language leaves guest language and graphics untouched");
+  }
+  [StormNativePreferences setValue:@"unsupported" forKey:@"appLanguage"];
+  check([StormAppLanguages() containsObject:StormAppLanguage()], @"Unknown app language falls back to supported system language");
+  [StormNativePreferences setValue:@"pt" forKey:@"appLanguage"];
+  controls.mobileActionLabels = YES;
+  [StormNativePreferences setValue:@YES forKey:@"expandedMemory"];
+  check([StormNativePreferences.runtimeValues[@"runtime.title_memory_mb"] isEqual:@"0"], @"Expanded memory removes the SDK title commit budget cap");
+  check([StormNativePreferences.runtimeValues[@"gpu.xenos.texture_cache_memory_limit_hard"] isEqual:@"512"], @"Expanded memory permits a larger texture cache");
+  [StormNativePreferences setValue:@NO forKey:@"expandedMemory"];
+  check([StormNativePreferences.runtimeValues[@"runtime.title_memory_mb"] isEqual:@"512"], @"Disabling expanded memory restores the compatible title budget");
+  // Migrate a tiny synthetic installation, checking the inode to establish
+  // that no duplicate copy is made. Also exercise conflict and idempotence.
+  NSFileManager *fm = NSFileManager.defaultManager;
+  NSURL *oldGame = [[fm URLsForDirectory:NSApplicationSupportDirectory inDomains:NSUserDomainMask].firstObject URLByAppendingPathComponent:@"Game"];
+  NSURL *newGame = StormGameImporter.gameURL;
+  BOOL emptySandbox = ![fm fileExistsAtPath:oldGame.path] && ![fm fileExistsAtPath:newGame.path];
+  check(emptySandbox, @"Migration test only uses a clean synthetic sandbox");
+  if (emptySandbox) {
+    NSError *error = nil;
+    [fm createDirectoryAtURL:oldGame withIntermediateDirectories:YES attributes:nil error:&error];
+    NSURL *oldFile = [oldGame URLByAppendingPathComponent:@"synthetic.txt"];
+    [@"preserve-content" writeToURL:oldFile atomically:YES encoding:NSUTF8StringEncoding error:&error];
+    NSNumber *inode = [fm attributesOfItemAtPath:oldFile.path error:&error][NSFileSystemFileNumber];
+    BOOL migrated = [StormGameImporter prepareGameDirectory:&error];
+    NSURL *newFile = [newGame URLByAppendingPathComponent:@"synthetic.txt"];
+    check(migrated && !error && ![fm fileExistsAtPath:oldGame.path] && [inode isEqual:[fm attributesOfItemAtPath:newFile.path error:nil][NSFileSystemFileNumber]], @"Existing game moves atomically without duplicate content");
+    check([[NSString stringWithContentsOfURL:newFile encoding:NSUTF8StringEncoding error:nil] isEqual:@"preserve-content"], @"Migration preserves file bytes");
+    check([StormGameImporter prepareGameDirectory:&error], @"Game migration is idempotent");
+    check([newGame.URLByDeletingLastPathComponent.path isEqual:[fm URLsForDirectory:NSDocumentDirectory inDomains:NSUserDomainMask].firstObject.path], @"Game is in Files-visible Documents");
+    [fm createDirectoryAtURL:oldGame withIntermediateDirectories:YES attributes:nil error:nil];
+    error = nil;
+    check(![StormGameImporter prepareGameDirectory:&error] && error && [fm fileExistsAtPath:oldGame.path] && [fm fileExistsAtPath:newFile.path], @"Migration refuses conflicting directories and preserves both");
+    [fm removeItemAtURL:oldGame error:nil]; [fm removeItemAtURL:newGame error:nil];
+  }
   [StormNativePreferences setValue:@30 forKey:@"fps"];
   StormNativeHome *home = [[StormNativeHome alloc] initWithFrame:root.view.bounds];
   home.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;

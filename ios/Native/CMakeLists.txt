@@ -29,7 +29,7 @@ endif()
 add_library(storm_native_title OBJECT ${generated_sources})
 add_executable(StormNative MACOSX_BUNDLE
   StormNativeMain.mm StormNativeSession.mm StormNativePreferences.mm StormNativeOptions.mm StormNativeHome.mm StormNativeMetrics.mm
-  ../Import/StormGameImporter.mm ../Controls/StormControls.mm
+  ../Import/StormGameImporter.mm ../Controls/StormControls.mm ../Localization/StormLocalization.mm
   ../../runtime/filesystem/zip_archive.cpp
   $<TARGET_OBJECTS:storm_native_title>)
 set(native_icon_catalog "${CMAKE_CURRENT_BINARY_DIR}/Assets.xcassets")

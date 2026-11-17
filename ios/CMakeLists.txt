@@ -24,7 +24,7 @@ set_source_files_properties("${STORM_METAL_LIBRARY}" PROPERTIES
 add_executable(StormRevolution MACOSX_BUNDLE
   App/main.mm App/StormViewController.mm Import/StormGameImporter.mm Import/StormImportSmoke.mm
   Assets.xcassets
-  Metal/StormMetalView.mm Controls/StormControls.mm
+  Metal/StormMetalView.mm Controls/StormControls.mm Localization/StormLocalization.mm
   "${STORM_METAL_LIBRARY}")
 target_compile_features(StormRevolution PRIVATE cxx_std_17)
 target_compile_options(StormRevolution PRIVATE -fobjc-arc)

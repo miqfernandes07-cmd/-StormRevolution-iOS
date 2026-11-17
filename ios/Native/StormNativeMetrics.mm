@@ -1,5 +1,6 @@
 #import "StormNativeMetrics.h"
 #include <cmath>
+#import <os/proc.h>
 
 @implementation StormNativeMetrics {
   NSMutableArray<NSDictionary *> *_samples;
@@ -21,7 +22,10 @@
   [_samples addObject:@{@"time":@(NSDate.date.timeIntervalSince1970), @"fps":@(fps),
     @"frameTimeMs":@(milliseconds), @"frameCount":statistics[@"frames"] ?: @0,
     @"overlayOpen":@(overlayOpen), @"thermalState":thermal,
-    @"lowPowerMode":@(NSProcessInfo.processInfo.lowPowerModeEnabled)}];
+    @"lowPowerMode":@(NSProcessInfo.processInfo.lowPowerModeEnabled),
+    @"memoryAvailableMB":@(os_proc_available_memory()/(1024*1024)),
+    @"titleCommittedMB":statistics[@"titleCommittedMB"] ?: @0,
+    @"titleBudgetMB":statistics[@"titleBudgetMB"] ?: @0}];
   if (_samples.count > 60) [_samples removeObjectAtIndex:0];
 }
 - (NSDictionary *)report {

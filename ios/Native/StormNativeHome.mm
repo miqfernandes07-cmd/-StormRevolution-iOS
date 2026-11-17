@@ -1,3 +1,4 @@
+#import "Localization/StormLocalization.h"
 #import "StormNativeHome.h"
 #import <QuartzCore/QuartzCore.h>
 
@@ -43,7 +44,7 @@ UIView *Card(UIColor *color, CGFloat radius) {
   _background.startPoint = CGPointMake(0,1); _background.endPoint = CGPointMake(1,0);
   [self.layer addSublayer:_background];
   _brand = Text(@"STORM  /  REVOLUTION",15,UIFontWeightHeavy,UIColor.whiteColor);
-  _collection = Text(@"SUA BIBLIOTECA",10,UIFontWeightSemibold,Ink(.50,.65,.78));
+  _collection = Text(SL(@"SUA BIBLIOTECA"),10,UIFontWeightSemibold,Ink(.50,.65,.78));
   _collection.textAlignment = NSTextAlignmentRight;
   [self addSubview:_brand]; [self addSubview:_collection];
   _hero = Card(Ink(.10,.14,.21),26); [self addSubview:_hero];
@@ -56,13 +57,13 @@ UIView *Card(UIColor *color, CGFloat radius) {
   _emblem = [[UIImageView alloc] initWithImage:[UIImage systemImageNamed:@"flame.fill"]];
   _emblem.contentMode = UIViewContentModeScaleAspectFit; _emblem.tintColor = Ink(1,.62,.32); _emblem.alpha = .18;
   _emblem.isAccessibilityElement = NO; [_hero addSubview:_emblem];
-  _eyebrow = Text(@"A PRÓXIMA BATALHA É SUA",10,UIFontWeightBold,Ink(1,.71,.48)); [_hero addSubview:_eyebrow];
+  _eyebrow = Text(SL(@"A PRÓXIMA BATALHA É SUA"),10,UIFontWeightBold,Ink(1,.71,.48)); [_hero addSubview:_eyebrow];
   _title = Text(@"STORM\nREVOLUTION",38,UIFontWeightHeavy,UIColor.whiteColor);
   _title.numberOfLines = 2; _title.accessibilityLabel = @"Storm Revolution"; [_hero addSubview:_title];
-  _subtitle = Text(@"Sua arena. Seu controle.",13,UIFontWeightRegular,Ink(.68,.73,.81)); [_hero addSubview:_subtitle];
+  _subtitle = Text(SL(@"Sua arena. Seu controle."),13,UIFontWeightRegular,Ink(.68,.73,.81)); [_hero addSubview:_subtitle];
   _playButton = [UIButton buttonWithType:UIButtonTypeSystem];
   UIButtonConfiguration *play = [UIButtonConfiguration filledButtonConfiguration];
-  play.title = @"Jogar"; play.image = [UIImage systemImageNamed:@"play.fill"]; play.imagePadding = 10;
+  play.title = SL(@"Jogar"); play.image = [UIImage systemImageNamed:@"play.fill"]; play.imagePadding = 10;
   play.baseBackgroundColor = Ink(1,.64,.35); play.baseForegroundColor = Ink(.08,.055,.04);
   play.background.cornerRadius = 15;
   play.titleTextAttributesTransformer = ^NSDictionary *(NSDictionary *attributes) {
@@ -73,18 +74,18 @@ UIView *Card(UIColor *color, CGFloat radius) {
   _library = Card(Ink(.08,.12,.18),22); [self addSubview:_library];
   _folder = [[UIImageView alloc] initWithImage:[UIImage systemImageNamed:@"folder.fill"]];
   _folder.tintColor = Ink(.50,.75,1); _folder.contentMode = UIViewContentModeScaleAspectFit; [_library addSubview:_folder];
-  _libraryTitle = Text(@"SEU JOGO",10,UIFontWeightBold,Ink(.55,.70,.83)); [_library addSubview:_libraryTitle];
-  _statusLabel = Text(@"Verificando os arquivos…",13,UIFontWeightMedium,Ink(.88,.91,.96));
+  _libraryTitle = Text(SL(@"SEU JOGO"),10,UIFontWeightBold,Ink(.55,.70,.83)); [_library addSubview:_libraryTitle];
+  _statusLabel = Text(SL(@"Verificando os arquivos…"),13,UIFontWeightMedium,Ink(.88,.91,.96));
   _statusLabel.numberOfLines = 3; _statusLabel.accessibilityIdentifier = @"home-status"; [_library addSubview:_statusLabel];
   _importButton = [UIButton buttonWithType:UIButtonTypeSystem];
   UIButtonConfiguration *importConfiguration = [UIButtonConfiguration plainButtonConfiguration];
-  importConfiguration.title = @"Importar ZIP"; importConfiguration.image = [UIImage systemImageNamed:@"plus.circle.fill"]; importConfiguration.imagePadding = 7;
+  importConfiguration.title = SL(@"Importar ZIP"); importConfiguration.image = [UIImage systemImageNamed:@"plus.circle.fill"]; importConfiguration.imagePadding = 7;
   importConfiguration.contentInsets = NSDirectionalEdgeInsetsMake(0,0,0,0); importConfiguration.baseForegroundColor = Ink(.51,.76,1);
   _importButton.configuration = importConfiguration; _importButton.contentHorizontalAlignment = UIControlContentHorizontalAlignmentLeft;
   _importButton.enabled = NO; _importButton.accessibilityIdentifier = @"home-import"; [_library addSubview:_importButton];
   _optionsButton = [UIButton buttonWithType:UIButtonTypeSystem];
   UIButtonConfiguration *settings = [UIButtonConfiguration tintedButtonConfiguration];
-  settings.title = @"Do seu jeito"; settings.subtitle = @"Controles e gráficos";
+  settings.title = SL(@"Do seu jeito"); settings.subtitle = SL(@"Controles e gráficos");
   settings.image = [UIImage systemImageNamed:@"slider.horizontal.3"]; settings.imagePadding = 12;
   settings.titleAlignment = UIButtonConfigurationTitleAlignmentLeading;
   settings.contentInsets = NSDirectionalEdgeInsetsMake(14,16,14,12);
@@ -92,11 +93,19 @@ UIView *Card(UIColor *color, CGFloat radius) {
   settings.background.cornerRadius = 22;
   _optionsButton.configuration = settings; _optionsButton.contentHorizontalAlignment = UIControlContentHorizontalAlignmentLeft;
   _optionsButton.accessibilityIdentifier = @"home-options"; [self addSubview:_optionsButton];
-  _credit = Text(@"Créditos  /  MiquéiasF07",11,UIFontWeightMedium,Ink(.58,.64,.73)); [self addSubview:_credit];
+  _credit = Text(SL(@"Créditos  /  MiquéiasF07"),11,UIFontWeightMedium,Ink(.58,.64,.73)); [self addSubview:_credit];
   NSString *version = [NSBundle.mainBundle objectForInfoDictionaryKey:@"CFBundleShortVersionString"] ?: @"0.5.0";
   _version = Text([@"v" stringByAppendingString:version],11,UIFontWeightMedium,Ink(.44,.52,.64));
   _version.textAlignment = NSTextAlignmentRight; [self addSubview:_version];
   return self;
+}
+- (void)refreshLanguage {
+  _collection.text = SL(@"SUA BIBLIOTECA"); _eyebrow.text = SL(@"A PRÓXIMA BATALHA É SUA");
+  _subtitle.text = SL(@"Sua arena. Seu controle."); _libraryTitle.text = SL(@"SEU JOGO");
+  _credit.text = SL(@"Créditos  /  MiquéiasF07");
+  UIButtonConfiguration *play = _playButton.configuration; play.title = SL(@"Jogar"); _playButton.configuration = play;
+  UIButtonConfiguration *import = _importButton.configuration; import.title = SL(@"Importar ZIP"); _importButton.configuration = import;
+  UIButtonConfiguration *options = _optionsButton.configuration; options.title = SL(@"Do seu jeito"); options.subtitle = SL(@"Controles e gráficos"); _optionsButton.configuration = options;
 }
 - (void)layoutSubviews {
   [super layoutSubviews];

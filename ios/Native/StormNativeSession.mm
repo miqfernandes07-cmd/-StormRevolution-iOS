@@ -1,3 +1,4 @@
+#import "Localization/StormLocalization.h"
 #import "StormNativeSession.h"
 #import "Controls/StormControls.h"
 #import "Import/StormGameImporter.h"
@@ -65,7 +66,7 @@
     if (!session || session.invalidated) return;
     if (session.fatalFailure) return;
     session.ready = !error && [validation[@"reference_matches"] boolValue];
-    session.status.text = session.ready ? @"Tudo pronto para jogar. Seus arquivos estão instalados." : @"Importe o ZIP completo da sua cópia para começar.";
+    session.status.text = session.ready ? SL(@"Tudo pronto para jogar. Seus arquivos estão instalados.") : SL(@"Importe o ZIP completo da sua cópia para começar.");
     session.playButton.enabled = session.ready;
     session.importButton.enabled = YES;
   }];
@@ -76,7 +77,7 @@
   menuConfiguration.baseForegroundColor = UIColor.whiteColor;
   menuConfiguration.baseBackgroundColor = [UIColor colorWithWhite:.08 alpha:.7];
   _menuButton.configuration = menuConfiguration;
-  _menuButton.accessibilityLabel = @"Abrir ajustes de controles e gráficos";
+  _menuButton.accessibilityLabel = SL(@"Abrir ajustes de controles e gráficos");
   _menuButton.translatesAutoresizingMaskIntoConstraints = NO;
   _menuButton.hidden = YES;
   [_menuButton addTarget:self action:@selector(menuPressed) forControlEvents:UIControlEventTouchUpInside];
@@ -117,12 +118,12 @@
   [self.importer importZIPAtURL:urls.firstObject progress:^(double fraction, NSString *message) {
     StormNativeSession *session = weakSelf;
     if (!session || session.invalidated) return;
-    session.status.text = fraction >= 1 ? @"Arquivos preparados. Verificando…" : message;
+    session.status.text = fraction >= 1 ? SL(@"Arquivos preparados. Verificando…") : message;
   } completion:^(NSDictionary *validation, NSError *error) {
     StormNativeSession *session = weakSelf;
     if (!session || session.invalidated) return;
     session.ready = !error && [validation[@"reference_matches"] boolValue];
-    session.status.text = session.ready ? @"Jogo instalado. Toque em Jogar." : (error.localizedDescription ?: @"A cópia importada não corresponde ao executável suportado.");
+    session.status.text = session.ready ? SL(@"Jogo instalado. Toque em Jogar.") : (error.localizedDescription ?: SL(@"A cópia importada não corresponde ao executável suportado."));
     session.playButton.enabled = session.ready;
     session.importButton.enabled = YES;
   }];
@@ -149,7 +150,7 @@
   _padID = SDL_AttachVirtualJoystick(&description);
   if (_padID) _pad = SDL_OpenJoystick(_padID);
   if (!_pad) {
-    [self showFailure:[NSString stringWithFormat:@"Falha ao criar controles: %s", SDL_GetError()]];
+    [self showFailure:[NSString stringWithFormat:SL(@"Falha ao criar controles: %s"), SDL_GetError()]];
     return NO;
   }
   [self updateButtons:0 lx:0 ly:0 rx:0 ry:0 lt:0 rt:0];
@@ -216,6 +217,11 @@
     StormNativeSession *session = weakSelf;
     if (!session || session.invalidated) return;
     [session applyControlPreferences];
+    if ([key isEqual:@"appLanguage"]) {
+      [(StormNativeHome *)session.panel refreshLanguage];
+      session.status.text = session.ready ? SL(@"Tudo pronto para jogar. Seus arquivos estão instalados.") : SL(@"Importe o ZIP completo da sua cópia para começar.");
+      session.menuButton.accessibilityLabel = SL(@"Abrir ajustes de controles e gráficos");
+    }
     NSDictionary *values = StormNativePreferences.runtimeValues;
     NSArray *live = @[@"gpu.xenos.present_letterbox", @"gpu.frame_limit", @"gpu.xenos.async_shader_compilation", @"gpu.vulkan.async_skip_incomplete_frames"];
     for (NSString *name in live) {
@@ -247,7 +253,7 @@
     [session applyControlPreferences];
     session.controls.editingControls = YES;
     session.menuButton.hidden = NO;
-    [session.menuButton setTitle:@"Concluir" forState:UIControlStateNormal];
+    [session.menuButton setTitle:SL(@"Concluir") forState:UIControlStateNormal];
   };
   options.resetControls = ^{
     NSDictionary *values = StormNativePreferences.values;

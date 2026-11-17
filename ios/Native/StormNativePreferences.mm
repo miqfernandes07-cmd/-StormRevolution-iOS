@@ -16,7 +16,8 @@
     @"fill":@YES, @"compatible":@YES, @"async":@NO, @"fps":@30,
     @"resolution":@"1280x720", @"renderScale":@1, @"anisotropy":@2,
     @"fxaa":@NO, @"stats":@NO, @"clearCache":@NO,
-    @"fastReadback":@NO, @"actionControls":@YES} mutableCopy];
+    @"fastReadback":@NO, @"actionControls":@YES,
+    @"appLanguage":@"system", @"expandedMemory":@YES} mutableCopy];
   NSDictionary *saved = [NSUserDefaults.standardUserDefaults dictionaryForKey:@"StormNativePreferencesV3"];
   for (NSString *key in values.allKeys) {
     id value = saved[key];
@@ -45,7 +46,9 @@
     @"gpu.vulkan.render_target_path": @"host",
     @"gpu.vulkan.dynamic_rendering": compatible ? @"false" : @"true",
     @"gpu.xenos.direct_host_resolve": compatible ? @"false" : @"true",
-    @"runtime.title_memory_mb":compatible ? @"512" : @"480",
+    // The SDK documents 0 as no title commit-budget cap. Physical guest address
+    // ranges stay unchanged; this never requests or fabricates extra iOS RAM.
+    @"runtime.title_memory_mb":[v[@"expandedMemory"] boolValue] ? @"0" : (compatible ? @"512" : @"480"),
     @"gpu.xenos.async_shader_compilation": [v[@"async"] boolValue] ? @"true" : @"false",
     @"gpu.vulkan.async_skip_incomplete_frames":@"false",
     @"gpu.xenos.readback_resolve": compatible ? (fast ? @"fast" : @"full") : @"none",
@@ -54,8 +57,8 @@
     @"gpu.xenos.force_convert_quad_lists_to_triangle_lists":@"false",
     @"gpu.xenos.force_convert_triangle_fans_to_lists":@"false",
     @"gpu.xenos.force_convert_line_loops_to_strips":@"false",
-    @"gpu.xenos.texture_cache_memory_limit_soft":@"256",
-    @"gpu.xenos.texture_cache_memory_limit_hard":@"384",
+    @"gpu.xenos.texture_cache_memory_limit_soft":[v[@"expandedMemory"] boolValue] ? @"384" : @"256",
+    @"gpu.xenos.texture_cache_memory_limit_hard":[v[@"expandedMemory"] boolValue] ? @"512" : @"384",
     @"gpu.vulkan.pipeline_creation_threads":@"2",
     @"gpu.frame_limit":[NSString stringWithFormat:@"%ld", (long)fps],
     @"gpu.vsync":@"true", @"gpu.anisotropic_override":[NSString stringWithFormat:@"%ld",(long)anisotropy],

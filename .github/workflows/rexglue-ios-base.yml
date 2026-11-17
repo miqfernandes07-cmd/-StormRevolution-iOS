@@ -199,7 +199,7 @@ jobs:
             -DREX_PHYSICAL_OFFSET_IN_CODE=1 -DSTORM_NATIVE_INTERFACE_CHECK=1 \
             -I out/ios-runtime-package/runtime/include -I ios -I runtime \
             -fsyntax-only ios/Native/StormNativeMain.mm ios/Native/StormNativeSession.mm \
-            ios/Import/StormGameImporter.mm ios/Controls/StormControls.mm \
+            ios/Import/StormGameImporter.mm ios/Controls/StormControls.mm ios/Localization/StormLocalization.mm \
             2>&1 | tee out/ios-base/native-frontend-compile.txt
       - name: Preserve rebuildable open source runtime package
         if: success() && (github.event_name == 'push' || inputs.stage == 'drivers')

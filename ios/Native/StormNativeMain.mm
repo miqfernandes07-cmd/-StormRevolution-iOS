@@ -7,6 +7,8 @@
 #include <rex/gpu/graphics_system.h>
 #include <rex/hid/input_system.h>
 #include <rex/ui/ui_system.h>
+#include <rex/kernel/guest_memory.h>
+#include <rex/kernel/heap.h>
 #if defined(STORM_NATIVE_INTERFACE_CHECK)
 // Syntax checking only; this declaration cannot produce an executable.
 extern const rex::ppc::PPCImage kPPCImageConfig;
@@ -20,6 +22,9 @@ class StormNativeApp final : public rex::app::TitleApp {
  protected:
   rex::Result<void> OnConfigure(rex::SettingsRegistry& settings) override {
     [StormNativePreferences prepareForLaunch];
+    NSError *migrationError = nil;
+    if (![StormGameImporter prepareGameDirectory:&migrationError])
+      return rex::Err(rex::ErrorCategory::kIO, migrationError.localizedDescription.UTF8String);
     NSURL *support = [NSFileManager.defaultManager URLsForDirectory:NSApplicationSupportDirectory inDomains:NSUserDomainMask].firstObject;
     NSURL *cache = [NSFileManager.defaultManager URLsForDirectory:NSCachesDirectory inDomains:NSUserDomainMask].firstObject;
     NSURL *documents = [NSFileManager.defaultManager URLsForDirectory:NSDocumentDirectory inDomains:NSUserDomainMask].firstObject;
@@ -68,7 +73,14 @@ static int RunStormNative(StormNativeApp& app, const rex::CLIArgList& args) {
       };
       session.frameStatistics = ^NSDictionary * {
         auto stats = application->GetGraphics().GetFrameStats();
-        return @{@"fps":@(stats.fps), @"frames":@(stats.frame_count), @"frameTimeMs":@(stats.frame_time_ms)};
+        double committed = 0, budget = 0;
+        auto& runtime = application->GetTitleRuntime();
+        if (runtime.IsLoaded()) {
+          auto& memory = runtime.GetGuestMemory().GetAddressSpace();
+          committed = memory.GetTitlePages()/256.0; budget = memory.GetBudgetPages()/256.0;
+        }
+        return @{@"fps":@(stats.fps), @"frames":@(stats.frame_count), @"frameTimeMs":@(stats.frame_time_ms),
+          @"titleCommittedMB":@(committed), @"titleBudgetMB":@(budget)};
       };
       while (!session.launchRequested && app.RunFrame()) {}
       if (session.ready && !rex::app::IsShutdownRequested()) {

@@ -23,6 +23,8 @@ jobs:
           with open(os.environ['GITHUB_ENV'],'a') as f:f.write('DEVELOPER_DIR='+app+'/Contents/Developer\n')
           print(app)
           PY
+      - name: Check app translations
+        run: python3 tools/check_app_localization.py
       - name: Compile actual UIKit controls and settings without game content
         run: |
           mkdir -p out/ControlsSmoke.app
@@ -34,9 +36,10 @@ jobs:
           xcrun --sdk iphonesimulator clang++ -std=c++23 -fobjc-arc -fblocks \
             -target "$(uname -m)-apple-ios17.0-simulator" -isysroot "$(xcrun --sdk iphonesimulator --show-sdk-path)" \
             -Iios -Iruntime ios/Native/Tests/ControlsSmoke.mm ios/Controls/StormControls.mm \
-            ios/Native/StormNativePreferences.mm ios/Native/StormNativeOptions.mm ios/Native/StormNativeHome.mm ios/Native/StormNativeMetrics.mm \
+            ios/Native/StormNativePreferences.mm ios/Native/StormNativeOptions.mm ios/Native/StormNativeHome.mm ios/Native/StormNativeMetrics.mm ios/Localization/StormLocalization.mm \
+            ios/Import/StormGameImporter.mm runtime/filesystem/zip_archive.cpp \
             -framework UIKit -framework Foundation -framework GameController -framework QuartzCore -framework CoreGraphics \
-            -o out/ControlsSmoke.app/ControlsSmoke
+            -lz -o out/ControlsSmoke.app/ControlsSmoke
           codesign --force --sign - out/ControlsSmoke.app
       - name: Exercise inputs, layout limits and persisted settings
         timeout-minutes: 12

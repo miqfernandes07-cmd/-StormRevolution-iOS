@@ -1,3 +1,4 @@
+#import "Localization/StormLocalization.h"
 #import "Controls/StormControls.h"
 #import <GameController/GameController.h>
 #include "input/xbox360_mapping.h"
@@ -89,14 +90,14 @@ CGFloat ClampCenter(CGFloat value, CGFloat length, CGFloat halfSize) {
     [_items addObject:button];
     [self addSubview:button];
   }
-  _leftStick = [self makeStick:@"L" tag:17 label:@"Analógico esquerdo"];
-  _rightStick = [self makeStick:@"R" tag:18 label:@"Analógico direito"];
+  _leftStick = [self makeStick:@"L" tag:17 label:SL(@"Analógico esquerdo")];
+  _rightStick = [self makeStick:@"R" tag:18 label:SL(@"Analógico direito")];
   _leftKnob = (UILabel *)_leftStick.subviews.firstObject;
   _rightKnob = (UILabel *)_rightStick.subviews.firstObject;
   for (NSUInteger i = 0; i < 3; ++i) {
     UIButton *button = [StormTouchButton buttonWithType:UIButtonTypeCustom];
     button.tag = 19 + i; button.hidden = YES;
-    [button setTitle:@[@"Jutsu",@"Supremo",@"Dash"][i] forState:UIControlStateNormal];
+    [button setTitle:@[SL(@"Jutsu"),SL(@"Supremo"),SL(@"Dash")][i] forState:UIControlStateNormal];
     [button setTitleColor:[UIColor colorWithRed:.65 green:.85 blue:1 alpha:1] forState:UIControlStateNormal];
     button.titleLabel.font = [UIFont systemFontOfSize:11 weight:UIFontWeightBold];
     button.titleLabel.adjustsFontSizeToFitWidth = YES;
@@ -125,7 +126,7 @@ CGFloat ClampCenter(CGFloat value, CGFloat length, CGFloat halfSize) {
   stick.tag = tag;
   stick.isAccessibilityElement = YES;
   stick.accessibilityLabel = label;
-  stick.accessibilityHint = @"Arraste em qualquer direção. Solte para centralizar.";
+  stick.accessibilityHint = SL(@"Arraste em qualquer direção. Solte para centralizar.");
   stick.accessibilityIdentifier = tag == 17 ? @"xbox-left-stick" : @"xbox-right-stick";
   UIPanGestureRecognizer *pan = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(moveStick:)];
   pan.maximumNumberOfTouches = 1;
@@ -150,7 +151,7 @@ CGFloat ClampCenter(CGFloat value, CGFloat length, CGFloat halfSize) {
   _controller.extendedGamepad.valueChangedHandler = nil;
   [NSNotificationCenter.defaultCenter removeObserver:self];
 }
-- (NSString *)connectionDescription { return _connectionDescription ?: @"Nenhum controle conectado"; }
+- (NSString *)connectionDescription { return _connectionDescription ?: SL(@"Nenhum controle conectado"); }
 - (NSString *)positionsKey { return (_mobileLayout && _mobileActionLabels) ? @"touchPositionsActionsV1" : (_mobileLayout ? @"touchPositionsMobileV3" : PositionsKey); }
 - (void)setMobileLayout:(BOOL)value {
   _mobileLayout = value;
@@ -167,7 +168,7 @@ CGFloat ClampCenter(CGFloat value, CGFloat length, CGFloat halfSize) {
 }
 - (void)updateButtonLabels {
   BOOL value = _playStationLabels;
-  NSArray *names = _mobileActionLabels ? @[@"Pulo",@"Ataque",@"Kunai",@"Chakra",@"Aliado 1",@"Aliado 2",@"Subst.",@"Guarda",@"PAUSA",@"VOLTAR",@"L3",@"R3"] : (value ? @[@"✕", @"○", @"□", @"△", @"L1", @"R1", @"L2", @"R2", @"OPTIONS", @"SHARE", @"L3", @"R3"]
+  NSArray *names = _mobileActionLabels ? @[SL(@"Pulo"),SL(@"Ataque"),SL(@"Kunai"),SL(@"Chakra"),SL(@"Aliado 1"),SL(@"Aliado 2"),SL(@"Subst."),SL(@"Guarda"),SL(@"PAUSA"),SL(@"VOLTAR"),@"L3",@"R3"] : (value ? @[@"✕", @"○", @"□", @"△", @"L1", @"R1", @"L2", @"R2", @"OPTIONS", @"SHARE", @"L3", @"R3"]
                          : @[@"A", @"B", @"X", @"Y", @"LB", @"RB", @"LT", @"RT", @"START", @"BACK", @"LS", @"RS"]);
   NSArray *colors = value ? @[[UIColor colorWithRed:.43 green:.70 blue:1 alpha:1],
       [UIColor colorWithRed:1 green:.47 blue:.53 alpha:1],
@@ -183,6 +184,8 @@ CGFloat ClampCenter(CGFloat value, CGFloat length, CGFloat halfSize) {
     button.titleLabel.adjustsFontSizeToFitWidth = YES;
     if (i < 4) [button setTitleColor:colors[i] forState:UIControlStateNormal];
   }
+  [(UIButton *)_items[19] setTitle:SL(@"Supremo") forState:UIControlStateNormal];
+  [self setNeedsLayout];
 }
 - (void)setControlScale:(CGFloat)value {
   _controlScale = std::isfinite(value) ? MIN(1.4, MAX(.65, value)) : 1;
@@ -271,9 +274,9 @@ CGFloat ClampCenter(CGFloat value, CGFloat length, CGFloat halfSize) {
       knob.bounds = CGRectMake(0, 0, itemWidth * scale * .58, itemHeight * scale * .58);
       knob.center = CGPointMake(view.bounds.size.width / 2, view.bounds.size.height / 2);
       knob.layer.cornerRadius = knob.bounds.size.width / 2;
-      knob.text = _mobileActionLabels ? (i == 16 ? @"MOVER" : @"CÂM.") : (_mobileLayout ? (i == 16 ? @"L3" : @"R3") : (i == 16 ? @"L" : @"R"));
+      knob.text = _mobileActionLabels ? (i == 16 ? SL(@"MOVER") : SL(@"CÂM.")) : (_mobileLayout ? (i == 16 ? @"L3" : @"R3") : (i == 16 ? @"L" : @"R"));
       knob.font = [UIFont systemFontOfSize:_mobileActionLabels ? 10 : 12 weight:UIFontWeightBold];
-      view.accessibilityHint = _mobileLayout ? @"Arraste para mover. Toque duas vezes para clicar o analógico." : @"Arraste para mover.";
+      view.accessibilityHint = _mobileLayout ? SL(@"Arraste para mover. Toque duas vezes para clicar o analógico.") : SL(@"Arraste para mover.");
     }
   }
   [self updateStickIndicators];
@@ -292,12 +295,12 @@ CGFloat ClampCenter(CGFloat value, CGFloat length, CGFloat halfSize) {
     BOOL pressed = i == 6 ? value.lt > .1f : (i == 7 ? value.rt > .1f : (value.buttons & ButtonBits[i]) != 0);
     button.backgroundColor = pressed ? [UIColor colorWithRed:.27 green:.34 blue:.43 alpha:1] : Surface();
     button.layer.borderWidth = pressed ? 2 : 1;
-    button.accessibilityValue = pressed ? @"Pressionado" : @"Solto";
+    button.accessibilityValue = pressed ? SL(@"Pressionado") : SL(@"Solto");
   }
   for (NSUInteger i = 18; i < _items.count; ++i) {
     UIButton *button = (UIButton *)_items[i]; BOOL active = button.tag == _shortcutTag;
     button.backgroundColor = active ? [UIColor colorWithRed:.20 green:.35 blue:.52 alpha:1] : Surface();
-    button.accessibilityValue = active ? @"Executando" : @"Pronto";
+    button.accessibilityValue = active ? SL(@"Executando") : SL(@"Pronto");
   }
   if (self.inputChanged) self.inputChanged(value.buttons, value.lx, value.ly, value.rx, value.ry, value.lt, value.rt);
 }
@@ -428,7 +431,7 @@ CGFloat ClampCenter(CGFloat value, CGFloat length, CGFloat halfSize) {
     [self readController:_controller.extendedGamepad];
     [self emit];
   }
-  NSString *description = _controller ? [NSString stringWithFormat:@"Controle conectado: %@", _controller.vendorName ?: @"Gamepad"] : @"Nenhum controle conectado";
+  NSString *description = _controller ? [NSString stringWithFormat:SL(@"Controle conectado: %@"), _controller.vendorName ?: @"Gamepad"] : SL(@"Nenhum controle conectado");
   if (![_connectionDescription isEqualToString:description]) {
     _connectionDescription = [description copy];
     if (self.connectionChanged) self.connectionChanged(_connectionDescription);
