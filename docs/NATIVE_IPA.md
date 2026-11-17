@@ -8,8 +8,12 @@ O SDK aberto com 17 frameworks iPhone ARM64 passou pelo link de um fixture e
 pela compilação do frontend no run público
 [44003543615](https://github.com/miqfernandes07-cmd/-StormRevolution-iOS/actions/runs/44003543615).
 A compilação privada seguinte aprovou todos os fontes do título para iPhone;
-o primeiro link completo apontou CoreGraphics ausente, agora incluído no alvo.
-O novo link e o empacotamento ainda estão em andamento.
+o primeiro link completo apontou CoreGraphics ausente, depois incluído no alvo.
+O run privado 44007706307 aprovou a compilação e o link completos. O arquivo
+IPA não foi concluído nesse run porque o script confundiu uma pasta provisória
+do Xcode com o aplicativo final. A seleção da pasta e a inclusão dos frameworks
+foram corrigidas; a nova verificação continua em andamento.
+[Relatório do link](validation/native-iphone-link-2026-11-17.json).
 
 ## Build privado
 

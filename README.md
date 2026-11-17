@@ -1,11 +1,13 @@
 # Storm Revolution — pesquisa de port nativo para iOS
 
 Projeto de port AOT PowerPC → C++ → ARM64 de Naruto Shippuden:
-Ultimate Ninja Storm Revolution, versão Xbox 360. **O jogo ainda não executa no iOS.**
+Ultimate Ninja Storm Revolution, versão Xbox 360. **Ainda não há gameplay validado no iPhone.**
 Em 2026-11-16, um experimento privado com ReXGlue compilou o título completo
 no Linux e exibiu abertura, título, diálogos de salvamento e menu de modos.
 START, A e seleção responderam; um save foi gravado. Não há combate comprovado.
-O frontend iPhone com ReXGlue está em integração, sem IPA nativo validado.
+O alvo iPhone `StormNative` já passou pela compilação e pelo link completos;
+o empacotamento está em correção, sem IPA nativo ou execução no aparelho validados.
+[Build nativo](docs/NATIVE_IPA.md).
 [Estado atual e limites](docs/REXGLUE_BOOT_2026_11_16.md).
 
 A CI produziu um IPA não assinado de infraestrutura; não há instalação no iPhone

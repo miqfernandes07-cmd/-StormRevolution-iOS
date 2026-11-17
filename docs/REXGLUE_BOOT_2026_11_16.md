@@ -1,7 +1,9 @@
 # Boot privado com ReXGlue — 2026-11-16
 
-Ainda não há versão jogável no iPhone. O aplicativo UIKit não incorpora o
-ReXGlue nem o código comercial recompilado. O novo experimento privado Linux
+Ainda não há versão jogável no iPhone. O aplicativo UIKit diagnóstico não
+incorpora o ReXGlue nem o código comercial recompilado. O alvo separado
+`StormNative` já passou pelo link completo para iPhone, mas seu IPA e sua
+execução no aparelho ainda estão em verificação. O novo experimento privado Linux
 compilou e vinculou o título completo e exibiu gráficos reais de inicialização:
 indicador de carregamento, logotipos, vídeo de abertura, tela de título e diálogos
 de salvamento e o menu principal de modos. START, seleção pelo analógico e A
@@ -146,6 +148,11 @@ fontes/headers derivados e nenhum XEX ou recurso do jogo. O proprietário criou 
 criação automática. A visibilidade privada e o acesso ADMIN foram conferidos.
 O build do título foi iniciado no run privado 44004158738. Um workflow
 seguinte reutiliza o pacote aberto verificado para recompilar somente o app.
+O run privado 44007706307 aprovou a compilação e o link do aplicativo completo;
+a etapa de archive encontrou duas pastas `.app`, uma delas provisória do
+Xcode. A correção seleciona a pasta que contém o executável e usa a fase de
+embedding do Xcode para os frameworks, incluindo as licenças no bundle.
+[Relatório do link](validation/native-iphone-link-2026-11-17.json).
 Nunca usar a CI pública como substituição para compilar o título comercial.
 
 ## Retomar neste workspace
