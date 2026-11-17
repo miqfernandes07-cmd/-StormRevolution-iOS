@@ -44,13 +44,15 @@ static int RunStormNative(StormNativeApp& app, const rex::CLIArgList& args) {
     } else {
       StormNativeSession *session = [[StormNativeSession alloc] initWithWindow:(__bridge UIWindow *)native->window];
       while (!session.ready && app.RunFrame()) {}
-      if (session.ready && !rex::app::IsShutdownRequested() && [session attachControls]) {
-        auto launch = app.LaunchTitle();
-        if (launch) app.Run();
-        else {
-          [session showFailure:[NSString stringWithUTF8String:launch.error().GetDescription().c_str()]];
-          while (app.RunFrame()) {}
-        }
+      if (session.ready && !rex::app::IsShutdownRequested()) {
+        if ([session attachControls]) {
+          auto launch = app.LaunchTitle();
+          if (launch) app.Run();
+          else {
+            [session showFailure:[NSString stringWithUTF8String:launch.error().GetDescription().c_str()]];
+            while (app.RunFrame()) {}
+          }
+        } else while (app.RunFrame()) {}
       }
       [session invalidate];
     }
