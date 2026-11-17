@@ -1,0 +1,55 @@
+--- a/include/rex/platform/native_window.h
++++ b/include/rex/platform/native_window.h
+@@ -21,12 +21,13 @@
+     kCocoa,   /**< window is an NSWindow pointer and layer a CAMetalLayer pointer. */
+     kWayland, /**< window is a wl_surface pointer and display a wl_display pointer. */
+     kX11,     /**< window is an X11 Window id stored as an integer and display a Display pointer. */
++    kUIKit,  /**< window is a UIWindow pointer and layer a CAMetalLayer pointer. */
+   };
+   Type type = Type::kNone;
+   void* window = nullptr;
+-  /** The display connection. Null on Win32 and Cocoa. */
++  /** The display connection. Null on Win32, Cocoa and UIKit. */
+   void* display = nullptr;
+-  /** The CAMetalLayer on Cocoa. Created on first request and owned by the window. */
++  /** The CAMetalLayer on Cocoa and UIKit. Created on first request and owned by the window. */
+   void* layer = nullptr;
+   /** The SDL_Window of an SDL backed window on every platform, otherwise null. */
+   void* sdl = nullptr;
+--- a/src/gpu/xenos/host/surface.cpp
++++ b/src/gpu/xenos/host/surface.cpp
+@@ -17,6 +17,7 @@
+     case NativeWindow::Type::kX11:
+       return kTypeIndexXCBWindow;
+     case NativeWindow::Type::kCocoa:
++    case NativeWindow::Type::kUIKit:
+       return kTypeIndexCAMetalLayer;
+     default:
+       return kTypeIndexWin32HWND;
+--- a/src/ui/sdl3/sdl3_ui_driver.cpp
++++ b/src/ui/sdl3/sdl3_ui_driver.cpp
+@@ -714,6 +714,24 @@
+ #endif
+     return result;
+   }
++#if defined(__APPLE__) && TARGET_OS_IPHONE
++  if (void* ui_window =
++          SDL_GetPointerProperty(props, SDL_PROP_WINDOW_UIKIT_WINDOW_POINTER, nullptr)) {
++    result.type = NativeWindow::Type::kUIKit;
++    result.window = ui_window;
++    State& mutable_state = *state_;
++    if (!mutable_state.metal_view) {
++      mutable_state.metal_view = SDL_Metal_CreateView(s.window);
++    }
++    result.layer = mutable_state.metal_view
++                       ? SDL_Metal_GetLayer(static_cast<SDL_MetalView>(mutable_state.metal_view))
++                       : nullptr;
++    if (!result.layer) {
++      return Err<NativeWindow>(ErrorCategory::kNotFound, "SDL UIKit window has no Metal layer");
++    }
++    return result;
++  }
++#endif
+   if (void* surface =
+           SDL_GetPointerProperty(props, SDL_PROP_WINDOW_WAYLAND_SURFACE_POINTER, nullptr)) {
+     result.type = NativeWindow::Type::kWayland;

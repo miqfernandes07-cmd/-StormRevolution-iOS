@@ -10,8 +10,8 @@ on:
     inputs:
       stage:
         type: choice
-        default: core
-        options: [base, core]
+        default: drivers
+        options: [base, core, drivers]
 permissions:
   contents: read
 jobs:
@@ -103,7 +103,7 @@ jobs:
           pathlib.Path('out/ios-base/report.json').write_text(json.dumps(report,indent=2)+'\n')
           PY
       - name: Compile and link Xbox runtime modules
-        if: github.event_name == 'push' || inputs.stage == 'core'
+        if: github.event_name == 'push' || inputs.stage == 'core' || inputs.stage == 'drivers'
         run: |
           set -o pipefail
           cmake --build build-rex-ios --target rexppc rexkernel rexxam rexxbdm rexxenos \
@@ -122,6 +122,28 @@ jobs:
                   'static_xenos_built':True,'gpu_driver_linked':False,
                   'device_executed':False,'game_executed':False,'ios_runtime_qualified':False}
           pathlib.Path('out/ios-base/core-report.json').write_text(json.dumps(report,indent=2)+'\n')
+          PY
+      - name: Compile SDL UIKit and Vulkan runtime drivers
+        if: github.event_name == 'push' || inputs.stage == 'drivers'
+        run: |
+          set -o pipefail
+          cmake --build build-rex-ios --target rexapp rexui-sdl3 rexhid-sdl3 \
+            rexapu-sdl3 rexgpu-xenos-vulkan --parallel 3 \
+            2>&1 | tee out/ios-base/drivers-build.txt
+          python3 - <<'PY'
+          import json,pathlib,subprocess
+          root=pathlib.Path('sdk-source/out')
+          targets=['rexapp','rexui-sdl3','rexhid-sdl3','rexapu-sdl3','rexgpu-xenos-vulkan']
+          for target in targets:
+              libraries=list(root.rglob('lib'+target+'.dylib'))
+              assert len(libraries)==1,(target,libraries)
+              info=subprocess.check_output(['xcrun','vtool','-show-build',str(libraries[0])],text=True)
+              assert 'platform IOS' in info,info
+              print(info)
+          report={'scope':'runtime_driver_libraries_only','linked_iOS_modules':targets,
+                  'application_linked':False,'device_executed':False,'game_executed':False,
+                  'ios_runtime_qualified':False}
+          pathlib.Path('out/ios-base/drivers-report.json').write_text(json.dumps(report,indent=2)+'\n')
           PY
       - name: Upload compilation diagnostics only
         if: always()
