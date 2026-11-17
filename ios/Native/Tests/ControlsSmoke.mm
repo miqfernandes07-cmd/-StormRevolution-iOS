@@ -16,9 +16,9 @@
   UIViewController *root = [UIViewController new];
   self.window.rootViewController = root;
   [self.window makeKeyAndVisible];
-  dispatch_after(dispatch_time(DISPATCH_TIME_NOW, NSEC_PER_SEC), dispatch_get_main_queue(), ^{
-    [self runChecks:root];
-  });
+  // Enter from a run-loop timer, not a main-queue block. The shortcut checks
+  // pump the run loop and must let scheduled main-queue input steps run.
+  [self performSelector:@selector(runChecks:) withObject:root afterDelay:1];
   return YES;
 }
 - (void)runChecks:(UIViewController *)root {
@@ -106,6 +106,7 @@
   void (^pump)(NSTimeInterval) = ^(NSTimeInterval seconds) {
     NSDate *end = [NSDate dateWithTimeIntervalSinceNow:seconds];
     while (end.timeIntervalSinceNow > 0) [NSRunLoop.currentRunLoop runUntilDate:[NSDate dateWithTimeIntervalSinceNow:.01]];
+    [NSRunLoop.currentRunLoop runUntilDate:[NSDate dateWithTimeIntervalSinceNow:.02]];
   };
   NSArray *sequences = @[@[@(storm::input::xbox360::y),@0,@(storm::input::xbox360::b),@0],
     @[@(storm::input::xbox360::y),@0,@(storm::input::xbox360::y),@0,@(storm::input::xbox360::b),@0],
