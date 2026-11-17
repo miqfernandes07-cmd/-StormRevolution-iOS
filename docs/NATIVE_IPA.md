@@ -14,9 +14,11 @@ IPA não foi concluído nesse run porque o script confundiu uma pasta provisóri
 do Xcode com o aplicativo final. A seleção da pasta e a inclusão dos frameworks foram corrigidas. O run
 privado 44018437659 passou pelo build e archive completos. A auditoria estática
 confirmou ARM64/iOS, 17 frameworks com dependências presentes, rpath do bundle,
-licenças e 37.255.824 bytes na seção de código recompilado. Esse IPA usa a
-versão anterior do backend de memória e será atualizado antes da indicação
-para teste no aparelho.
+licenças e 37.255.824 bytes na seção de código recompilado. O build 2 foi
+reempacotado com o novo backend de memória no run privado 44022730725 e
+publicado privadamente no run 44022871358. Seus 17 hashes de frameworks
+correspondem ao SDK verificado; o executável comercial permaneceu idêntico.
+[Auditoria do IPA atual](validation/native-iphone-ipa-v2-2026-11-17.json).
 [Relatório do link](validation/native-iphone-link-2026-11-17.json).
 
 ## Memória no sandbox
@@ -30,12 +32,15 @@ O teste do helper real passou por 25 verificações no Linux/UBSan e no macOS:
 dois aliases coerentes acima de 4 GiB, tamanho esparso, nome removido, descriptor
 close-on-exec, restrição de escrita no descriptor somente leitura, validade dos
 views depois de fechar o descriptor e rejeição de tamanhos inválidos. A
-compilação para iPhone também passou; o link do SDK completo está em andamento.
+compilação e o link do SDK completo para iPhone passaram no
+[run 44020335898](https://github.com/miqfernandes07-cmd/-StormRevolution-iOS/actions/runs/44020335898).
 Não houve execução desse backend em aparelho físico.
 
 O reempacotamento mantém o executável comercial já vinculado apenas quando
 todos os headers públicos do SDK são idênticos aos usados nessa compilação.
-O novo pacote precisa conter o quinto adaptador; depois é inspecionado de novo.
+O pacote contém o quinto adaptador e passou de novo pela inspeção do
+executável, dos frameworks, das dependências, das licenças e do SHA-256.
+A publicação privada oferece o IPA não assinado para teste no aparelho.
 
 ## Build privado
 

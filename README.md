@@ -6,8 +6,9 @@ Em 2026-11-16, um experimento privado com ReXGlue compilou o título completo
 no Linux e exibiu abertura, título, diálogos de salvamento e menu de modos.
 START, A e seleção responderam; um save foi gravado. Não há combate comprovado.
 O alvo iPhone `StormNative` já gerou um IPA ARM64 com os 17 frameworks
-embutidos e dependências conferidas. A adaptação de memória ao sandbox está
-em integração; ainda não há execução em aparelho físico validada.
+embutidos e dependências conferidas. O build 2 inclui memória respaldada por
+arquivo temporário privado para iOS. Ainda não há execução em aparelho físico
+ou gameplay validados.
 [Build nativo](docs/NATIVE_IPA.md).
 [Estado atual e limites](docs/REXGLUE_BOOT_2026_11_16.md).
 
