@@ -1,5 +1,14 @@
 # Retomada direta do boot comercial
 
+Atualização após o teste do build 3: o proprietário relatou corrupção da imagem
+desde a abertura e os menus, enviando captura, logs 005/006 e native-session.
+Versão de iOS informada pelo diagnóstico: 27.2; o perfil solicitava FSI. O
+build nativo 4 / 0.4.1 passou no run privado 44057527412 com dois perfis host,
+opção Seguro com render passes clássicos, migração de cache e nova tela inicial.
+O build 5 adicionou o ícone no run privado 44060974749, mantendo executável e
+frameworks idênticos. O IPA foi publicado e auditado; falta novo teste físico.
+O estado operacional atualizado permanece em `private/NATIVE_IPA_STATE.json`.
+
 O IPA nativo experimental build 3 / 0.4.0 está publicado e auditado:
 `native-iphone-run-44029386428`. O proprietário executou o build 2 em iPhone
 15 Pro, selecionou personagens e chegou à luta, mas relatou crashes e tela preta

@@ -1,6 +1,21 @@
 # Progresso — atualização em 2026-11-17
 
-## Marco atual: execução física e atualização nativa 0.4.0
+## Marco atual: nova tela inicial, ícone e perfis gráficos 0.4.1
+
+O teste do build 3 apresentou artefatos desde a abertura e os menus. A versão
+0.4.1 retira a solicitação de FSI dos dois perfis; Seguro usa render passes
+clássicos, resolve completo e a conversão automática de primitivas. O cache
+gráfico é limpo uma vez, preservando arquivos importados, saves e controles.
+
+A tela inicial ganhou destaque para Jogar, cartão de biblioteca/importação,
+acesso a controles e gráficos e crédito para MiquéiasF07. A arte própria do
+ícone usa uma shuriken com energia laranja e azul, compilada em asset catalog.
+As 127 verificações UIKit passaram e a captura da tela foi inspecionada.
+O build nativo 44057527412 passou; o pacote com ícone 44060974749 preservou
+exatamente o executável e os frameworks e foi publicado privadamente.
+A correção visual e o gameplay estável exigem teste físico.
+
+## Histórico: execução física e atualização nativa 0.4.0
 
 O proprietário instalou o build 2 no iPhone 15 Pro, selecionou personagens e
 chegou à luta, mas relatou crashes no carregamento e tela preta. Três logs

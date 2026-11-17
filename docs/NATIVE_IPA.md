@@ -29,7 +29,12 @@ privado do alocador/cópia. O IPA de 20.186.253 bytes passou pela auditoria na C
 e por conferência independente do checksum, identidade do bundle, frameworks
 iOS e ligação dos dois hooks aos originais.
 [Auditoria do build 3](validation/native-iphone-ipa-v3-2026-11-17.json).
-Este build ainda requer teste físico. O teste UIKit do
+O teste físico posterior encontrou artefatos desde a abertura e nos menus com
+o perfil Compatível. O diagnóstico solicitava FSI; o caminho efetivamente
+selecionado pode sofrer fallback interno e não está exposto pelo SDK. Os logs
+005/006 e a captura não comprovam a origem exata da corrupção. Esses arquivos
+não contêm outro SIGBUS ou falha de alocação, o que também não comprova que os
+crashes da luta foram corrigidos. O teste UIKit do
 [run 44030440277](https://github.com/miqfernandes07-cmd/-StormRevolution-iOS/actions/runs/44030440277)
 passou por 116 verificações programáticas sem executar o jogo.
 
@@ -57,18 +62,51 @@ A publicação privada oferece o IPA não assinado para teste no aparelho.
 
 ## Ajustes após o teste físico
 
-O frontend 0.4.0 mantém o bundle ID e os dados importados. Inclui botões
+O frontend mantém o bundle ID e os dados importados. Inclui botões
 PlayStation/Xbox, disposição para celular/clássica, edição de posições, tamanho,
 opacidade, vibração opcional, controle externo e crédito para MiquéiasF07.
 A engrenagem abre os ajustes e permite compartilhar os logs. Abrir os ajustes
 bloqueia o controle virtual, mas a pausa deve ser acionada com OPTIONS no jogo.
 
-O perfil Compatível solicita FSI, espera a compilação dos shaders, mantém
-readback de recursos, limita caches e usa o teto de memória de título de 512 MiB
-suportado pelo SDK. São medidas de compatibilidade que precisam de novo teste
-físico. O perfil Padrão continua disponível. Tela preenchida pode alterar a
+O perfil Seguro da versão 0.4.1 solicita render targets host e render passes
+tradicionais, espera os shaders, mantém readback e usa a cópia completa de
+resolves. O perfil Padrão também solicita host, com dynamic rendering. Nenhum
+dos dois solicita FSI. A conversão de primitivas volta à seleção automática do
+driver. O teto de memória de título permanece em 512 MiB no perfil Seguro.
+Essas medidas precisam de confirmação física; não são uma correção comprovada
+do backend gráfico. Tela preenchida pode alterar a
 proporção; Original preserva a proporção do jogo. Mudanças no renderizador,
 resolução, escala e FXAA exigem reabrir o aplicativo.
+
+A versão 0.4.1 apresenta uma tela inicial UIKit própria: destaque para Jogar,
+estado da biblioteca/importação, cartão de controles e gráficos e crédito para
+MiquéiasF07. O teste de simulador usa a mesma classe que o aplicativo nativo.
+Na primeira abertura após a atualização, a revisão do renderizador agenda a
+remoção de `Caches/Native`; o jogo importado, os saves e as posições dos
+controles mantêm seus diretórios e preferências. Se a remoção falhar, fica
+pendente para a próxima abertura.
+
+O ícone próprio usa uma shuriken com energia laranja e azul. A arte original
+fica em `ios/Native/Icon/StormIcon.png`; o script de preparação gera um PNG RGB
+opaco de 1024×1024 para o asset catalog. O compilador de assets da Apple gera
+os tamanhos usados pelo iPhone e os metadados `CFBundleIcons`. A integração
+também está no CMake do alvo nativo para os próximos builds.
+
+A nova tela inicial, os controles, os dois perfis sem FSI e a migração do cache
+passaram por 127 verificações programáticas no
+[run 44057533788](https://github.com/miqfernandes07-cmd/-StormRevolution-iOS/actions/runs/44057533788).
+A captura real da tela inicial foi inspecionada. O estado de biblioteca dessa
+captura é sintético; não há execução do jogo no simulador.
+[Relatório](validation/native-home-2026-11-17.json).
+
+O build nativo completo 44057527412 passou. O run 44060974749 adicionou o ícone
+usando `actool`, declarou `CFBundleIcons` e manteve o executável e todos os
+frameworks idênticos, byte a byte. O IPA 0.4.1 / build 5 foi publicado no run
+44061631559 e passou pela auditoria independente de ARM64/iOS, dependências,
+checksum, identidade, classe da nova tela e recursos do ícone.
+[Auditoria do pacote com ícone](validation/native-iphone-ipa-v5-2026-11-17.json).
+O comportamento gráfico e o gameplay dessa versão ainda não foram confirmados
+em aparelho físico.
 
 Os dois crashes foram localizados na cópia de recursos, com destino inválido.
 Uma instrumentação privada registra falhas do alocador e os argumentos antes

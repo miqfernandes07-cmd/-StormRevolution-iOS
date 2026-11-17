@@ -32,6 +32,16 @@ add_executable(StormNative MACOSX_BUNDLE
   ../Import/StormGameImporter.mm ../Controls/StormControls.mm
   ../../runtime/filesystem/zip_archive.cpp
   $<TARGET_OBJECTS:storm_native_title>)
+set(native_icon_catalog "${CMAKE_CURRENT_BINARY_DIR}/Assets.xcassets")
+execute_process(
+  COMMAND bash "${PROJECT_SOURCE_DIR}/ios/scripts/prepare-native-icon.sh"
+    "${CMAKE_CURRENT_SOURCE_DIR}/Icon/StormIcon.png" "${native_icon_catalog}"
+  COMMAND_ERROR_IS_FATAL ANY)
+set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS
+  "${CMAKE_CURRENT_SOURCE_DIR}/Icon/StormIcon.png"
+  "${PROJECT_SOURCE_DIR}/ios/scripts/prepare-native-icon.sh")
+set_source_files_properties("${native_icon_catalog}" PROPERTIES MACOSX_PACKAGE_LOCATION Resources)
+target_sources(StormNative PRIVATE "${native_icon_catalog}")
 set(STORM_NATIVE_HOOK_SOURCES "" CACHE STRING "Optional private title diagnostics sources")
 if(STORM_NATIVE_HOOK_SOURCES)
   target_sources(StormNative PRIVATE ${STORM_NATIVE_HOOK_SOURCES})
@@ -75,6 +85,7 @@ target_link_libraries(StormNative PRIVATE ZLIB::ZLIB "${STORM_REX_IOS_SDK}/lib/l
   "-framework Foundation" "-framework UIKit" "-framework UniformTypeIdentifiers"
   "-framework GameController" "-framework QuartzCore" "-framework CoreGraphics")
 set_target_properties(StormNative PROPERTIES
+  XCODE_ATTRIBUTE_ASSETCATALOG_COMPILER_APPICON_NAME AppIcon
   XCODE_GENERATE_SCHEME TRUE
   MACOSX_BUNDLE_INFO_PLIST "${CMAKE_CURRENT_SOURCE_DIR}/Info.plist"
   XCODE_ATTRIBUTE_PRODUCT_BUNDLE_IDENTIFIER "org.stormrevolution.native"

@@ -2,23 +2,24 @@
 
 Projeto de port AOT PowerPC → C++ → ARM64 de Naruto Shippuden:
 Ultimate Ninja Storm Revolution, versão Xbox 360. **O jogo abre no iPhone 15 Pro,
-mas o gameplay ainda apresenta crashes e tela preta.**
+mas o gameplay ainda apresenta crashes, tela preta e regressões gráficas.**
 Em 2026-11-16, um experimento privado com ReXGlue compilou o título completo
 no Linux e exibiu abertura, título, diálogos de salvamento e menu de modos.
 START, A e seleção responderam; um save foi gravado no Linux.
 O alvo iPhone `StormNative` já gerou um IPA ARM64 com os 17 frameworks
 embutidos e dependências conferidas. O proprietário executou o build 2 no
 iPhone 15 Pro, selecionou personagens e chegou a uma luta; forneceu captura e
-três logs. O build 3 / versão 0.4.0 foi publicado privadamente com controles
-PlayStation/celular, ajustes gráficos e de toque, tela preenchida, crédito para
-MiquéiasF07 e diagnóstico de carregamento. A compilação e a auditoria do IPA
-passaram; a estabilidade dessa atualização depende de novo teste físico.
+três logs. O teste do build 3 encontrou artefatos desde a abertura e os menus.
+A versão 0.4.1 / build 5 traz dois perfis sem solicitar FSI, migração do cache,
+nova tela inicial, ícone ninja, controles PlayStation/celular e crédito para
+MiquéiasF07. O IPA foi compilado e auditado; a correção da imagem e a
+estabilidade dessa atualização dependem de novo teste físico.
 [Build nativo](docs/NATIVE_IPA.md).
 [Estado atual e limites](docs/REXGLUE_BOOT_2026_11_16.md).
 
 A CI pública também produz um aplicativo de infraestrutura separado. Ele não
 contém o título. O aplicativo nativo e o código recompilado permanecem privados.
-Os controles/ajustes UIKit passaram por 116 verificações programáticas no
+Os controles, a tela inicial e os ajustes passaram por 127 verificações no
 simulador; isso não valida gameplay nem toques no aparelho.
 
 O código original deste repositório é MIT. Não inclui jogo, código comercial
