@@ -6,6 +6,7 @@
 #import "StormNativeOptions.h"
 #import "StormNativeHome.h"
 #import "StormNativeMetrics.h"
+#import "StormNativeSaveProfiles.h"
 #import <UniformTypeIdentifiers/UniformTypeIdentifiers.h>
 #import <os/proc.h>
 #include <SDL3/SDL.h>
@@ -60,6 +61,8 @@
   [_playButton addTarget:self action:@selector(play) forControlEvents:UIControlEventTouchUpInside];
   [_importButton addTarget:self action:@selector(chooseZIP) forControlEvents:UIControlEventTouchUpInside];
   [home.optionsButton addTarget:self action:@selector(showOptions) forControlEvents:UIControlEventTouchUpInside];
+  home.cheatSwitch.on = [StormNativePreferences.values[@"cheatMode"] boolValue];
+  [home.cheatSwitch addTarget:self action:@selector(cheatsChanged:) forControlEvents:UIControlEventValueChanged];
   __weak StormNativeSession *weakSelf = self;
   [StormGameImporter validateInstalledWithCompletion:^(NSDictionary *validation, NSError *error) {
     StormNativeSession *session = weakSelf;
@@ -104,6 +107,15 @@
   return self;
 }
 - (void)play { if (self.ready && !self.fatalFailure) self.launchRequested = YES; }
+- (void)cheatsChanged:(UISwitch *)sender {
+  if (self.launchRequested) return;
+  NSError *error = nil;
+  if (![StormNativeSaveProfiles selectCheats:sender.on error:&error]) {
+    sender.on = !sender.on; self.status.text = error.localizedDescription; return;
+  }
+  [StormNativePreferences setValue:@(sender.on) forKey:@"cheatMode"];
+  [self writeSessionReport:@"cheat-profile-selected"];
+}
 - (void)chooseZIP {
   UIDocumentPickerViewController *picker = [[UIDocumentPickerViewController alloc]
       initForOpeningContentTypes:@[UTTypeZIP] asCopy:NO];
@@ -285,6 +297,7 @@
     @"memoryAvailableMB":@(os_proc_available_memory() / (1024 * 1024)),
     @"memoryWarnings":@(self.memoryWarningCount),
     @"preferences":StormNativePreferences.values, @"runtimeRequested":StormNativePreferences.runtimeValues,
+    @"saveProfile":StormNativeSaveProfiles.activeURL.URLByResolvingSymlinksInPath.lastPathComponent ?: @"unknown",
     @"runtimeConfigured":configured, @"performance":[self.metrics report],
     @"updatedAt":NSDate.date.description};
   NSData *data = [NSJSONSerialization dataWithJSONObject:report options:NSJSONWritingPrettyPrinted error:nil];

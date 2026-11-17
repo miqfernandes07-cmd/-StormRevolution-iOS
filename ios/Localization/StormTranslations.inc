@@ -919,5 +919,45 @@ static const char *const StormTranslationJSON = R"storm({
     "de": "Entfernt das virtuelle 512-MB-Budgetlimit des Titels. iOS begrenzt weiterhin den RAM. App neu starten.",
     "it": "Rimuove il limite virtuale di 512 MB del titolo. iOS limita ancora la RAM disponibile. Riavvia l’app.",
     "ja": "タイトルの仮想メモリ予算の512 MB上限を解除します。使用可能なRAMはiOSの制限に従います。再起動で適用します。"
+  },
+  "Modo trapaça": {
+    "en": "Cheat mode",
+    "es": "Modo trucos",
+    "fr": "Mode triche",
+    "de": "Cheat-Modus",
+    "it": "Modalità trucchi",
+    "ja": "チートモード"
+  },
+  "Personagens e coleções • save separado": {
+    "en": "Characters and collections • separate save",
+    "es": "Personajes y colecciones • partida separada",
+    "fr": "Personnages et collections • sauvegarde séparée",
+    "de": "Charaktere und Sammlung • eigener Spielstand",
+    "it": "Personaggi e collezioni • salvataggio separato",
+    "ja": "キャラクター・コレクション／専用セーブ"
+  },
+  "Usa um save separado. Desligue para voltar ao seu progresso normal.": {
+    "en": "Uses a separate save. Turn off to return to your normal progress.",
+    "es": "Usa una partida separada. Desactiva para volver a tu progreso normal.",
+    "fr": "Utilise une sauvegarde séparée. Désactivez pour retrouver votre progression normale.",
+    "de": "Nutzt einen eigenen Spielstand. Ausschalten, um zum normalen Fortschritt zurückzukehren.",
+    "it": "Usa un salvataggio separato. Disattiva per tornare ai progressi normali.",
+    "ja": "専用のセーブを使います。オフにすると通常の進行状況に戻ります。"
+  },
+  "Desempenho": {
+    "en": "Performance",
+    "es": "Rendimiento",
+    "fr": "Performances",
+    "de": "Leistung",
+    "it": "Prestazioni",
+    "ja": "パフォーマンス"
+  },
+  "Desempenho é experimental: desativa cópias de resolve para CPU, mantendo memexport e o renderizador clássico. Pode causar artefatos; nesse caso, volte a Seguro. Os perfis exigem reabrir o aplicativo.": {
+    "en": "Performance is experimental: disables resolve copies to the CPU while retaining memexport and the classic renderer. May cause artifacts; switch to Safe if so. Profiles require an app restart.",
+    "es": "Rendimiento es experimental: desactiva copias de resolve a la CPU, manteniendo memexport y el renderizador clásico. Puede causar artefactos; vuelve a Seguro si ocurre. Reinicia la app al cambiar perfiles.",
+    "fr": "Performances est expérimental : désactive les copies de resolve vers le CPU, conserve memexport et le moteur classique. Des artefacts sont possibles ; revenez à Sûr si nécessaire. Relancez l’application après un changement de profil.",
+    "de": "Leistung ist experimentell: deaktiviert Resolve-Kopien zur CPU, behält Memexport und den klassischen Renderer. Bei Bildfehlern zu Sicher wechseln. Profile erfordern einen App-Neustart.",
+    "it": "Prestazioni è sperimentale: disattiva le copie resolve verso la CPU, mantenendo memexport e il renderer classico. Se compaiono artefatti, torna a Sicuro. I profili richiedono un riavvio dell’app.",
+    "ja": "実験的な設定です。memexportと従来の描画方式を維持し、CPUへのresolveコピーを無効化します。表示が乱れたら安全に戻してください。プロファイル変更後はアプリを再起動してください。"
   }
 })storm";

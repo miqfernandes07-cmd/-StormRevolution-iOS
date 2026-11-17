@@ -22,7 +22,7 @@
 }
 - (NSString *)tableView:(UITableView *)tableView titleForFooterInSection:(NSInteger)section {
   return @[SL(@"Controles por ações e atalhos de golpes. Arraste em Organizar. Pause o jogo antes de ajustar."),
-    SL(@"Rápido é experimental e pode causar artefatos. Use Seguro se isso ocorrer. Perfil, resolução, escala e FXAA exigem reabrir o aplicativo."),
+    SL(@"Desempenho é experimental: desativa cópias de resolve para CPU, mantendo memexport e o renderizador clássico. Pode causar artefatos; nesse caso, volte a Seguro. Os perfis exigem reabrir o aplicativo."),
     SL(@"O cache é limpo na próxima abertura. Os logs incluem FPS, temperatura e memória para investigar falhas."),
     SL(@"Port nativo experimental. Seus arquivos importados e saves são preservados nas atualizações.")][section];
 }
@@ -69,7 +69,7 @@
   } else if (index.section == 1) {
     cell.textLabel.text = @[SL(@"Tela"),SL(@"Perfil gráfico"),SL(@"Shaders"),SL(@"Modo de vídeo"),SL(@"Escala interna"),SL(@"Limite de quadros"),SL(@"Suavização FXAA"),SL(@"Usar memória ampliada")][row];
     if (row == 0) cell.accessoryView = [self segments:@[SL(@"Preencher"),SL(@"Original")] key:@"fill" selected:[v[@"fill"] boolValue] ? 0 : 1];
-    if (row == 1) cell.accessoryView = [self segments:@[SL(@"Seguro"),SL(@"Rápido"),SL(@"Padrão")] key:@"graphicsProfile" selected:[v[@"compatible"] boolValue] ? ([v[@"fastReadback"] boolValue] ? 1 : 0) : 2];
+    if (row == 1) cell.accessoryView = [self segments:@[SL(@"Seguro"),SL(@"Rápido"),SL(@"Padrão"),SL(@"Desempenho")] key:@"graphicsProfile" selected:[v[@"reducedReadbacks"] boolValue] ? 3 : ([v[@"compatible"] boolValue] ? ([v[@"fastReadback"] boolValue] ? 1 : 0) : 2)];
     if (row == 2) cell.accessoryView = [self segments:@[SL(@"Estável"),SL(@"Assíncrono")] key:@"async" selected:[v[@"async"] boolValue] ? 1 : 0];
     if (row == 3) cell.accessoryView = [self segments:@[@"480p",@"720p"] key:@"resolution" selected:[v[@"resolution"] isEqual:@"640x480"] ? 0 : 1];
     if (row == 4) cell.accessoryView = [self segments:@[@"1×",@"2×"] key:@"renderScale" selected:[v[@"renderScale"] integerValue] == 2 ? 1 : 0];
@@ -104,6 +104,7 @@
     [self.tableView reloadData]; return;
   }
   if ([key isEqual:@"graphicsProfile"]) {
+    [StormNativePreferences setValue:@(i == 3) forKey:@"reducedReadbacks"];
     [StormNativePreferences setValue:@(i != 2) forKey:@"compatible"];
     [self notify:@"fastReadback" value:@(i == 1)]; return;
   }

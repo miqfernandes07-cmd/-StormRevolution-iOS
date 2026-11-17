@@ -3,6 +3,8 @@
 #import "StormNativeSession.h"
 #import "Import/StormGameImporter.h"
 #import "StormNativePreferences.h"
+#import "StormNativeSaveProfiles.h"
+#import "StormNativeCheats.h"
 #include <rex/app/title_app.h>
 #include <rex/gpu/graphics_system.h>
 #include <rex/hid/input_system.h>
@@ -20,6 +22,9 @@ class StormNativeApp final : public rex::app::TitleApp {
  protected:
   rex::Result<void> OnConfigure(rex::SettingsRegistry& settings) override {
     [StormNativePreferences prepareForLaunch];
+    NSError *profileError = nil;
+    if (![StormNativeSaveProfiles selectCheats:[StormNativePreferences.values[@"cheatMode"] boolValue] error:&profileError])
+      return rex::Err(rex::ErrorCategory::kIO, profileError.localizedDescription.UTF8String);
     NSError *migrationError = nil;
     if (![StormGameImporter prepareGameDirectory:&migrationError])
       return rex::Err(rex::ErrorCategory::kIO, migrationError.localizedDescription.UTF8String);
@@ -41,7 +46,7 @@ class StormNativeApp final : public rex::app::TitleApp {
       return settings.SetText(rex::SettingLayer::kTitle, name, url.path.UTF8String);
     };
     REX_TRY_VOID(path("app.log_root", [documents URLByAppendingPathComponent:@"Logs"]));
-    REX_TRY_VOID(path("app.user_root", [support URLByAppendingPathComponent:@"User"]));
+    REX_TRY_VOID(settings.SetText(rex::SettingLayer::kRuntime, "app.user_root", StormNativeSaveProfiles.activeURL.path.UTF8String));
     REX_TRY_VOID(path("app.cache_root", [cache URLByAppendingPathComponent:@"Native"]));
     REX_TRY_VOID(settings.SetText(rex::SettingLayer::kTitle, "app.config_file", [support URLByAppendingPathComponent:@"StormNative.toml"].path.UTF8String));
     REX_TRY_VOID(settings.SetText(rex::SettingLayer::kTitle, "title.game_root", StormGameImporter.gameURL.path.UTF8String));
@@ -75,6 +80,7 @@ static int RunStormNative(StormNativeApp& app, const rex::CLIArgList& args) {
       };
       while (!session.launchRequested && app.RunFrame()) {}
       if (session.ready && !rex::app::IsShutdownRequested()) {
+        StormNativeSetCheatsEnabled([StormNativePreferences.values[@"cheatMode"] boolValue]);
         if ([session attachControls]) {
           auto launch = app.LaunchTitle();
           if (launch) app.Run();

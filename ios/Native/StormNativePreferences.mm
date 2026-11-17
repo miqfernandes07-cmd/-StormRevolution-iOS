@@ -17,7 +17,8 @@
     @"resolution":@"1280x720", @"renderScale":@1, @"anisotropy":@2,
     @"fxaa":@NO, @"stats":@NO, @"clearCache":@NO,
     @"fastReadback":@NO, @"actionControls":@YES,
-    @"appLanguage":@"system", @"expandedMemory":@YES} mutableCopy];
+    @"appLanguage":@"system", @"expandedMemory":@YES,
+    @"reducedReadbacks":@NO, @"cheatMode":@YES} mutableCopy];
   NSDictionary *saved = [NSUserDefaults.standardUserDefaults dictionaryForKey:@"StormNativePreferencesV3"];
   for (NSString *key in values.allKeys) {
     id value = saved[key];
@@ -35,6 +36,8 @@
   NSDictionary *v = [self values];
   BOOL compatible = [v[@"compatible"] boolValue];
   BOOL fast = compatible && [v[@"fastReadback"] boolValue];
+  BOOL reduced = [v[@"reducedReadbacks"] boolValue];
+  if (reduced) { compatible = YES; fast = NO; }
   NSInteger scale = [v[@"renderScale"] integerValue] == 2 ? 2 : 1;
   NSInteger fps = [v[@"fps"] integerValue] == 60 ? 60 : 30;
   NSInteger anisotropy = [v[@"anisotropy"] integerValue];
@@ -51,8 +54,8 @@
     @"runtime.title_memory_mb":[v[@"expandedMemory"] boolValue] ? @"0" : (compatible ? @"512" : @"480"),
     @"gpu.xenos.async_shader_compilation": [v[@"async"] boolValue] ? @"true" : @"false",
     @"gpu.vulkan.async_skip_incomplete_frames":@"false",
-    @"gpu.xenos.readback_resolve": compatible ? (fast ? @"fast" : @"full") : @"none",
-    @"gpu.vulkan.readback_resolve": compatible ? @"true" : @"false",
+    @"gpu.xenos.readback_resolve": reduced ? @"none" : (compatible ? (fast ? @"fast" : @"full") : @"none"),
+    @"gpu.vulkan.readback_resolve": compatible && !reduced ? @"true" : @"false",
     @"gpu.xenos.readback_memexport":@"true", @"gpu.xenos.readback_memexport_fast":fast ? @"true" : @"false",
     @"gpu.xenos.force_convert_quad_lists_to_triangle_lists":@"false",
     @"gpu.xenos.force_convert_triangle_fans_to_lists":@"false",

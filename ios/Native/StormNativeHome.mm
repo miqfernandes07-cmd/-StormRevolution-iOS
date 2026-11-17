@@ -34,6 +34,7 @@ UIView *Card(UIColor *color, CGFloat radius) {
   UILabel *_version;
   UIImageView *_emblem;
   UIImageView *_folder;
+  UILabel *_cheatLabel;
 }
 - (instancetype)initWithFrame:(CGRect)frame {
   if (!(self = [super initWithFrame:frame])) return nil;
@@ -71,6 +72,14 @@ UIView *Card(UIColor *color, CGFloat radius) {
   };
   _playButton.configuration = play; _playButton.enabled = NO; _playButton.accessibilityIdentifier = @"home-play";
   [_hero addSubview:_playButton];
+  _cheatLabel = Text(SL(@"Modo trapaça"),12,UIFontWeightMedium,Ink(.82,.86,.94));
+  _cheatLabel.numberOfLines = 2;
+  _cheatLabel.text = [NSString stringWithFormat:@"%@\n%@", SL(@"Modo trapaça"), SL(@"Personagens e coleções • save separado")];
+  [_hero addSubview:_cheatLabel];
+  _cheatSwitch = [UISwitch new]; _cheatSwitch.accessibilityIdentifier = @"home-cheats";
+  _cheatSwitch.accessibilityLabel = SL(@"Modo trapaça");
+  _cheatSwitch.accessibilityHint = SL(@"Usa um save separado. Desligue para voltar ao seu progresso normal.");
+  _cheatSwitch.onTintColor = Ink(1,.64,.35); [_hero addSubview:_cheatSwitch];
   _library = Card(Ink(.08,.12,.18),22); [self addSubview:_library];
   _folder = [[UIImageView alloc] initWithImage:[UIImage systemImageNamed:@"folder.fill"]];
   _folder.tintColor = Ink(.50,.75,1); _folder.contentMode = UIViewContentModeScaleAspectFit; [_library addSubview:_folder];
@@ -100,6 +109,9 @@ UIView *Card(UIColor *color, CGFloat radius) {
   return self;
 }
 - (void)refreshLanguage {
+  _cheatLabel.text = [NSString stringWithFormat:@"%@\n%@", SL(@"Modo trapaça"), SL(@"Personagens e coleções • save separado")];
+  _cheatSwitch.accessibilityLabel = _cheatLabel.text;
+  _cheatSwitch.accessibilityHint = SL(@"Usa um save separado. Desligue para voltar ao seu progresso normal.");
   _collection.text = SL(@"SUA BIBLIOTECA"); _eyebrow.text = SL(@"A PRÓXIMA BATALHA É SUA");
   _subtitle.text = SL(@"Sua arena. Seu controle."); _libraryTitle.text = SL(@"SEU JOGO");
   _credit.text = SL(@"Créditos  /  MiquéiasF07");
@@ -121,11 +133,13 @@ UIView *Card(UIColor *color, CGFloat radius) {
   _hero.frame = CGRectMake(left,mainTop,heroWidth,mainHeight);
   _heroGradient.frame = _hero.bounds;
   CGFloat pad = mainHeight < 220 ? 18 : 24;
-  _eyebrow.frame = CGRectMake(pad,18,heroWidth-pad*2,16);
-  CGFloat titleHeight = mainHeight < 220 ? 70 : 92;
-  _title.font = [UIFont systemFontOfSize:mainHeight < 220 ? 29 : 38 weight:UIFontWeightHeavy];
-  _title.frame = CGRectMake(pad,39,heroWidth-pad*2,titleHeight);
-  _subtitle.frame = CGRectMake(pad,39+titleHeight+5,heroWidth-pad*2,20);
+  _eyebrow.frame = CGRectMake(pad,13,heroWidth-pad*2,14);
+  CGFloat titleHeight = mainHeight < 240 ? 58 : 78;
+  _title.font = [UIFont systemFontOfSize:mainHeight < 240 ? 25 : 32 weight:UIFontWeightHeavy];
+  _title.frame = CGRectMake(pad,31,heroWidth-pad*2,titleHeight);
+  _subtitle.frame = CGRectMake(pad,32+titleHeight,heroWidth-pad*2,20);
+  _cheatLabel.frame = CGRectMake(pad,mainHeight-106,MAX(30,heroWidth-pad*2-60),34);
+  _cheatSwitch.frame = CGRectMake(heroWidth-pad-51,mainHeight-104,51,31);
   _playButton.frame = CGRectMake(pad,mainHeight-62,142,44);
   _emblem.frame = CGRectMake(heroWidth*.58,mainHeight*.10,heroWidth*.48,mainHeight*.75);
   UIBezierPath *rings = [UIBezierPath bezierPath];

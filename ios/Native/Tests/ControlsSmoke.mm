@@ -6,6 +6,7 @@
 #import "Native/StormNativeMetrics.h"
 #import "Localization/StormLocalization.h"
 #import "Import/StormGameImporter.h"
+#import "Native/StormNativeSaveProfiles.h"
 #include <cmath>
 #include "input/xbox360_mapping.h"
 
@@ -154,6 +155,11 @@
   NSDictionary *fast = StormNativePreferences.runtimeValues;
   check([fast[@"gpu.xenos.readback_resolve"] isEqual:@"fast"] && [fast[@"gpu.xenos.readback_memexport_fast"] isEqual:@"true"], @"Fast profile selects buffered readbacks");
   check([fast[@"gpu.vulkan.render_target_path"] isEqual:@"host"] && [fast[@"gpu.vulkan.dynamic_rendering"] isEqual:@"false"] && [fast[@"runtime.title_memory_mb"] isEqual:@"512"], @"Fast profile preserves the working renderer and memory budget");
+  profile.selectedSegmentIndex=3; [profile sendActionsForControlEvents:UIControlEventValueChanged];
+  NSDictionary *performance = StormNativePreferences.runtimeValues;
+  check([performance[@"gpu.xenos.readback_resolve"] isEqual:@"none"] && [performance[@"gpu.vulkan.readback_resolve"] isEqual:@"false"], @"Performance profile removes measured resolve readbacks");
+  check([performance[@"gpu.xenos.readback_memexport"] isEqual:@"true"] && [performance[@"gpu.xenos.readback_memexport_fast"] isEqual:@"false"], @"Performance profile preserves current memexport data");
+  check([performance[@"gpu.vulkan.render_target_path"] isEqual:@"host"] && [performance[@"gpu.vulkan.dynamic_rendering"] isEqual:@"false"] && [performance[@"gpu.xenos.direct_host_resolve"] isEqual:@"false"], @"Performance profile retains Safe renderer settings");
   profile.selectedSegmentIndex=0; [profile sendActionsForControlEvents:UIControlEventValueChanged];
   check([StormNativePreferences.runtimeValues[@"gpu.xenos.readback_resolve"] isEqual:@"full"] && [StormNativePreferences.runtimeValues[@"gpu.xenos.readback_memexport_fast"] isEqual:@"false"], @"Safe profile restores exact prior readback settings");
   StormNativeMetrics *metrics = [StormNativeMetrics new];
@@ -219,9 +225,31 @@
     [fm removeItemAtURL:oldGame error:nil]; [fm removeItemAtURL:newGame error:nil];
   }
   [StormNativePreferences setValue:@30 forKey:@"fps"];
+  NSURL *normalUser = StormNativeSaveProfiles.normalURL, *cheatUser = StormNativeSaveProfiles.cheatURL, *activeUser = StormNativeSaveProfiles.activeURL;
+  BOOL cleanProfiles = ![fm fileExistsAtPath:normalUser.path] && ![fm fileExistsAtPath:cheatUser.path] && ![fm fileExistsAtPath:activeUser.path];
+  check(cleanProfiles, @"Save profile test requires clean synthetic sandbox");
+  if (cleanProfiles) {
+    NSError *error = nil;
+    [fm createDirectoryAtURL:normalUser withIntermediateDirectories:YES attributes:nil error:&error];
+    NSURL *normalFile = [normalUser URLByAppendingPathComponent:@"synthetic-save.txt"];
+    [@"normal-progress" writeToURL:normalFile atomically:YES encoding:NSUTF8StringEncoding error:&error];
+    check([StormNativeSaveProfiles selectCheats:YES error:&error] && !error, @"Cheat profile clones existing progress before use");
+    NSURL *activeFile = [activeUser URLByAppendingPathComponent:@"synthetic-save.txt"];
+    check([[NSString stringWithContentsOfURL:activeFile encoding:NSUTF8StringEncoding error:nil] isEqual:@"normal-progress"], @"Selected alias reaches cloned save");
+    [@"cheated-progress" writeToURL:activeFile atomically:YES encoding:NSUTF8StringEncoding error:&error];
+    check([[NSString stringWithContentsOfURL:normalFile encoding:NSUTF8StringEncoding error:nil] isEqual:@"normal-progress"], @"Cheat save writes preserve original bytes");
+    check([StormNativeSaveProfiles selectCheats:NO error:&error] && [[NSString stringWithContentsOfURL:activeFile encoding:NSUTF8StringEncoding error:nil] isEqual:@"normal-progress"], @"Disabling cheat mode restores normal progress");
+    check([StormNativeSaveProfiles selectCheats:YES error:&error] && [[NSString stringWithContentsOfURL:activeFile encoding:NSUTF8StringEncoding error:nil] isEqual:@"cheated-progress"], @"Re-enabling cheat mode preserves its own progress");
+    [fm removeItemAtURL:activeUser error:nil];
+    [@"preserve-conflict" writeToURL:activeUser atomically:YES encoding:NSUTF8StringEncoding error:nil];
+    error = nil;
+    check(![StormNativeSaveProfiles selectCheats:NO error:&error] && error && [[NSString stringWithContentsOfURL:activeUser encoding:NSUTF8StringEncoding error:nil] isEqual:@"preserve-conflict"], @"Save profile selection refuses conflicting files");
+    [fm removeItemAtURL:activeUser error:nil]; [fm removeItemAtURL:normalUser error:nil]; [fm removeItemAtURL:cheatUser error:nil];
+  }
   StormNativeHome *home = [[StormNativeHome alloc] initWithFrame:root.view.bounds];
   home.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
   [root.view addSubview:home]; [home layoutIfNeeded];
+  check(home.cheatSwitch != nil && [home.cheatSwitch.accessibilityIdentifier isEqual:@"home-cheats"], @"Home exposes the cheat toggle");
   check(!home.playButton.enabled && !home.importButton.enabled, @"Home waits for installed-file validation");
   for (UIButton *button in @[home.playButton,home.importButton,home.optionsButton]) {
     CGRect frame = [button convertRect:button.bounds toView:home];
