@@ -5,6 +5,10 @@
   "linux_amd64_archive_sha256": "e7d543ab8dde2c7839836a0417bfe84691c10f93357ec2c023fa98d3d315803b",
   "ios_runtime_supported": false,
   "integrated_into_application": false,
+  "vma": {
+    "commit": "1d8f600fd424278486eade7ed3e877c99f0846b1",
+    "header_sha256": "90ce12fc4a2466235a09ae02905dd0c13aee80c1bbf11b331ab61230c2ceb112"
+  },
   "ios_experimental_patch": {
     "path": "tools/recompilation/rexglue_patches/0001-ios-vm-region.patch",
     "sha256": "47b2af858dc4f76e689fef865534a2639fca4d64a1b0df8f58ae75094750abfa",

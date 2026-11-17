@@ -39,9 +39,20 @@ jobs:
           PY
       - name: Install configuration dependencies
         run: |
-          brew install vulkan-loader molten-vk vulkan-memory-allocator
+          brew install vulkan-loader molten-vk
           brew list --versions > out/ios-base/packages.txt
           xcodebuild -version | tee out/ios-base/xcode.txt
+          python3 - <<'PY'
+          import hashlib,json,pathlib,urllib.request
+          ref=json.loads(pathlib.Path('config/rexglue_reference.json').read_text())['vma']
+          url='https://raw.githubusercontent.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator/'+ref['commit']+'/include/vk_mem_alloc.h'
+          with urllib.request.urlopen(url,timeout=60) as response:
+              data=response.read(2*1024*1024)
+          assert hashlib.sha256(data).hexdigest()==ref['header_sha256'],'VMA digest mismatch'
+          dest=pathlib.Path('out/vma');dest.mkdir(parents=True,exist_ok=True)
+          (dest/'vk_mem_alloc.h').write_bytes(data)
+          print('Verified pinned VMA header:',ref['header_sha256'])
+          PY
       - name: Apply and verify the iOS adapter
         run: |
           python3 tools/recompilation/rexglue_ios_probe.py \
@@ -63,7 +74,7 @@ jobs:
             -DVulkan_LIBRARY="$(brew --prefix vulkan-loader)/lib/libvulkan.dylib" \
             -DVulkan_MoltenVK_INCLUDE_DIR="$(brew --prefix molten-vk)/include" \
             -DVulkan_MoltenVK_LIBRARY="$(brew --prefix molten-vk)/lib/libMoltenVK.dylib" \
-            -DREXGLUE_VMA_INCLUDE_DIR="$(brew --prefix vulkan-memory-allocator)/include" \
+            -DREXGLUE_VMA_INCLUDE_DIR="$PWD/out/vma" \
             2>&1 | tee out/ios-base/configure.txt
       - name: Compile and link base library only
         run: |
@@ -72,6 +83,19 @@ jobs:
             2>&1 | tee out/ios-base/build.txt
           find build-rex-ios -name 'librexbase*.dylib' -exec file {} \; \
             | tee out/ios-base/mach-o.txt
+          python3 - <<'PY'
+          import json,pathlib,subprocess
+          libraries=list(pathlib.Path('build-rex-ios').rglob('librexbase*.dylib'))
+          assert libraries,'No base library produced'
+          for library in libraries:
+              info=subprocess.check_output(['xcrun','vtool','-show-build',str(library)],text=True)
+              assert 'platform IOS' in info,info
+              print(info)
+          report={'scope':'base_library_only','platform':'iOS','linked':True,
+                  'gpu_linked':False,'device_executed':False,'game_executed':False,
+                  'ios_runtime_qualified':False}
+          pathlib.Path('out/ios-base/report.json').write_text(json.dumps(report,indent=2)+'\n')
+          PY
       - name: Upload compilation diagnostics only
         if: always()
         uses: actions/upload-artifact@v4
