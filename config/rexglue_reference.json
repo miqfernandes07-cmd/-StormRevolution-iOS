@@ -46,6 +46,17 @@
           "after_sha256": "f07ddfb8607aeddb2b8f939664e3d50c9701668b5fcd89a3ee6c42e3766677dd"
         }
       ]
+    },
+    {
+      "path": "tools/recompilation/rexglue_patches/0003-appleclang-aes-schedule-extent.patch",
+      "sha256": "e7ed2c51c5889c9716b920733b1041d3a45a94b273b5a51d7aaebb1b73b63b15",
+      "files": [
+        {
+          "path": "src/kernel/xboxkrnl/xboxkrnl_crypt.cpp",
+          "before_sha256": "5b9e7d44ba521d0c83684bb01c8d8794ef16194248bd82837cf855dc2eec3f81",
+          "after_sha256": "d84a2ea3973c42f990f635a2f24446e6c1052936c96ab8a67ea63228976c4d81"
+        }
+      ]
     }
   ]
 }
