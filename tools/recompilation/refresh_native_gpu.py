@@ -33,6 +33,8 @@ def refresh(base_ipa,baseline_sdk,new_sdk,output,source_run):
   new_headers={n:sha(new.read(n)) for n in new.namelist() if n.startswith('include/') and not n.endswith('/')}
   assert old_headers and old_headers==new_headers,'Public SDK headers changed; recompile the application instead'
   replacement=new.read(BINARY);assert b'Native GPU timing:' in replacement
+  record=next(r for r in nm['frameworks'] if r['name']=='rexgpu-xenos-vulkan')
+  assert sha(replacement)==record['framework_sha256'],'Renderer digest does not match SDK manifest'
   missing=exports(old.read(BINARY))-exports(replacement)
   assert not missing,('Renderer removed ABI symbols',sorted(missing))
   info=plistlib.loads(app.read(APP+'Info.plist'))
