@@ -31,6 +31,8 @@ class StormNativeApp final : public rex::app::TitleApp {
     REX_TRY_VOID(settings.SetText(rex::SettingLayer::kTitle, "app.config_file", [support URLByAppendingPathComponent:@"StormNative.toml"].path.UTF8String));
     REX_TRY_VOID(settings.SetText(rex::SettingLayer::kTitle, "title.game_root", StormGameImporter.gameURL.path.UTF8String));
     REX_TRY_VOID(settings.SetText(rex::SettingLayer::kTitle, "hid.shared_pads", "true"));
+    // Upstream's Apple default is Cocoa; this application uses SDL's UIKit driver.
+    REX_TRY_VOID(settings.SetText(rex::SettingLayer::kTitle, "ui.sdl.video_driver", "uikit"));
     return rex::Ok();
   }
 };
