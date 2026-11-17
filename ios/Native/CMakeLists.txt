@@ -46,6 +46,17 @@ foreach(framework IN LISTS sdk_frameworks)
   set_target_properties("storm_sdk_${framework_name}" PROPERTIES FRAMEWORK TRUE
     IMPORTED_LOCATION "${framework}/${framework_name}")
   target_link_libraries(StormNative PRIVATE "storm_sdk_${framework_name}")
+  set_property(TARGET StormNative APPEND PROPERTY XCODE_EMBED_FRAMEWORKS "storm_sdk_${framework_name}")
+endforeach()
+file(GLOB_RECURSE sdk_notices "${STORM_REX_IOS_SDK}/licenses/*")
+foreach(notice IN LISTS sdk_notices)
+  if(NOT IS_DIRECTORY "${notice}")
+    file(RELATIVE_PATH notice_relative "${STORM_REX_IOS_SDK}/licenses" "${notice}")
+    get_filename_component(notice_parent "${notice_relative}" DIRECTORY)
+    set_source_files_properties("${notice}" PROPERTIES
+      MACOSX_PACKAGE_LOCATION "Resources/ThirdPartyLicenses/${notice_parent}")
+    target_sources(StormNative PRIVATE "${notice}")
+  endif()
 endforeach()
 target_link_libraries(StormNative PRIVATE ZLIB::ZLIB "${STORM_REX_IOS_SDK}/lib/librexxenos.a"
   "-framework Foundation" "-framework UIKit" "-framework UniformTypeIdentifiers"
@@ -57,8 +68,7 @@ set_target_properties(StormNative PROPERTIES
   XCODE_ATTRIBUTE_TARGETED_DEVICE_FAMILY "1"
   XCODE_ATTRIBUTE_CLANG_ENABLE_OBJC_ARC YES
   XCODE_ATTRIBUTE_CODE_SIGNING_ALLOWED NO XCODE_ATTRIBUTE_CODE_SIGNING_REQUIRED NO
+  XCODE_EMBED_FRAMEWORKS_CODE_SIGN_ON_COPY NO
+  XCODE_EMBED_FRAMEWORKS_REMOVE_HEADERS_ON_COPY YES
   XCODE_ATTRIBUTE_ENABLE_BITCODE NO
   XCODE_ATTRIBUTE_LD_RUNPATH_SEARCH_PATHS "@executable_path/Frameworks")
-add_custom_command(TARGET StormNative POST_BUILD
-  COMMAND "${CMAKE_COMMAND}" -E copy_directory "${STORM_REX_IOS_SDK}/Frameworks"
-    "$<TARGET_BUNDLE_DIR:StormNative>/Frameworks" VERBATIM)
