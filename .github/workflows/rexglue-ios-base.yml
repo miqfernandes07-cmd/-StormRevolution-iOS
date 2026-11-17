@@ -171,9 +171,11 @@ jobs:
         if: github.event_name == 'push' || inputs.stage == 'drivers'
         run: |
           set -o pipefail
+          rex_offset=$(python3 -c "import json; print(json.load(open('out/ios-runtime-package/runtime/manifest.json'))['physical_offset_in_code'])")
           xcrun --sdk iphoneos clang++ -target arm64-apple-ios17.0 \
             -isysroot "$(xcrun --sdk iphoneos --show-sdk-path)" \
             -std=c++23 -fexperimental-library -fno-char8_t \
+            -DREX_PHYSICAL_OFFSET_IN_CODE="$rex_offset" \
             -I out/ios-runtime-package/runtime/include \
             -F out/ios-runtime-package/runtime/Frameworks \
             tests/integration/rexglue_ios_link.cpp \

@@ -176,6 +176,7 @@ def main():
             (licenses / "MoltenVK/LICENSE").write_bytes(stream.read())
 
     report = {"scope": "open_source_runtime_frameworks_only", "sdk_commit": reference["commit"],
+              "physical_offset_in_code": manifest["physical_offset_in_code"],
               "patches": reference["ios_experimental_patches"], "frameworks": records,
               "signed": False, "application_linked": False, "device_executed": False,
               "game_executed": False, "ios_runtime_qualified": False}
