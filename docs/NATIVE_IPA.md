@@ -1,5 +1,17 @@
 # Aplicativo nativo experimental
 
+Versão atual publicada: **0.5.0 / build 6**, run nativo privado 44071616081,
+publicação 44073868217. Acrescenta controles móveis por ações e atalhos,
+perfil Rápido experimental e amostras de apresentação no relatório. O ícone,
+os 17 frameworks iOS, as dependências, a identidade e o código recompilado
+passaram por auditoria independente.
+[Auditoria do build 6](validation/native-iphone-ipa-v6-2026-11-17.json).
+[Controles, limitações e comparação de desempenho](MOBILE_CONTROLS.md).
+[224 checks UIKit](validation/mobile-controls-2026-11-17.json).
+O usuário conseguiu jogar no build 5, em aproximadamente 11 FPS; as mudanças
+do build 6 ainda exigem teste físico. Não atribuir um ganho de FPS ao build
+antes dessa confirmação.
+
 O alvo `StormNative` integra ReXGlue e o código recompilado do título. É
 separado do aplicativo UIKit de infraestrutura `StormRevolution`. O proprietário
 executou o build 2 em um iPhone 15 Pro: abriu o jogo, selecionou personagens e

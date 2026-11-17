@@ -10,17 +10,20 @@ O alvo iPhone `StormNative` já gerou um IPA ARM64 com os 17 frameworks
 embutidos e dependências conferidas. O proprietário executou o build 2 no
 iPhone 15 Pro, selecionou personagens e chegou a uma luta; forneceu captura e
 três logs. O teste do build 3 encontrou artefatos desde a abertura e os menus.
-A versão 0.4.1 / build 5 traz dois perfis sem solicitar FSI, migração do cache,
-nova tela inicial, ícone ninja, controles PlayStation/celular e crédito para
-MiquéiasF07. O IPA foi compilado e auditado; a correção da imagem e a
-estabilidade dessa atualização dependem de novo teste físico.
+O proprietário confirmou gameplay no build 5, mas informou aproximadamente
+11 FPS em Seguro / 720p / 1×. A versão 0.5.0 / build 6 acrescenta controles
+por ações para celular, atalhos de Jutsu/Supremo/Dash, um perfil Rápido
+experimental e amostras de desempenho. Mantém o perfil Seguro, ícone ninja,
+tela inicial e crédito para MiquéiasF07. O IPA foi compilado e auditado;
+o ganho de FPS e os golpes pelos atalhos ainda exigem teste físico.
 [Build nativo](docs/NATIVE_IPA.md).
 [Estado atual e limites](docs/REXGLUE_BOOT_2026_11_16.md).
 
 A CI pública também produz um aplicativo de infraestrutura separado. Ele não
 contém o título. O aplicativo nativo e o código recompilado permanecem privados.
-Os controles, a tela inicial e os ajustes passaram por 127 verificações no
+Os controles, atalhos, perfis e ajustes passaram por 224 verificações no
 simulador; isso não valida gameplay nem toques no aparelho.
+[Ações móveis e comparação dos perfis](docs/MOBILE_CONTROLS.md).
 
 O código original deste repositório é MIT. Não inclui jogo, código comercial
 recompilado, chaves, APKs ou assets. Forneça localmente os arquivos da sua cópia

@@ -1,5 +1,16 @@
 # Retomada direta do boot comercial
 
+Atualização mais recente: 0.5.0 / build 6 foi compilado e publicado no run
+privado 44071616081. O usuário já joga no build 5, com cerca de 11 FPS em
+Seguro/720p/1×. Build 6 adiciona ações móveis, atalhos temporizados, perfil
+Rápido optativo e medições de apresentação, temperatura categórica e pouca
+energia. Os 224 testes UIKit passaram no run 44073315091; o harness foi
+ajustado para permitir callbacks GCD enquanto testa as sequências.
+IPA e ícone auditados; faltam teste físico dos atalhos e comparação de FPS.
+Detalhes: [controles móveis](MOBILE_CONTROLS.md). O primeiro STORM nativo
+enviado pelo usuário foi analisado somente como referência privada; nenhum
+código, shader ou asset dele foi incorporado.
+
 Atualização após o teste do build 3: o proprietário relatou corrupção da imagem
 desde a abertura e os menus, enviando captura, logs 005/006 e native-session.
 Versão de iOS informada pelo diagnóstico: 27.2; o perfil solicitava FSI. O

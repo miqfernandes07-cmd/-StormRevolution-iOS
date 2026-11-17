@@ -1,6 +1,26 @@
 # Progresso — atualização em 2026-11-17
 
-## Marco atual: nova tela inicial, ícone e perfis gráficos 0.4.1
+## Marco atual: controles por ações e perfil Rápido 0.5.0
+
+O proprietário confirmou que consegue jogar no build 5, mas relatou 11 FPS.
+O arquivo da sessão mostra Seguro, 720p, 1×, sem FXAA, sem avisos de memória.
+O tempo gasto individualmente em CPU/GPU ainda não foi medido.
+
+0.5.0 acrescenta ações móveis e atalhos temporizados de Jutsu/Supremo/Dash,
+preservando PlayStation/Xbox e suas posições. O perfil Rápido optativo usa
+leituras GPU em buffers alternados; Seguro mantém a configuração anterior.
+Há até 60 amostras de FPS/tempo de quadro do SDK, estado térmico e pouca energia
+no relatório, com valores configurados e solicitados do runtime.
+
+Build nativo 44071616081 e publicação privada 44073868217 passaram. O pacote
+foi auditado independentemente, incluindo ícone e classes da interface.
+Os 224 checks UIKit passaram no run 44073315091. O primeiro autoteste entrava
+por um bloco da fila principal e bloqueava os passos GCD ao bombear o run loop;
+a correção de agendamento ficou restrita ao harness. O teste não executa o jogo.
+Ganho de FPS, efeitos visuais e execução dos golpes dependem de teste físico.
+[Guia de controles e perfis](MOBILE_CONTROLS.md).
+
+## Histórico: nova tela inicial, ícone e perfis gráficos 0.4.1
 
 O teste do build 3 apresentou artefatos desde a abertura e os menus. A versão
 0.4.1 retira a solicitação de FSI dos dois perfis; Seguro usa render passes
