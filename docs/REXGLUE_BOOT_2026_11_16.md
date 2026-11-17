@@ -2,8 +2,8 @@
 
 Ainda não há versão jogável no iPhone. O aplicativo UIKit diagnóstico não
 incorpora o ReXGlue nem o código comercial recompilado. O alvo separado
-`StormNative` já passou pelo link completo para iPhone, mas seu IPA e sua
-execução no aparelho ainda estão em verificação. O novo experimento privado Linux
+`StormNative` já gerou um IPA iPhone ARM64 com 17 frameworks e dependências
+inspecionadas. A execução e o gameplay no aparelho físico continuam pendentes. O novo experimento privado Linux
 compilou e vinculou o título completo e exibiu gráficos reais de inicialização:
 indicador de carregamento, logotipos, vídeo de abertura, tela de título e diálogos
 de salvamento e o menu principal de modos. START, seleção pelo analógico e A
@@ -173,3 +173,20 @@ real; não são imagens geradas nem provas de jogabilidade no iPhone.
 No ambiente atual foram usados Clang 20.1.8 e headers GCC13, para compatibilidade
 com a libstdc++ do SDK. A CI pública usa somente código próprio e fontes abertas.
 Licença do SDK: BSD-3-Clause; consulte o LICENSE na revisão referenciada.
+
+## IPA nativo build 2
+
+O run público 44020335898 aprovou o SDK com o quinto adaptador: memória guest
+respaldada por arquivo temporário privado, em vez de um nome POSIX global.
+O helper passou em 25 verificações reais no Linux e no macOS, incluindo aliases
+coerentes acima de 4 GiB. A compilação iPhone, os módulos e os drivers passaram.
+
+O run privado 44022730725 reempacotou o executável já vinculado depois de
+conferir a identidade dos 924 headers públicos. O IPA tem 20.161.962 bytes,
+17 frameworks com hashes conferidos e 37.255.824 bytes de código recompilado.
+Seu SHA-256 é `ddc42216f024dab7d9efc1ac0571975bf6402f0806ac87f082cf3da5a7a449eb`.
+A release privada foi publicada no run 44022871358, sem assinatura ou recursos
+do jogo. Ver [guia nativo](NATIVE_IPA.md) e
+[auditoria estática](validation/native-iphone-ipa-v2-2026-11-17.json).
+O próximo passo é o proprietário instalar/assinar, importar o ZIP e testar no
+iPhone 15 Pro. Não há prova de execução ou combate nesse aparelho.
