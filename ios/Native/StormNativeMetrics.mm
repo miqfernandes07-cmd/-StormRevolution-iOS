@@ -1,6 +1,7 @@
 #import "StormNativeMetrics.h"
 #include <cmath>
 #import <os/proc.h>
+#import <mach/mach.h>
 
 @implementation StormNativeMetrics {
   NSMutableArray<NSDictionary *> *_samples;
@@ -12,6 +13,9 @@
 - (void)addStatistics:(NSDictionary *)statistics overlayOpen:(BOOL)overlayOpen {
   double fps = [statistics[@"fps"] doubleValue], milliseconds = [statistics[@"frameTimeMs"] doubleValue];
   if (!std::isfinite(fps) || fps <= 0 || !std::isfinite(milliseconds) || milliseconds < 0) return;
+  task_vm_info_data_t memory = {};
+  mach_msg_type_number_t count = TASK_VM_INFO_COUNT;
+  BOOL hasFootprint = task_info(mach_task_self(), TASK_VM_INFO, (task_info_t)&memory, &count) == KERN_SUCCESS;
   NSString *thermal = @"unknown";
   switch (NSProcessInfo.processInfo.thermalState) {
     case NSProcessInfoThermalStateNominal: thermal = @"nominal"; break;
@@ -24,8 +28,7 @@
     @"overlayOpen":@(overlayOpen), @"thermalState":thermal,
     @"lowPowerMode":@(NSProcessInfo.processInfo.lowPowerModeEnabled),
     @"memoryAvailableMB":@(os_proc_available_memory()/(1024*1024)),
-    @"titleCommittedMB":statistics[@"titleCommittedMB"] ?: @0,
-    @"titleBudgetMB":statistics[@"titleBudgetMB"] ?: @0}];
+    @"processFootprintMB":hasFootprint ? @(memory.phys_footprint/(1024.0*1024.0)) : NSNull.null}];
   if (_samples.count > 60) [_samples removeObjectAtIndex:0];
 }
 - (NSDictionary *)report {

@@ -7,8 +7,6 @@
 #include <rex/gpu/graphics_system.h>
 #include <rex/hid/input_system.h>
 #include <rex/ui/ui_system.h>
-#include <rex/kernel/guest_memory.h>
-#include <rex/kernel/heap.h>
 #if defined(STORM_NATIVE_INTERFACE_CHECK)
 // Syntax checking only; this declaration cannot produce an executable.
 extern const rex::ppc::PPCImage kPPCImageConfig;
@@ -73,14 +71,7 @@ static int RunStormNative(StormNativeApp& app, const rex::CLIArgList& args) {
       };
       session.frameStatistics = ^NSDictionary * {
         auto stats = application->GetGraphics().GetFrameStats();
-        double committed = 0, budget = 0;
-        auto& runtime = application->GetTitleRuntime();
-        if (runtime.IsLoaded()) {
-          auto& memory = runtime.GetGuestMemory().GetAddressSpace();
-          committed = memory.GetTitlePages()/256.0; budget = memory.GetBudgetPages()/256.0;
-        }
-        return @{@"fps":@(stats.fps), @"frames":@(stats.frame_count), @"frameTimeMs":@(stats.frame_time_ms),
-          @"titleCommittedMB":@(committed), @"titleBudgetMB":@(budget)};
+        return @{@"fps":@(stats.fps), @"frames":@(stats.frame_count), @"frameTimeMs":@(stats.frame_time_ms)};
       };
       while (!session.launchRequested && app.RunFrame()) {}
       if (session.ready && !rex::app::IsShutdownRequested()) {
