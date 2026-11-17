@@ -49,7 +49,7 @@ foreach(framework IN LISTS sdk_frameworks)
 endforeach()
 target_link_libraries(StormNative PRIVATE ZLIB::ZLIB "${STORM_REX_IOS_SDK}/lib/librexxenos.a"
   "-framework Foundation" "-framework UIKit" "-framework UniformTypeIdentifiers"
-  "-framework GameController" "-framework QuartzCore")
+  "-framework GameController" "-framework QuartzCore" "-framework CoreGraphics")
 set_target_properties(StormNative PROPERTIES
   XCODE_GENERATE_SCHEME TRUE
   MACOSX_BUNDLE_INFO_PLIST "${CMAKE_CURRENT_SOURCE_DIR}/Info.plist"
