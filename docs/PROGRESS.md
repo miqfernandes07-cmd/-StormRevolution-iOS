@@ -1,6 +1,33 @@
 # Progresso — atualização em 2026-11-17
 
-## Marco atual: controles por ações e perfil Rápido 0.5.0
+## Marco atual: idiomas, Arquivos e memória ampliada 0.6.0
+
+Versão atual publicada: **0.6.0 / build 7**, [download privado](https://github.com/miqfernandes07-cmd/StormRevolution-iPhone-Private/releases/tag/native-iphone-run-44082240260).
+O build nativo 44079853215, a configuração final 44082240260 e a publicação
+44082291246 passaram. O IPA tem 22.794.234 bytes e SHA-256
+`6a49c23f688eef6e7075d8f6237e3b43947ba6b5606e8acef50cc61660d290c6`.
+
+A interface oferece português, inglês, espanhol, francês, alemão, italiano e
+japonês sem alterar o idioma do jogo. A instalação migra para Documents/Game,
+visível no Arquivos, por uma renomeação atômica sem duplicar os arquivos.
+Memória ampliada remove o teto de alocação do runtime e amplia o cache;
+o iOS mantém seus limites. O pacote declara as chaves atual e antiga do Modo
+Jogo. A configuração final altera só Info.plist; outros 80 itens do pacote
+permanecem idênticos ao build ligado, inclusive executável, frameworks e ícone.
+
+Há um contorno específico para o abort na notificação opcional de renomear
+threads. Uma segunda falha por recurso nulo continua em investigação, com
+novos logs. Os dados enviados eram do perfil Seguro e registravam média de
+14,12 FPS; não há medição física de ganho ou confirmação de estabilidade do
+build 7. Não atribuir o crash ao Rápido com base nesses dados.
+
+Validação: [255 checks UIKit](validation/native-app-ui-build7-2026-11-17.json),
+15 casos do wrapper real com contexto sintético, frontend ARM64, link completo
+e [auditoria do IPA](validation/native-iphone-ipa-v7-2026-11-17.json).
+[Idiomas, Arquivos e memória](APP_LANGUAGES_AND_FILES.md).
+[Controles e perfis](MOBILE_CONTROLS.md).
+
+## Histórico — controles por ações e perfil Rápido 0.5.0
 
 O proprietário confirmou que consegue jogar no build 5, mas relatou 11 FPS.
 O arquivo da sessão mostra Seguro, 720p, 1×, sem FXAA, sem avisos de memória.

@@ -6,6 +6,12 @@ gamepad virtual Xbox 360 já ligado ao Revolution. O código, os shaders e os
 assets do primeiro STORM enviado como referência continuam privados e não
 foram incorporados ao aplicativo.
 
+A versão atual 0.6.0 / build 7 mantém esses controles e acrescenta
+[idiomas da interface, acesso pelo Arquivos e memória ampliada](APP_LANGUAGES_AND_FILES.md).
+O relatório do build 6 confirmou Seguro ativo e média de 14,12 FPS em amostras
+que misturam menus e jogo; não é um benchmark controlado. O ganho de FPS do
+build 7 ainda precisa ser medido no aparelho.
+
 ## Entrada manual
 
 Em Ajustes → Botões, **Celular** seleciona os nomes de ações e a disposição
@@ -69,7 +75,11 @@ aproximadamente 11 FPS; os arquivos anteriores não medem CPU/GPU separadamente.
 | Leitura de resolves | full | fast | none |
 | Memexport habilitado | sim | sim | sim |
 | Memexport em buffers alternados | não | sim | não |
-| Orçamento do título | 512 MiB | 512 MiB | 480 MiB |
+| Orçamento do título com Memória ampliada desligada | 512 MiB | 512 MiB | 480 MiB |
+
+No build 7, Memória ampliada vem ligada e seleciona o valor documentado `0`
+(sem teto de orçamento do runtime) nos três perfis, mantendo os endereços
+físicos esperados pelo jogo e os limites de RAM impostos pelo iOS.
 
 Rápido é experimental e usa os caminhos de leitura em buffers alternados
 existentes no SDK. Eles podem apresentar resultados anteriores ou artefatos;

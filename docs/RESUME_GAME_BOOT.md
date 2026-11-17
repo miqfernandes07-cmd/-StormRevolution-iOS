@@ -1,15 +1,31 @@
 # Retomada direta do boot comercial
 
-Atualização mais recente: 0.5.0 / build 6 foi compilado e publicado no run
-privado 44071616081. O usuário já joga no build 5, com cerca de 11 FPS em
-Seguro/720p/1×. Build 6 adiciona ações móveis, atalhos temporizados, perfil
-Rápido optativo e medições de apresentação, temperatura categórica e pouca
-energia. Os 224 testes UIKit passaram no run 44073315091; o harness foi
-ajustado para permitir callbacks GCD enquanto testa as sequências.
-IPA e ícone auditados; faltam teste físico dos atalhos e comparação de FPS.
-Detalhes: [controles móveis](MOBILE_CONTROLS.md). O primeiro STORM nativo
-enviado pelo usuário foi analisado somente como referência privada; nenhum
-código, shader ou asset dele foi incorporado.
+Versão atual publicada: **0.6.0 / build 7**, [download privado](https://github.com/miqfernandes07-cmd/StormRevolution-iPhone-Private/releases/tag/native-iphone-run-44082240260).
+O build nativo 44079853215, a configuração final 44082240260 e a publicação
+44082291246 passaram. O IPA tem 22.794.234 bytes e SHA-256
+`6a49c23f688eef6e7075d8f6237e3b43947ba6b5606e8acef50cc61660d290c6`.
+
+A interface oferece português, inglês, espanhol, francês, alemão, italiano e
+japonês sem alterar o idioma do jogo. A instalação migra para Documents/Game,
+visível no Arquivos, por uma renomeação atômica sem duplicar os arquivos.
+Memória ampliada remove o teto de alocação do runtime e amplia o cache;
+o iOS mantém seus limites. O pacote declara as chaves atual e antiga do Modo
+Jogo. A configuração final altera só Info.plist; outros 80 itens do pacote
+permanecem idênticos ao build ligado, inclusive executável, frameworks e ícone.
+
+Há um contorno específico para o abort na notificação opcional de renomear
+threads. Uma segunda falha por recurso nulo continua em investigação, com
+novos logs. Os dados enviados eram do perfil Seguro e registravam média de
+14,12 FPS; não há medição física de ganho ou confirmação de estabilidade do
+build 7. Não atribuir o crash ao Rápido com base nesses dados.
+
+Validação: [255 checks UIKit](validation/native-app-ui-build7-2026-11-17.json),
+15 casos do wrapper real com contexto sintético, frontend ARM64, link completo
+e [auditoria do IPA](validation/native-iphone-ipa-v7-2026-11-17.json).
+[Idiomas, Arquivos e memória](APP_LANGUAGES_AND_FILES.md).
+[Controles e perfis](MOBILE_CONTROLS.md).
+
+O estado operacional detalhado está em `private/NATIVE_IPA_STATE.json`. Não solicitar novo login nem uma nova importação quando a instalação já existe. Os arquivos e executáveis comerciais continuam privados.
 
 Atualização após o teste do build 3: o proprietário relatou corrupção da imagem
 desde a abertura e os menus, enviando captura, logs 005/006 e native-session.
