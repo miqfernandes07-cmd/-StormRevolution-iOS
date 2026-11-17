@@ -68,7 +68,7 @@ static int RunStormNative(StormNativeApp& app, const rex::CLIArgList& args) {
       };
       session.frameStatistics = ^NSDictionary * {
         auto stats = application->GetGraphics().GetFrameStats();
-        return @{@"fps":@(stats.fps), @"frames":@(stats.frame_count)};
+        return @{@"fps":@(stats.fps), @"frames":@(stats.frame_count), @"frameTimeMs":@(stats.frame_time_ms)};
       };
       while (!session.launchRequested && app.RunFrame()) {}
       if (session.ready && !rex::app::IsShutdownRequested()) {

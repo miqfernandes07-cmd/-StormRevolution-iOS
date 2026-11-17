@@ -3,6 +3,8 @@
 #import "Native/StormNativeOptions.h"
 #import "Native/StormNativePreferences.h"
 #import "Native/StormNativeHome.h"
+#import "Native/StormNativeMetrics.h"
+#include <cmath>
 #include "input/xbox360_mapping.h"
 
 @interface ControlsSmoke : UIResponder <UIApplicationDelegate>
@@ -26,7 +28,7 @@
     checks++; if (!passed) [failures addObject:name];
   };
   NSUserDefaults *defaults = NSUserDefaults.standardUserDefaults;
-  for (NSString *key in @[@"StormNativePreferencesV3", @"touchPositionsMobileV3", @"touchPositionsXbox360V2"]) [defaults removeObjectForKey:key];
+  for (NSString *key in @[@"StormNativePreferencesV3", @"touchPositionsMobileV3", @"touchPositionsXbox360V2", @"touchPositionsActionsV1"]) [defaults removeObjectForKey:key];
   [defaults removeObjectForKey:@"StormNativeRendererRevision"];
   [StormNativePreferences setValue:@.8 forKey:@"opacity"];
   [StormNativePreferences prepareForLaunch];
@@ -84,6 +86,56 @@
   check([controls viewWithTag:11].hidden && [controls viewWithTag:12].hidden, @"Mobile stick clicks use double tap");
   controls.playStationLabels = NO; check([cross.currentTitle isEqual:@"A"], @"Xbox labels remain available");
   controls.playStationLabels = YES;
+  controls.mobileActionLabels = YES;
+  check([circle.currentTitle isEqual:@"Ataque"] && [cross.currentTitle isEqual:@"Pulo"], @"Mobile action names preserve manual inputs");
+  for (NSNumber *scale in @[@.65,@1,@1.4]) {
+    controls.controlScale = scale.doubleValue; [controls layoutIfNeeded];
+    for (NSInteger tag=19;tag<=21;tag++) {
+      UIView *shortcut = [controls viewWithTag:tag];
+      check(!shortcut.hidden && CGRectContainsRect(CGRectInset(controls.bounds,-.1,-.1),shortcut.frame), @"Mobile shortcut remains on screen");
+      for (NSInteger face=1;face<=8;face++) check(!CGRectIntersectsRect(shortcut.frame,[controls viewWithTag:face].frame), @"Shortcut avoids face and shoulder controls");
+    }
+  }
+  controls.controlScale = 1; [controls layoutIfNeeded]; controls.shortcutPulseDuration = .08;
+  NSMutableArray<NSNumber *> *events = [NSMutableArray array];
+  __block uint32_t previous = 0;
+  controls.inputChanged = ^(uint32_t b,float lx,float ly,float rx,float ry,float lt,float rt) {
+    bits = b;
+    if (b != previous) { [events addObject:@(b)]; previous=b; }
+  };
+  void (^pump)(NSTimeInterval) = ^(NSTimeInterval seconds) {
+    NSDate *end = [NSDate dateWithTimeIntervalSinceNow:seconds];
+    while (end.timeIntervalSinceNow > 0) [NSRunLoop.currentRunLoop runUntilDate:[NSDate dateWithTimeIntervalSinceNow:.01]];
+  };
+  NSArray *sequences = @[@[@(storm::input::xbox360::y),@0,@(storm::input::xbox360::b),@0],
+    @[@(storm::input::xbox360::y),@0,@(storm::input::xbox360::y),@0,@(storm::input::xbox360::b),@0],
+    @[@(storm::input::xbox360::y),@0,@(storm::input::xbox360::a),@0]];
+  for (NSInteger i=0;i<3;i++) {
+    [controls resetInput]; [events removeAllObjects]; previous=0;
+    [(UIButton *)[controls viewWithTag:19+i] sendActionsForControlEvents:UIControlEventTouchDown];
+    pump(.08*([sequences[i] count]-1)+.07);
+    check([events isEqual:sequences[i]] && bits==0, @"Shortcut emits the complete ordered input sequence and releases");
+  }
+  UIButton *ultimate = (UIButton *)[controls viewWithTag:20];
+  [ultimate sendActionsForControlEvents:UIControlEventTouchDown];
+  [NSNotificationCenter.defaultCenter postNotificationName:UIApplicationWillResignActiveNotification object:nil];
+  pump(.5); check(bits==0, @"Background cancellation prevents delayed shortcut input");
+  [NSNotificationCenter.defaultCenter postNotificationName:UIApplicationDidBecomeActiveNotification object:nil];
+  [ultimate sendActionsForControlEvents:UIControlEventTouchDown];
+  controls.editingControls=YES; pump(.5); check(bits==0, @"Control editing cancels all queued steps");
+  controls.editingControls=NO;
+  [ultimate sendActionsForControlEvents:UIControlEventTouchDown];
+  [circle sendActionsForControlEvents:UIControlEventTouchDown];
+  pump(.5); check(bits==storm::input::xbox360::b, @"Manual input overrides shortcut without being released by old steps");
+  [circle sendActionsForControlEvents:UIControlEventTouchUpInside];
+  [ultimate sendActionsForControlEvents:UIControlEventTouchDown];
+  [ultimate sendActionsForControlEvents:UIControlEventTouchCancel];
+  pump(.5); check(bits==0, @"Cancelled shortcut touch cannot leave inputs held");
+  [defaults setObject:@{@"0":@[@.2,@.3]} forKey:@"touchPositionsMobileV3"];
+  [defaults setObject:@{@"0":@[@.5,@.6]} forKey:@"touchPositionsActionsV1"];
+  [StormControls resetSavedLayoutForMobile:YES actions:YES];
+  check([defaults dictionaryForKey:@"touchPositionsMobileV3"]!=nil && [defaults dictionaryForKey:@"touchPositionsActionsV1"]==nil, @"Action layout reset preserves PlayStation mobile positions");
+  [defaults removeObjectForKey:@"touchPositionsMobileV3"];
   StormNativeOptions *settings = [StormNativeOptions new]; [settings loadViewIfNeeded];
   check([settings numberOfSectionsInTableView:settings.tableView] == 4, @"Settings sections");
   UITableViewCell *fps = [settings tableView:settings.tableView cellForRowAtIndexPath:[NSIndexPath indexPathForRow:5 inSection:1]];
@@ -91,6 +143,24 @@
   rate.selectedSegmentIndex = 1; [rate sendActionsForControlEvents:UIControlEventValueChanged];
   check([StormNativePreferences.values[@"fps"] integerValue] == 60, @"Settings persist user selection");
   check([StormNativePreferences.runtimeValues[@"gpu.frame_limit"] isEqual:@"60"], @"Selected FPS reaches runtime configuration");
+  UITableViewCell *profileCell = [settings tableView:settings.tableView cellForRowAtIndexPath:[NSIndexPath indexPathForRow:1 inSection:1]];
+  UISegmentedControl *profile = (UISegmentedControl *)profileCell.accessoryView;
+  profile.selectedSegmentIndex=1; [profile sendActionsForControlEvents:UIControlEventValueChanged];
+  NSDictionary *fast = StormNativePreferences.runtimeValues;
+  check([fast[@"gpu.xenos.readback_resolve"] isEqual:@"fast"] && [fast[@"gpu.xenos.readback_memexport_fast"] isEqual:@"true"], @"Fast profile selects buffered readbacks");
+  check([fast[@"gpu.vulkan.render_target_path"] isEqual:@"host"] && [fast[@"gpu.vulkan.dynamic_rendering"] isEqual:@"false"] && [fast[@"runtime.title_memory_mb"] isEqual:@"512"], @"Fast profile preserves the working renderer and memory budget");
+  profile.selectedSegmentIndex=0; [profile sendActionsForControlEvents:UIControlEventValueChanged];
+  check([StormNativePreferences.runtimeValues[@"gpu.xenos.readback_resolve"] isEqual:@"full"] && [StormNativePreferences.runtimeValues[@"gpu.xenos.readback_memexport_fast"] isEqual:@"false"], @"Safe profile restores exact prior readback settings");
+  StormNativeMetrics *metrics = [StormNativeMetrics new];
+  [metrics addStatistics:@{@"fps":@(NAN),@"frameTimeMs":@1} overlayOpen:NO];
+  [metrics addStatistics:@{@"fps":@0,@"frameTimeMs":@0} overlayOpen:NO];
+  check([metrics.report[@"samples"] count]==0, @"Performance metrics reject startup zero and nonfinite FPS");
+  for (NSInteger i=0;i<65;i++) [metrics addStatistics:@{@"fps":i%2 ? @10 : @20,@"frameTimeMs":@50,@"frames":@(i)} overlayOpen:NO];
+  NSDictionary *measurement=metrics.report;
+  check([measurement[@"samples"] count]==60 && [measurement[@"summaryExcludingOverlay"][@"meanFps"] doubleValue]==15, @"Performance history stays bounded and reports known mean");
+  [metrics addStatistics:@{@"fps":@60,@"frameTimeMs":@16.6} overlayOpen:YES];
+  check([metrics.report[@"summaryExcludingOverlay"][@"count"] integerValue]==59, @"Native settings overlay is excluded from FPS summary");
+  check([NSJSONSerialization dataWithJSONObject:metrics.report options:0 error:nil]!=nil, @"Performance export is valid JSON");
   UITableViewCell *credit = [settings tableView:settings.tableView cellForRowAtIndexPath:[NSIndexPath indexPathForRow:0 inSection:3]];
   check([credit.textLabel.text containsString:@"MiquéiasF07"], @"Requested credit");
   [StormNativePreferences setValue:@30 forKey:@"fps"];

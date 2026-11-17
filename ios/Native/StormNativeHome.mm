@@ -93,7 +93,7 @@ UIView *Card(UIColor *color, CGFloat radius) {
   _optionsButton.configuration = settings; _optionsButton.contentHorizontalAlignment = UIControlContentHorizontalAlignmentLeft;
   _optionsButton.accessibilityIdentifier = @"home-options"; [self addSubview:_optionsButton];
   _credit = Text(@"Créditos  /  MiquéiasF07",11,UIFontWeightMedium,Ink(.58,.64,.73)); [self addSubview:_credit];
-  NSString *version = [NSBundle.mainBundle objectForInfoDictionaryKey:@"CFBundleShortVersionString"] ?: @"0.4.1";
+  NSString *version = [NSBundle.mainBundle objectForInfoDictionaryKey:@"CFBundleShortVersionString"] ?: @"0.5.0";
   _version = Text([@"v" stringByAppendingString:version],11,UIFontWeightMedium,Ink(.44,.52,.64));
   _version.textAlignment = NSTextAlignmentRight; [self addSubview:_version];
   return self;

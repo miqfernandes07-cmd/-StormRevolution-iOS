@@ -20,9 +20,9 @@
   return @[@"Seu controle", @"Imagem e desempenho", @"Diagnóstico", @"Créditos"][section];
 }
 - (NSString *)tableView:(UITableView *)tableView titleForFooterInSection:(NSInteger)section {
-  return @[@"✕ confirma e ○ volta. No layout celular, o duplo toque no analógico aciona L3/R3. Pause a luta com OPTIONS antes de ajustar. Na organização, arraste cada botão ou analógico e toque em Concluir.",
-    @"O perfil Seguro usa o renderizador tradicional e evita o caminho experimental que apresentou artefatos. Preencher usa toda a tela. Perfil, resolução, escala e FXAA exigem reabrir o aplicativo. Estável espera os shaders ficarem prontos.",
-    @"O cache é limpo na próxima abertura. Compartilhar envia apenas os logs e as configurações de diagnóstico.",
+  return @[@"Celular mostra ações e atalhos de Jutsu, Supremo e Dash. Eles enviam combinações de botões; precisam de chakra e do tipo de personagem compatível. As sequências são canceladas ao abrir os ajustes ou sair do app. PlayStation e Xbox continuam disponíveis. Arraste os controles em Organizar. Pause com OPTIONS/PAUSA antes de ajustar.",
+    @"Rápido é experimental: usa leituras de GPU em buffers alternados e pode causar efeitos atrasados ou artefatos. Nesse caso, volte a Seguro. Ambos mantêm o renderizador host tradicional. Para menor carga, tente 480p, 1× e FXAA desligado. Perfil, resolução, escala e FXAA exigem reabrir o aplicativo.",
+    @"O cache é limpo na próxima abertura. Os logs incluem amostras recentes de FPS, tempo de quadro, temperatura e modo de pouca energia. Esses dados ajudam a comparar os perfis; não medem separadamente CPU e GPU.",
     @"Port nativo experimental. Seus arquivos importados e saves são preservados nas atualizações."][section];
 }
 - (UISegmentedControl *)segments:(NSArray<NSString *> *)labels key:(NSString *)key selected:(NSInteger)selected {
@@ -46,7 +46,7 @@
   NSInteger row = index.row;
   if (index.section == 0) {
     cell.textLabel.text = @[@"Botões",@"Disposição",@"Tamanho",@"Opacidade",@"Controles na tela",@"Vibração de toque",@"Organizar / restaurar"][row];
-    if (row == 0) cell.accessoryView = [self segments:@[@"PlayStation",@"Xbox"] key:@"playstation" selected:[v[@"playstation"] boolValue] ? 0 : 1];
+    if (row == 0) cell.accessoryView = [self segments:@[@"Celular",@"PlayStation",@"Xbox"] key:@"controlStyle" selected:([v[@"actionControls"] boolValue] && [v[@"mobile"] boolValue]) ? 0 : ([v[@"playstation"] boolValue] ? 1 : 2)];
     if (row == 1) cell.accessoryView = [self segments:@[@"Celular",@"Clássico"] key:@"mobile" selected:[v[@"mobile"] boolValue] ? 0 : 1];
     if (row == 2 || row == 3) {
       NSString *key = row == 2 ? @"scale" : @"opacity";
@@ -61,14 +61,14 @@
   } else if (index.section == 1) {
     cell.textLabel.text = @[@"Tela",@"Perfil gráfico",@"Shaders",@"Modo de vídeo",@"Escala interna",@"Limite de quadros",@"Suavização FXAA"][row];
     if (row == 0) cell.accessoryView = [self segments:@[@"Preencher",@"Original"] key:@"fill" selected:[v[@"fill"] boolValue] ? 0 : 1];
-    if (row == 1) cell.accessoryView = [self segments:@[@"Seguro",@"Padrão"] key:@"compatible" selected:[v[@"compatible"] boolValue] ? 0 : 1];
+    if (row == 1) cell.accessoryView = [self segments:@[@"Seguro",@"Rápido",@"Padrão"] key:@"graphicsProfile" selected:[v[@"compatible"] boolValue] ? ([v[@"fastReadback"] boolValue] ? 1 : 0) : 2];
     if (row == 2) cell.accessoryView = [self segments:@[@"Estável",@"Assíncrono"] key:@"async" selected:[v[@"async"] boolValue] ? 1 : 0];
     if (row == 3) cell.accessoryView = [self segments:@[@"480p",@"720p"] key:@"resolution" selected:[v[@"resolution"] isEqual:@"640x480"] ? 0 : 1];
     if (row == 4) cell.accessoryView = [self segments:@[@"1×",@"2×"] key:@"renderScale" selected:[v[@"renderScale"] integerValue] == 2 ? 1 : 0];
     if (row == 5) cell.accessoryView = [self segments:@[@"30",@"60"] key:@"fps" selected:[v[@"fps"] integerValue] == 60 ? 1 : 0];
     if (row == 6) cell.accessoryView = [self toggle:@"fxaa" value:[v[@"fxaa"] boolValue]];
   } else if (index.section == 2) {
-    cell.textLabel.text = row == 0 ? @"Limpar cache de shaders" : @"Compartilhar logs";
+    cell.textLabel.text = row == 0 ? @"Limpar cache de shaders" : @"Compartilhar logs e desempenho";
     cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
     cell.selectionStyle = UITableViewCellSelectionStyleDefault;
   } else {
@@ -84,12 +84,24 @@
 }
 - (void)segmentChanged:(UISegmentedControl *)sender {
   NSString *key = sender.accessibilityIdentifier; NSInteger i = sender.selectedSegmentIndex;
+  if ([key isEqual:@"controlStyle"]) {
+    [StormNativePreferences setValue:@(i == 0) forKey:@"actionControls"];
+    if (i == 0) [StormNativePreferences setValue:@YES forKey:@"mobile"];
+    [self notify:@"playstation" value:@(i != 2)];
+    [self.tableView reloadData]; return;
+  }
+  if ([key isEqual:@"graphicsProfile"]) {
+    [StormNativePreferences setValue:@(i != 2) forKey:@"compatible"];
+    [self notify:@"fastReadback" value:@(i == 1)]; return;
+  }
+  if ([key isEqual:@"mobile"] && i == 1) [StormNativePreferences setValue:@NO forKey:@"actionControls"];
   id value = @(i == 0);
   if ([key isEqual:@"async"]) value = @(i == 1);
   else if ([key isEqual:@"resolution"]) value = i == 0 ? @"640x480" : @"1280x720";
   else if ([key isEqual:@"renderScale"]) value = @(i + 1);
   else if ([key isEqual:@"fps"]) value = i == 0 ? @30 : @60;
   [self notify:key value:value];
+  if ([key isEqual:@"mobile"]) [self.tableView reloadData];
 }
 - (void)toggleChanged:(UISwitch *)sender { [self notify:sender.accessibilityIdentifier value:@(sender.on)]; }
 - (void)sliderChanged:(UISlider *)sender { [self notify:sender.accessibilityIdentifier value:@(sender.value)]; }

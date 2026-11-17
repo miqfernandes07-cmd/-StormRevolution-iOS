@@ -12,8 +12,11 @@
 @property(nonatomic) CGFloat controlOpacity;
 @property(nonatomic) BOOL playStationLabels;
 @property(nonatomic) BOOL mobileLayout;
+@property(nonatomic) BOOL mobileActionLabels;
+@property(nonatomic) NSTimeInterval shortcutPulseDuration;
 @property(nonatomic) BOOL hapticsEnabled;
 - (void)resetInput;
 - (void)resetLayout;
 + (void)resetSavedLayoutForMobile:(BOOL)mobile;
++ (void)resetSavedLayoutForMobile:(BOOL)mobile actions:(BOOL)actions;
 @end

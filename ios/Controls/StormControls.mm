@@ -40,6 +40,9 @@ CGFloat ClampCenter(CGFloat value, CGFloat length, CGFloat halfSize) {
   UIImpactFeedbackGenerator *_haptic;
   BOOL _inputActive;
   NSString *_connectionDescription;
+  uint32_t _shortcutButtons;
+  NSUInteger _shortcutEpoch;
+  NSInteger _shortcutTag;
 }
 - (instancetype)initWithFrame:(CGRect)frame {
   self = [super initWithFrame:frame];
@@ -49,6 +52,7 @@ CGFloat ClampCenter(CGFloat value, CGFloat length, CGFloat halfSize) {
   _controlOpacity = .85;
   _inputActive = YES;
   _hapticsEnabled = YES;
+  _shortcutPulseDuration = .18;
   _haptic = [[UIImpactFeedbackGenerator alloc] initWithStyle:UIImpactFeedbackStyleLight];
   self.multipleTouchEnabled = YES;
   self.backgroundColor = [UIColor colorWithRed:.055 green:.075 blue:.115 alpha:1];
@@ -89,6 +93,22 @@ CGFloat ClampCenter(CGFloat value, CGFloat length, CGFloat halfSize) {
   _rightStick = [self makeStick:@"R" tag:18 label:@"Analógico direito"];
   _leftKnob = (UILabel *)_leftStick.subviews.firstObject;
   _rightKnob = (UILabel *)_rightStick.subviews.firstObject;
+  for (NSUInteger i = 0; i < 3; ++i) {
+    UIButton *button = [StormTouchButton buttonWithType:UIButtonTypeCustom];
+    button.tag = 19 + i; button.hidden = YES;
+    [button setTitle:@[@"Jutsu",@"Supremo",@"Dash"][i] forState:UIControlStateNormal];
+    [button setTitleColor:[UIColor colorWithRed:.65 green:.85 blue:1 alpha:1] forState:UIControlStateNormal];
+    button.titleLabel.font = [UIFont systemFontOfSize:11 weight:UIFontWeightBold];
+    button.titleLabel.adjustsFontSizeToFitWidth = YES;
+    button.backgroundColor = Surface(); button.layer.borderWidth = 1;
+    button.layer.borderColor = [UIColor colorWithRed:.35 green:.65 blue:1 alpha:.4].CGColor;
+    button.accessibilityIdentifier = @[@"shortcut-jutsu",@"shortcut-ultimate",@"shortcut-dash"][i];
+    button.accessibilityLabel = button.currentTitle;
+    [button addTarget:self action:@selector(shortcutDown:) forControlEvents:UIControlEventTouchDown];
+    [button addTarget:self action:@selector(shortcutCancelled:) forControlEvents:UIControlEventTouchCancel];
+    UIPanGestureRecognizer *move = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(moveControl:)];
+    move.enabled = NO; [button addGestureRecognizer:move]; [_items addObject:button]; [self addSubview:button];
+  }
   NSNotificationCenter *center = NSNotificationCenter.defaultCenter;
   [center addObserver:self selector:@selector(controllersChanged:) name:GCControllerDidConnectNotification object:nil];
   [center addObserver:self selector:@selector(controllersChanged:) name:GCControllerDidDisconnectNotification object:nil];
@@ -131,7 +151,7 @@ CGFloat ClampCenter(CGFloat value, CGFloat length, CGFloat halfSize) {
   [NSNotificationCenter.defaultCenter removeObserver:self];
 }
 - (NSString *)connectionDescription { return _connectionDescription ?: @"Nenhum controle conectado"; }
-- (NSString *)positionsKey { return _mobileLayout ? @"touchPositionsMobileV3" : PositionsKey; }
+- (NSString *)positionsKey { return (_mobileLayout && _mobileActionLabels) ? @"touchPositionsActionsV1" : (_mobileLayout ? @"touchPositionsMobileV3" : PositionsKey); }
 - (void)setMobileLayout:(BOOL)value {
   _mobileLayout = value;
   [self resetInput];
@@ -139,8 +159,16 @@ CGFloat ClampCenter(CGFloat value, CGFloat length, CGFloat halfSize) {
 }
 - (void)setPlayStationLabels:(BOOL)value {
   _playStationLabels = value;
-  NSArray *names = value ? @[@"✕", @"○", @"□", @"△", @"L1", @"R1", @"L2", @"R2", @"OPTIONS", @"SHARE", @"L3", @"R3"]
-                         : @[@"A", @"B", @"X", @"Y", @"LB", @"RB", @"LT", @"RT", @"START", @"BACK", @"LS", @"RS"];
+  [self updateButtonLabels];
+}
+- (void)setMobileActionLabels:(BOOL)value {
+  if (_mobileActionLabels != value) [self resetInput];
+  _mobileActionLabels = value; [self updateButtonLabels]; [self setNeedsLayout];
+}
+- (void)updateButtonLabels {
+  BOOL value = _playStationLabels;
+  NSArray *names = _mobileActionLabels ? @[@"Pulo",@"Ataque",@"Kunai",@"Chakra",@"Aliado 1",@"Aliado 2",@"Subst.",@"Guarda",@"PAUSA",@"VOLTAR",@"L3",@"R3"] : (value ? @[@"✕", @"○", @"□", @"△", @"L1", @"R1", @"L2", @"R2", @"OPTIONS", @"SHARE", @"L3", @"R3"]
+                         : @[@"A", @"B", @"X", @"Y", @"LB", @"RB", @"LT", @"RT", @"START", @"BACK", @"LS", @"RS"]);
   NSArray *colors = value ? @[[UIColor colorWithRed:.43 green:.70 blue:1 alpha:1],
       [UIColor colorWithRed:1 green:.47 blue:.53 alpha:1],
       [UIColor colorWithRed:.90 green:.57 blue:.88 alpha:1],
@@ -151,7 +179,8 @@ CGFloat ClampCenter(CGFloat value, CGFloat length, CGFloat halfSize) {
     UIButton *button = (UIButton *)_items[i];
     [button setTitle:names[i] forState:UIControlStateNormal];
     button.accessibilityLabel = names[i];
-    if (i < 4) button.titleLabel.font = [UIFont systemFontOfSize:value ? 24 : 19 weight:UIFontWeightSemibold];
+    if (i < 4) button.titleLabel.font = [UIFont systemFontOfSize:_mobileActionLabels ? 12 : (value ? 24 : 19) weight:UIFontWeightSemibold];
+    button.titleLabel.adjustsFontSizeToFitWidth = YES;
     if (i < 4) [button setTitleColor:colors[i] forState:UIControlStateNormal];
   }
 }
@@ -170,11 +199,14 @@ CGFloat ClampCenter(CGFloat value, CGFloat length, CGFloat halfSize) {
   [self resetInput];
 }
 - (void)resetLayout {
-  [StormControls resetSavedLayoutForMobile:_mobileLayout];
+  [StormControls resetSavedLayoutForMobile:_mobileLayout actions:_mobileActionLabels];
   [self setNeedsLayout];
 }
 + (void)resetSavedLayoutForMobile:(BOOL)mobile {
-  [NSUserDefaults.standardUserDefaults removeObjectForKey:mobile ? @"touchPositionsMobileV3" : PositionsKey];
+  [self resetSavedLayoutForMobile:mobile actions:NO];
+}
++ (void)resetSavedLayoutForMobile:(BOOL)mobile actions:(BOOL)actions {
+  [NSUserDefaults.standardUserDefaults removeObjectForKey:(mobile && actions) ? @"touchPositionsActionsV1" : (mobile ? @"touchPositionsMobileV3" : PositionsKey)];
 }
 - (void)layoutSubviews {
   [super layoutSubviews];
@@ -187,7 +219,7 @@ CGFloat ClampCenter(CGFloat value, CGFloat length, CGFloat halfSize) {
       {145,180},{280,272},{65,220},{65,286},{32,253},{98,253},{65,120},{208,260}};
   const CGFloat fit = _mobileLayout ? MIN(1.1, height / 350) : MIN(width / 350, height / 330);
   NSDictionary *saved = [NSUserDefaults.standardUserDefaults dictionaryForKey:[self positionsKey]];
-  const CGFloat unit = fit * _controlScale;
+  const CGFloat unit = fit * (_mobileActionLabels ? MIN(1.2, _controlScale) : _controlScale);
   const CGFloat faceX = width - 103 * unit, faceY = height - 99 * unit;
   const CGPoint mobilePoints[] = {{faceX, faceY+44*unit},{faceX+44*unit,faceY},
     {faceX-44*unit,faceY},{faceX,faceY-44*unit},
@@ -198,24 +230,32 @@ CGFloat ClampCenter(CGFloat value, CGFloat length, CGFloat halfSize) {
     {105*unit,height-83*unit},{width-205*unit,height-89*unit}};
   for (NSUInteger i = 0; i < _items.count; ++i) {
     UIView *view = _items[i];
-    view.hidden = _mobileLayout && (i == 10 || i == 11);
+    view.hidden = i >= 18 ? !(_mobileLayout && _mobileActionLabels) : (_mobileLayout && (i == 10 || i == 11));
     CGFloat itemWidth = i < 4 ? 44 : (i < 8 ? 50 : (i < 10 ? 44 : (i < 12 ? 42 : 28)));
     CGFloat itemHeight = i < 4 ? 44 : (i < 8 ? 34 : (i < 12 ? 30 : 28));
-    if (i >= ButtonCount) itemWidth = itemHeight = i == 16 ? 80 : 70;
+    if (i >= ButtonCount && i < 18) itemWidth = itemHeight = i == 16 ? 80 : 70;
     if (_mobileLayout) {
       if (i < 4) itemWidth = itemHeight = 46;
       else if (i < 8) { itemWidth = 52; itemHeight = 30; }
       else if (i < 10) { itemWidth = 72; itemHeight = 25; }
       else if (i < 12) { itemWidth = 36; itemHeight = 24; }
       else if (i < 16) itemWidth = itemHeight = 32;
-      else itemWidth = itemHeight = i == 16 ? 86 : 62;
+      else if (i < 18) itemWidth = itemHeight = i == 16 ? 86 : 62;
     }
+    if (i >= 18) { itemWidth = 64; itemHeight = 38; }
+    if (_mobileActionLabels && i == 1) itemWidth = itemHeight = 56;
     CGFloat scale = MIN(_controlScale, (i >= 12 && i < 16) ? 1.15 : 1.25) * fit;
     // No transforms are needed: moving hit targets stays predictable when editing.
     view.bounds = CGRectMake(0, 0, itemWidth * scale, itemHeight * scale);
-    view.layer.cornerRadius = (i < 4 || i >= 12) ? itemWidth * scale / 2 : 10 * scale;
-    CGPoint position = CGPointMake(points[i].x / 350, points[i].y / 330);
-    if (_mobileLayout) position = CGPointMake(mobilePoints[i].x / width, mobilePoints[i].y / height);
+    view.layer.cornerRadius = (i < 4 || (i >= 12 && i < 18)) ? itemWidth * scale / 2 : 12 * scale;
+    CGPoint position = CGPointMake(.5,.5);
+    if (i < 18) {
+      position = CGPointMake(points[i].x / 350, points[i].y / 330);
+      if (_mobileLayout) position = CGPointMake(mobilePoints[i].x / width, mobilePoints[i].y / height);
+      if (_mobileLayout && _mobileActionLabels && i >= 4 && i < 8) position.y = 48 * unit / height;
+    } else {
+      position = CGPointMake((width - (187 - 70 * (i - 18)) * unit) / width, (height - 192 * unit) / height);
+    }
     id stored = saved[[NSString stringWithFormat:@"%lu", (unsigned long)i]];
     if ([stored isKindOfClass:NSArray.class] && [stored count] == 2 &&
         [stored[0] isKindOfClass:NSNumber.class] && [stored[1] isKindOfClass:NSNumber.class]) {
@@ -226,12 +266,13 @@ CGFloat ClampCenter(CGFloat value, CGFloat length, CGFloat halfSize) {
     view.center = CGPointMake(ClampCenter(position.x * width, width, view.bounds.size.width / 2),
                               ClampCenter(position.y * height, height, view.bounds.size.height / 2));
     view.alpha = _controlOpacity;
-    if (i >= ButtonCount) {
+    if (i >= ButtonCount && i < 18) {
       UILabel *knob = (UILabel *)view.subviews.firstObject;
       knob.bounds = CGRectMake(0, 0, itemWidth * scale * .58, itemHeight * scale * .58);
       knob.center = CGPointMake(view.bounds.size.width / 2, view.bounds.size.height / 2);
       knob.layer.cornerRadius = knob.bounds.size.width / 2;
-      knob.text = _mobileLayout ? (i == 16 ? @"L3" : @"R3") : (i == 16 ? @"L" : @"R");
+      knob.text = _mobileActionLabels ? (i == 16 ? @"MOVER" : @"CÂM.") : (_mobileLayout ? (i == 16 ? @"L3" : @"R3") : (i == 16 ? @"L" : @"R"));
+      knob.font = [UIFont systemFontOfSize:_mobileActionLabels ? 10 : 12 weight:UIFontWeightBold];
       view.accessibilityHint = _mobileLayout ? @"Arraste para mover. Toque duas vezes para clicar o analógico." : @"Arraste para mover.";
     }
   }
@@ -244,7 +285,8 @@ CGFloat ClampCenter(CGFloat value, CGFloat length, CGFloat halfSize) {
                                                            -_touchState.ry * _rightStick.bounds.size.height * .18);
 }
 - (void)emit {
-  Snapshot value = _inputActive ? Xbox::combine(_touchState, _physicalState) : Snapshot{};
+  Snapshot touch = _touchState; touch.buttons |= _shortcutButtons;
+  Snapshot value = _inputActive ? Xbox::combine(touch, _physicalState) : Snapshot{};
   for (NSUInteger i = 0; i < ButtonCount; ++i) {
     UIButton *button = (UIButton *)_items[i];
     BOOL pressed = i == 6 ? value.lt > .1f : (i == 7 ? value.rt > .1f : (value.buttons & ButtonBits[i]) != 0);
@@ -252,15 +294,46 @@ CGFloat ClampCenter(CGFloat value, CGFloat length, CGFloat halfSize) {
     button.layer.borderWidth = pressed ? 2 : 1;
     button.accessibilityValue = pressed ? @"Pressionado" : @"Solto";
   }
+  for (NSUInteger i = 18; i < _items.count; ++i) {
+    UIButton *button = (UIButton *)_items[i]; BOOL active = button.tag == _shortcutTag;
+    button.backgroundColor = active ? [UIColor colorWithRed:.20 green:.35 blue:.52 alpha:1] : Surface();
+    button.accessibilityValue = active ? @"Executando" : @"Pronto";
+  }
   if (self.inputChanged) self.inputChanged(value.buttons, value.lx, value.ly, value.rx, value.ry, value.lt, value.rt);
 }
 - (void)touchDown:(UIButton *)button {
   if (_editingControls || !_inputActive || button.tag < 1 || button.tag > (NSInteger)ButtonCount) return;
+  [self cancelShortcuts];
   _touchState.buttons |= ButtonBits[button.tag - 1];
   if (button.tag == 7) _touchState.lt = 1;
   if (button.tag == 8) _touchState.rt = 1;
     if (_hapticsEnabled) [_haptic impactOccurred];
   [self emit];
+}
+- (void)cancelShortcuts {
+  _shortcutEpoch++; _shortcutButtons = 0; _shortcutTag = 0;
+}
+- (void)shortcutCancelled:(UIButton *)button { [self cancelShortcuts]; [self emit]; }
+- (void)shortcutDown:(UIButton *)button {
+  if (!_inputActive || _editingControls || !_mobileLayout || !_mobileActionLabels) return;
+  NSArray<NSNumber *> *steps;
+  if (button.tag == 19) steps = @[@(Xbox::y),@0,@(Xbox::b),@0];
+  else if (button.tag == 20) steps = @[@(Xbox::y),@0,@(Xbox::y),@0,@(Xbox::b),@0];
+  else if (button.tag == 21) steps = @[@(Xbox::y),@0,@(Xbox::a),@0];
+  else return;
+  [self cancelShortcuts];
+  const NSUInteger epoch = _shortcutEpoch;
+  _shortcutTag = button.tag; _shortcutButtons = steps.firstObject.unsignedIntValue; [self emit];
+  NSTimeInterval pulse = std::isfinite(_shortcutPulseDuration) ? MIN(.35,MAX(.08,_shortcutPulseDuration)) : .18;
+  __weak StormControls *weakSelf = self;
+  for (NSUInteger i = 1; i < steps.count; ++i) {
+    uint32_t bits = steps[i].unsignedIntValue; BOOL last = i == steps.count-1;
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(i*pulse*NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+      StormControls *controls = weakSelf;
+      if (!controls || controls->_shortcutEpoch != epoch || !controls->_inputActive || controls->_editingControls) return;
+      controls->_shortcutButtons = bits; if (last) controls->_shortcutTag = 0; [controls emit];
+    });
+  }
 }
 - (void)touchUp:(UIButton *)button {
   if (button.tag < 1 || button.tag > (NSInteger)ButtonCount) return;
@@ -374,6 +447,7 @@ CGFloat ClampCenter(CGFloat value, CGFloat length, CGFloat halfSize) {
   [self readController:_controller.extendedGamepad];
 }
 - (void)resetInput {
+  [self cancelShortcuts];
   _touchState = {}; _physicalState = {};
   [self updateStickIndicators];
   [self emit];

@@ -34,7 +34,7 @@ jobs:
           xcrun --sdk iphonesimulator clang++ -std=c++23 -fobjc-arc -fblocks \
             -target "$(uname -m)-apple-ios17.0-simulator" -isysroot "$(xcrun --sdk iphonesimulator --show-sdk-path)" \
             -Iios -Iruntime ios/Native/Tests/ControlsSmoke.mm ios/Controls/StormControls.mm \
-            ios/Native/StormNativePreferences.mm ios/Native/StormNativeOptions.mm ios/Native/StormNativeHome.mm \
+            ios/Native/StormNativePreferences.mm ios/Native/StormNativeOptions.mm ios/Native/StormNativeHome.mm ios/Native/StormNativeMetrics.mm \
             -framework UIKit -framework Foundation -framework GameController -framework QuartzCore -framework CoreGraphics \
             -o out/ControlsSmoke.app/ControlsSmoke
           codesign --force --sign - out/ControlsSmoke.app

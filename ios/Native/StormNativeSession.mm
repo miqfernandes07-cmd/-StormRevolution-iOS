@@ -4,6 +4,7 @@
 #import "StormNativePreferences.h"
 #import "StormNativeOptions.h"
 #import "StormNativeHome.h"
+#import "StormNativeMetrics.h"
 #import <UniformTypeIdentifiers/UniformTypeIdentifiers.h>
 #import <os/proc.h>
 #include <SDL3/SDL.h>
@@ -29,6 +30,8 @@
 @property(nonatomic) BOOL inputBlocked;
 @property(nonatomic) BOOL editingPreview;
 @property(nonatomic) NSUInteger memoryWarningCount;
+@property(nonatomic) StormNativeMetrics *metrics;
+@property(nonatomic) NSUInteger statisticsTicks;
 @end
 
 @implementation StormNativeSession {
@@ -39,6 +42,7 @@
   if (!(self = [super init])) return nil;
   _window = window;
   _importer = [StormGameImporter new];
+  _metrics = [StormNativeMetrics new];
   StormNativeHome *home = [StormNativeHome new];
   _panel = home;
   _panel.translatesAutoresizingMaskIntoConstraints = NO;
@@ -176,6 +180,7 @@
   NSDictionary *v = StormNativePreferences.values;
   self.controls.playStationLabels = [v[@"playstation"] boolValue];
   self.controls.mobileLayout = [v[@"mobile"] boolValue];
+  self.controls.mobileActionLabels = [v[@"actionControls"] boolValue] && [v[@"mobile"] boolValue];
   self.controls.controlScale = [v[@"scale"] doubleValue];
   self.controls.controlOpacity = [v[@"opacity"] doubleValue];
   self.controls.hapticsEnabled = [v[@"haptics"] boolValue];
@@ -245,7 +250,8 @@
     [session.menuButton setTitle:@"Concluir" forState:UIControlStateNormal];
   };
   options.resetControls = ^{
-    [StormControls resetSavedLayoutForMobile:[StormNativePreferences.values[@"mobile"] boolValue]];
+    NSDictionary *values = StormNativePreferences.values;
+    [StormControls resetSavedLayoutForMobile:[values[@"mobile"] boolValue] actions:[values[@"actionControls"] boolValue]];
     [weakSelf.controls setNeedsLayout];
   };
   options.shareLogs = ^(UIViewController *presenter) { [weakSelf shareLogsFrom:presenter]; };
@@ -260,11 +266,20 @@
 - (void)writeSessionReport:(NSString *)phase {
   NSURL *folder = [self logsURL];
   [NSFileManager.defaultManager createDirectoryAtURL:folder withIntermediateDirectories:YES attributes:nil error:nil];
+  NSMutableDictionary *configured = [NSMutableDictionary dictionary];
+  for (NSString *name in StormNativePreferences.runtimeValues) {
+    auto setting = rex::GetSettingsRegistry().Find(name.UTF8String);
+    if (setting) {
+      std::string value = (*setting)->GetText();
+      configured[name] = [NSString stringWithUTF8String:value.c_str()] ?: @"";
+    }
+  }
   NSDictionary *report = @{@"phase":phase, @"os":UIDevice.currentDevice.systemVersion,
     @"appBuild":[NSBundle.mainBundle objectForInfoDictionaryKey:@"CFBundleVersion"] ?: @"unknown",
     @"memoryAvailableMB":@(os_proc_available_memory() / (1024 * 1024)),
     @"memoryWarnings":@(self.memoryWarningCount),
     @"preferences":StormNativePreferences.values, @"runtimeRequested":StormNativePreferences.runtimeValues,
+    @"runtimeConfigured":configured, @"performance":[self.metrics report],
     @"updatedAt":NSDate.date.description};
   NSData *data = [NSJSONSerialization dataWithJSONObject:report options:NSJSONWritingPrettyPrinted error:nil];
   [data writeToURL:[folder URLByAppendingPathComponent:@"native-session.json"] atomically:YES];
@@ -274,8 +289,15 @@
   if (self.frameStatistics) {
     NSDictionary *stats = self.frameStatistics();
     self.statisticsLabel.text = [NSString stringWithFormat:@"%.1f FPS", [stats[@"fps"] doubleValue]];
+    if (self.launchRequested) {
+      [self.metrics addStatistics:stats overlayOpen:self.inputBlocked];
+      double fps = [stats[@"fps"] doubleValue];
+      if (std::isfinite(fps) && fps > 0) self.controls.shortcutPulseDuration = MIN(.35,MAX(.08,2.0/fps));
+    }
   }
-  [self writeSessionReport:self.launchRequested ? @"title-running" : @"home"];
+  // Keep the two-second samples, but avoid rewriting the report on every tick.
+  self.statisticsTicks += 1;
+  if (self.statisticsTicks % 5 == 0) [self writeSessionReport:self.launchRequested ? @"title-running" : @"home"];
 }
 - (void)memoryWarning:(NSNotification *)notification { self.memoryWarningCount += 1; [self writeSessionReport:@"memory-warning"]; }
 - (void)shareLogsFrom:(UIViewController *)presenter {

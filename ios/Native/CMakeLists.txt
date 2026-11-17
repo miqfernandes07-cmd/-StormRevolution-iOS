@@ -28,7 +28,7 @@ if(NOT generated_sources)
 endif()
 add_library(storm_native_title OBJECT ${generated_sources})
 add_executable(StormNative MACOSX_BUNDLE
-  StormNativeMain.mm StormNativeSession.mm StormNativePreferences.mm StormNativeOptions.mm StormNativeHome.mm
+  StormNativeMain.mm StormNativeSession.mm StormNativePreferences.mm StormNativeOptions.mm StormNativeHome.mm StormNativeMetrics.mm
   ../Import/StormGameImporter.mm ../Controls/StormControls.mm
   ../../runtime/filesystem/zip_archive.cpp
   $<TARGET_OBJECTS:storm_native_title>)
