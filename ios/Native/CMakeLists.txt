@@ -46,7 +46,7 @@ foreach(framework IN LISTS sdk_frameworks)
   set_target_properties("storm_sdk_${framework_name}" PROPERTIES FRAMEWORK TRUE
     IMPORTED_LOCATION "${framework}/${framework_name}")
   target_link_libraries(StormNative PRIVATE "storm_sdk_${framework_name}")
-  set_property(TARGET StormNative APPEND PROPERTY XCODE_EMBED_FRAMEWORKS "storm_sdk_${framework_name}")
+  set_property(TARGET StormNative APPEND PROPERTY XCODE_EMBED_FRAMEWORKS "${framework}")
 endforeach()
 file(GLOB_RECURSE sdk_notices "${STORM_REX_IOS_SDK}/licenses/*")
 foreach(notice IN LISTS sdk_notices)
