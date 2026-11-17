@@ -6,6 +6,7 @@ on:
       - '.github/workflows/rexglue-ios-base.yml'
       - 'tools/recompilation/rexglue_patches/**'
       - 'config/rexglue_reference.json'
+      - 'ios/Native/**'
   workflow_dispatch:
     inputs:
       stage:
@@ -183,6 +184,18 @@ jobs:
             -Wl,-rpath,@executable_path/Frameworks \
             -o out/ios-base/SDKLinkProbe 2>&1 | tee out/ios-base/link-fixture.txt
           xcrun vtool -show-build out/ios-base/SDKLinkProbe | tee out/ios-base/link-fixture-platform.txt
+      - name: Compile the native UIKit frontend without title sources
+        if: github.event_name == 'push' || inputs.stage == 'drivers'
+        run: |
+          set -o pipefail
+          xcrun --sdk iphoneos clang++ -target arm64-apple-ios17.0 \
+            -isysroot "$(xcrun --sdk iphoneos --show-sdk-path)" \
+            -std=c++23 -fexperimental-library -fno-char8_t -fobjc-arc \
+            -DREX_PHYSICAL_OFFSET_IN_CODE=1 -DSTORM_NATIVE_INTERFACE_CHECK=1 \
+            -I out/ios-runtime-package/runtime/include -I ios -I runtime \
+            -fsyntax-only ios/Native/StormNativeMain.mm ios/Native/StormNativeSession.mm \
+            ios/Import/StormGameImporter.mm ios/Controls/StormControls.mm \
+            2>&1 | tee out/ios-base/native-frontend-compile.txt
       - name: Preserve rebuildable open source runtime package
         if: success() && (github.event_name == 'push' || inputs.stage == 'drivers')
         uses: actions/upload-artifact@v4
