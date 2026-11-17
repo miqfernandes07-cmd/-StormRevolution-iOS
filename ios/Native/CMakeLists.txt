@@ -28,10 +28,14 @@ if(NOT generated_sources)
 endif()
 add_library(storm_native_title OBJECT ${generated_sources})
 add_executable(StormNative MACOSX_BUNDLE
-  StormNativeMain.mm StormNativeSession.mm
+  StormNativeMain.mm StormNativeSession.mm StormNativePreferences.mm StormNativeOptions.mm
   ../Import/StormGameImporter.mm ../Controls/StormControls.mm
   ../../runtime/filesystem/zip_archive.cpp
   $<TARGET_OBJECTS:storm_native_title>)
+set(STORM_NATIVE_HOOK_SOURCES "" CACHE STRING "Optional private title diagnostics sources")
+if(STORM_NATIVE_HOOK_SOURCES)
+  target_sources(StormNative PRIVATE ${STORM_NATIVE_HOOK_SOURCES})
+endif()
 foreach(target storm_native_title StormNative)
   target_compile_features(${target} PRIVATE cxx_std_23)
   set_target_properties(${target} PROPERTIES CXX_STANDARD 23 OBJCXX_STANDARD 23
@@ -64,6 +68,9 @@ foreach(notice IN LISTS sdk_notices)
     target_sources(StormNative PRIVATE "${notice}")
   endif()
 endforeach()
+set_source_files_properties("${PROJECT_SOURCE_DIR}/LICENSE" PROPERTIES
+  MACOSX_PACKAGE_LOCATION "Resources/ThirdPartyLicenses/StormRevolutionIOS")
+target_sources(StormNative PRIVATE "${PROJECT_SOURCE_DIR}/LICENSE")
 target_link_libraries(StormNative PRIVATE ZLIB::ZLIB "${STORM_REX_IOS_SDK}/lib/librexxenos.a"
   "-framework Foundation" "-framework UIKit" "-framework UniformTypeIdentifiers"
   "-framework GameController" "-framework QuartzCore" "-framework CoreGraphics")

@@ -10,6 +10,9 @@
 @property(nonatomic) BOOL editingControls;
 @property(nonatomic) CGFloat controlScale;
 @property(nonatomic) CGFloat controlOpacity;
+@property(nonatomic) BOOL playStationLabels;
+@property(nonatomic) BOOL mobileLayout;
+@property(nonatomic) BOOL hapticsEnabled;
 - (void)resetInput;
 - (void)resetLayout;
 @end
