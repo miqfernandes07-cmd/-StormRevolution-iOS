@@ -132,7 +132,7 @@ jobs:
         if: github.event_name == 'push' || inputs.stage == 'drivers'
         run: |
           set -o pipefail
-          cmake --build build-rex-ios --target rexapp rexui-sdl3 rexhid-sdl3 \
+          cmake --build build-rex-ios --target rexapp rexfilesystem rexui-sdl3 rexhid-sdl3 \
             rexapu-sdl3 rexgpu-xenos-vulkan --parallel 3 \
             2>&1 | tee out/ios-base/drivers-build.txt
           python3 - <<'PY'
