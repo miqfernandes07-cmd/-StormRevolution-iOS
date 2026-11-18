@@ -1,0 +1,75 @@
+name: ReXGlue iPhone source feasibility (no game)
+on:
+  push:
+    branches: [codex/rexglue-ios-feasibility]
+  pull_request:
+    paths:
+      - '.github/workflows/rexglue-ios-probe.yml'
+      - 'tools/recompilation/rexglue_ios_probe.py'
+      - 'config/rexglue_reference.json'
+      - 'tools/recompilation/rexglue_patches/**'
+  workflow_dispatch:
+    inputs:
+      apple_runner:
+        type: choice
+        default: macos-15-intel
+        options: [macos-15-intel, macos-15, macos-latest]
+permissions:
+  contents: read
+jobs:
+  source-probe:
+    runs-on: ${{ inputs.apple_runner || 'macos-15-intel' }}
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          repository: rexglue/rexglue-sdk
+          ref: a3e1d82678ca20d68d4837a8e9ee4652ff073745
+          path: sdk-source
+          persist-credentials: false
+      - name: Fetch pinned logging headers only
+        working-directory: sdk-source
+        run: git submodule update --init --depth 1 thirdparty/spdlog
+      - name: Select newest installed Xcode and record toolchain
+        run: |
+          mkdir -p out/rexglue-ios
+          python3 - <<'PY'
+          import glob,os,plistlib
+          candidates=[]
+          for app in glob.glob('/Applications/Xcode*.app'):
+              with open(app+'/Contents/Info.plist','rb') as f:
+                  version=plistlib.load(f)['CFBundleShortVersionString']
+              candidates.append((tuple(int(x) for x in version.split('.')),app))
+          _,app=max(candidates)
+          with open(os.environ['GITHUB_ENV'],'a') as f:
+              f.write('DEVELOPER_DIR='+app+'/Contents/Developer\n')
+          print('Selected',app)
+          PY
+      - name: Compile selected SDK sources for iPhone ARM64
+        continue-on-error: true
+        run: |
+          xcodebuild -version | tee out/rexglue-ios/xcode.txt
+          python3 tools/recompilation/rexglue_ios_probe.py \
+            --sdk-source sdk-source --output out/rexglue-ios
+      - name: Compile the pinned experimental VM-region adapter
+        run: |
+          python3 tools/recompilation/rexglue_ios_probe.py \
+            --sdk-source sdk-source --output out/rexglue-ios-patched \
+            --experimental-ios-patch
+      - name: Verify private sparse mapping aliases on the build host
+        run: |
+          xcrun clang++ -std=c++17 -Wall -Wextra -Werror -I sdk-source/src \
+            tests/integration/rexglue_private_mapping.cpp -o out/private-mapping-test
+          out/private-mapping-test
+      - name: Upload open source compilation diagnostics only
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: rexglue-ios-source-probe
+          path: |
+            out/rexglue-ios/*.txt
+            out/rexglue-ios/*.json
+            out/rexglue-ios-patched/*.txt
+            out/rexglue-ios-patched/*.json
+          retention-days: 7

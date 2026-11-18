@@ -1,0 +1,22 @@
+{
+  "passed": true,
+  "scope": "Actual UIKit controls and settings; programmatic input events",
+  "failures": [],
+  "checks": 224,
+  "game_executed": false,
+  "physical_touch_tested": false,
+  "run": 44073315091,
+  "source_commit": "4aaf6c4a35e9cc84491f00eca7e742a7ec1e8742",
+  "production_source_commit": "baf4005a54cbf27856d0f31270ecd1a4dc7876a8",
+  "screenshot_scope": "Actual UIKit action-control layout on simulator; no game execution",
+  "controls_screenshot_sha256": "c7f6ca32c04c455ff1d62b60b1dd3f82cc594f66fd5c8276c9131846274169e1",
+  "checks_include": [
+    "Jutsu, ultimate and dash input order and final release",
+    "queued-step cancellation on background, edit and touch cancel",
+    "manual input override preserves held button",
+    "three shortcut buttons remain on screen and avoid face/shoulder controls at tested scales",
+    "separate saved action-layout reset",
+    "buffered Fast profile and exact Safe readback restoration",
+    "bounded metrics and exclusion of native overlay samples"
+  ]
+}

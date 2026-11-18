@@ -1,0 +1,104 @@
+--- a/src/base/memory_posix.h
++++ b/src/base/memory_posix.h
+@@ -12,10 +12,53 @@
+ 
+ #include <cerrno>
+ #include <cstddef>
++#include <cstdlib>
++#include <filesystem>
++#include <limits>
++#include <string>
++#include <fcntl.h>
++#include <unistd.h>
+ 
+ #include <sys/mman.h>
+ 
+ namespace rex::memory::detail {
++
++/** Creates an unlinked sparse mapping file in the process's writable temporary folder. */
++inline int CreatePrivateMappingFile(size_t length, bool read_only) {
++  static_assert(sizeof(off_t) == 8);
++  if (length == 0 || length > static_cast<size_t>(std::numeric_limits<off_t>::max())) {
++    errno = length == 0 ? EINVAL : EOVERFLOW;
++    return -1;
++  }
++  std::error_code error;
++  const auto folder = std::filesystem::temp_directory_path(error);
++  if (error) {
++    errno = error.value();
++    return -1;
++  }
++  std::string name = (folder / "rex-mapping-XXXXXX").string();
++  int fd = mkstemp(name.data());
++  if (fd < 0) return -1;
++  const auto fail = [&](int extra_fd = -1) {
++    const int saved_errno = errno;
++    if (extra_fd >= 0) close(extra_fd);
++    close(fd);
++    unlink(name.c_str());
++    errno = saved_errno;
++    return -1;
++  };
++  const int flags = fcntl(fd, F_GETFD);
++  if (flags < 0 || fcntl(fd, F_SETFD, flags | FD_CLOEXEC) < 0 ||
++      ftruncate(fd, static_cast<off_t>(length)) != 0) return fail();
++  int result = fd;
++  if (read_only) {
++    result = open(name.c_str(), O_RDONLY | O_CLOEXEC | O_NOFOLLOW);
++    if (result < 0) return fail();
++  }
++  if (unlink(name.c_str()) != 0) return fail(result != fd ? result : -1);
++  if (result != fd) close(fd);
++  return result;
++}
+ 
+ /**
+  * Accepts a fixed address mmap result only when it ended up at the requested address. A kernel
+--- a/src/base/memory_posix.cpp
++++ b/src/base/memory_posix.cpp
+@@ -67,7 +67,7 @@
+ namespace memory {
+ 
+ /** Builds a shm_open name from a path, hashing long names on macOS (31 character limit). */
+-static std::string BuildSHMName(const std::filesystem::path& path) {
++[[maybe_unused]] static std::string BuildSHMName(const std::filesystem::path& path) {
+   std::string name = path.string();
+   for (char& c : name) {
+     if (c == '/') {
+@@ -348,9 +348,22 @@
+ #endif
+ }
+ 
+-FileMappingHandle CreateFileMappingHandle(const std::filesystem::path& path, size_t length,
++FileMappingHandle CreateFileMappingHandle([[maybe_unused]] const std::filesystem::path& path, size_t length,
+                                           PageAccess access, [[maybe_unused]] bool commit) {
+-#if REX_PLATFORM_ANDROID
++#if REX_PLATFORM_MAC && TARGET_OS_IPHONE
++  // AOT guest bytes are data. Keep shared aliases inside the app's temporary folder,
++  // without requiring a global POSIX shared-memory name or app-group entitlement.
++  switch (access) {
++    case PageAccess::kNoAccess:
++    case PageAccess::kReadOnly:
++      return detail::CreatePrivateMappingFile(length, true);
++    case PageAccess::kReadWrite:
++      return detail::CreatePrivateMappingFile(length, false);
++    default:
++      errno = ENOTSUP;
++      return kFileMappingHandleInvalid;
++  }
++#elif REX_PLATFORM_ANDROID
+   if (android_ASharedMemory_create_) {
+     int sharedmem_fd = android_ASharedMemory_create_(path.c_str(), length);
+     return sharedmem_fd >= 0 ? sharedmem_fd : kFileMappingHandleInvalid;
+@@ -429,9 +442,9 @@
+ #endif
+ }
+ 
+-void CloseFileMappingHandle(FileMappingHandle handle, const std::filesystem::path& path) {
++void CloseFileMappingHandle(FileMappingHandle handle, [[maybe_unused]] const std::filesystem::path& path) {
+   close(handle);
+-#if !REX_PLATFORM_ANDROID
++#if !REX_PLATFORM_ANDROID && !(REX_PLATFORM_MAC && TARGET_OS_IPHONE)
+   auto full_path = BuildSHMName(path);
+   shm_unlink(full_path.c_str());
+ #endif

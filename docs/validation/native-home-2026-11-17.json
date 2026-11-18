@@ -1,0 +1,21 @@
+{
+  "passed": true,
+  "scope": "Actual UIKit controls and settings; programmatic input events",
+  "failures": [],
+  "checks": 127,
+  "game_executed": false,
+  "physical_touch_tested": false,
+  "run": 44057533788,
+  "source_commit": "5003dd82de4899ccbe563aa5e4ff63bee8998778",
+  "screenshot_scope": "Real UIKit Home with simulated installed-library status; harness v1.0 label; no game content or title execution",
+  "screenshot_sha256": "611fb32750047c61d0b5e31492695780495d5495b094ee0062033800204b8335",
+  "checks_include": [
+    "PlayStation logical input and multi-button release",
+    "mobile/classic layout bounds",
+    "graphics profile excludes FSI in both modes",
+    "cache revision runs once and preserves touch preferences",
+    "Home buttons visible with 44-point touch targets",
+    "Home Play action and disabled validation state",
+    "settings persistence and requested credit"
+  ]
+}

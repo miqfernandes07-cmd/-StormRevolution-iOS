@@ -32,6 +32,25 @@ class PrefixTests(unittest.TestCase):
         for names in ([],['own','own'],['bad-name'],['x");'],[1],'own',['x']*33):
             with self.subTest(names=names),self.assertRaisesRegex(PROBE.ProbeError,'FUNCTION_LIST'):PROBE.extract(self.generated,names)
 
+    def test_expanded_prefix_remains_bounded(self):
+        names=[f'own_{i}' for i in range(PROBE.MAX_FUNCTIONS)]
+        (self.generated/'batch.cpp').write_text(''.join(function(name) for name in names))
+        self.assertEqual(set(PROBE.extract(self.generated,names)),set(names))
+        with self.assertRaisesRegex(PROBE.ProbeError,'FUNCTION_LIST'):
+            PROBE.extract(self.generated,names+['one_too_many'])
+        with patch.object(PROBE,'MAX_SELECTED_SOURCE',1),self.assertRaisesRegex(PROBE.ProbeError,'SELECTED_SOURCE_LIMIT'):
+            PROBE.extract(self.generated,names)
+
+    def test_only_exact_guest32_reservation_forms_are_adapted(self):
+        body='\tctx.reserved.u32 = *(uint32_t*)(base + ctx.r3.u32 + ctx.r4.u32);\n\tctx.r5.u64 = __builtin_bswap32(ctx.reserved.u32);\n\tctx.cr0.eq = __sync_bool_compare_and_swap(reinterpret_cast<uint32_t*>(base + ctx.r3.u32 + ctx.r4.u32), ctx.reserved.s32, __builtin_bswap32(ctx.r6.s32));'
+        adapted=PROBE.checked_reservations(body)
+        self.assertIn('PPC_LOAD_RESERVE_U32(ctx.r3.u32 + ctx.r4.u32)',adapted)
+        self.assertIn('PPC_STORE_CONDITIONAL_U32(ctx.r3.u32 + ctx.r4.u32, ctx.r6.u32)',adapted)
+        self.assertNotIn('base +',adapted);self.assertNotIn('__sync_',adapted)
+        for wrong in (body.replace('uint32_t','uint64_t'),body.replace('ctx.reserved','reserved'),body.replace('ctx.r6.s32','ctx.r6.s64')):
+            adapted=PROBE.checked_reservations(wrong)
+            self.assertTrue('base +' in adapted or '__sync_' in adapted)
+
     def test_missing_and_duplicate_definition_are_rejected(self):
         with self.assertRaisesRegex(PROBE.ProbeError,'FUNCTION_MISSING'):PROBE.extract(self.generated,['own'])
         (self.generated/'a.cpp').write_text(function());(self.generated/'b.cpp').write_text(function())
@@ -81,18 +100,80 @@ int main(){
     if(ctx.r3.u64!=0x20000||space.load(0x20010,4)!=0xffffffff)return 5;
     ctx.r4.u64=257;__imp__RtlInitializeCriticalSectionAndSpinCount(ctx,base);
     if(ctx.r3.u64!=0||space.load(0x20001,1)!=2)return 6;
+    failed=false;ctx.r3.u64=0x20000;
+    try{__imp__RtlEnterCriticalSection(ctx,base);}catch(const std::runtime_error&){failed=true;}
+    if(!failed)return 7;
+    storm::kernel::CriticalSections locks(space,0x1000);critical_sections=&locks;
+    __imp__RtlEnterCriticalSection(ctx,base);
+    if(ctx.r3.u64!=0x20000||space.load(0x20018,4)!=0x1000)return 8;
+    __imp__RtlTryEnterCriticalSection(ctx,base);
+    if(ctx.r3.u64!=1||space.load(0x20014,4)!=2)return 9;
+    ctx.r3.u64=0x20000;__imp__RtlLeaveCriticalSection(ctx,base);
+    if(ctx.r3.u64!=0x20000||space.load(0x20014,4)!=1)return 10;
+    __imp__RtlLeaveCriticalSection(ctx,base);
+    if(space.load(0x20010,4)!=0xffffffff)return 11;
+    ctx.r3.u64=0xdeadbeef;failed=false;
+    try{__imp__XGetAVPack(ctx,base);}catch(const std::runtime_error&){failed=true;}
+    if(!failed||ctx.r3.u64!=0xdeadbeef)return 12;
+    diagnostic_av_pack=6;ctx.r4.u64=0x12345678;
+    __imp__XGetAVPack(ctx,base);
+    if(ctx.r3.u64!=6||ctx.r4.u64!=0x12345678)return 13;
+    failed=false;try{__imp__KeTlsAlloc(ctx,base);}catch(const std::runtime_error&){failed=true;}
+    if(!failed)return 14;
+    storm::kernel::DynamicTls tls(space,2);tls.attach(0x1000,0x30000);diagnostic_thread=0x1000;dynamic_tls=&tls;
+    __imp__KeTlsAlloc(ctx,base);if(ctx.r3.u64!=0)return 15;
+    ctx.r4.u64=0x12345678;__imp__KeTlsSetValue(ctx,base);if(ctx.r3.u64!=1||space.load(0x30000,4)!=0x12345678)return 16;
+    ctx.r3.u64=0;__imp__KeTlsGetValue(ctx,base);if(ctx.r3.u64!=0x12345678)return 17;
+    ctx.r3.u64=0;__imp__KeTlsFree(ctx,base);if(ctx.r3.u64!=1||space.load(0x30000,4)!=0)return 18;
+    ctx.r3.u64=0x20000;const auto before=storm::kernel::system_time_filetime();
+    __imp__KeQuerySystemTime(ctx,base);const auto after=storm::kernel::system_time_filetime();
+    const auto written=space.load(0x20000,8);
+    if(ctx.r3.u64!=0x20000||written<before||written>after)return 19;
+    failed=false;try{__rdtsc();}catch(const std::runtime_error&){failed=true;}
+    if(!failed)return 20;
+    diagnostic_clock_epoch=storm::kernel::monotonic_nanoseconds();diagnostic_clock_bound=true;
+    const auto ticks=__rdtsc();const auto elapsed=storm::kernel::monotonic_nanoseconds()-diagnostic_clock_epoch;
+    if(ticks>elapsed/20)return 21;
     return 0;
 }
 """
         source=self.root/'kernel_probe.cpp';source.write_text(handlers+main)
         executable=self.root/'kernel_probe'
         compiler=shlex.split(os.environ.get('CXX','c++'))
-        sources=['memory/address_space.cpp','kernel/executable_module.cpp','kernel/virtual_memory.cpp','kernel/process_state.cpp']
+        sources=['memory/address_space.cpp','kernel/executable_module.cpp','kernel/virtual_memory.cpp','kernel/process_state.cpp','kernel/tls_state.cpp','kernel/imports.cpp','kernel/timestamp_bundle.cpp']
         result=subprocess.run(compiler+['-std=c++17','-fsanitize=undefined','-fno-sanitize-recover=all','-I'+str(ROOT/'runtime'),'-I'+str(self.root),str(source)]+[str(ROOT/'runtime'/x) for x in sources]+['-o',str(executable)],capture_output=True,text=True,timeout=60)
         self.assertEqual(result.returncode,0,result.stderr)
         result=subprocess.run([str(executable)],capture_output=True,text=True,timeout=10)
         self.assertEqual(result.returncode,0,result.stdout+result.stderr)
         self.assertEqual(result.stderr,'')
+
+    def test_video_profile_is_opt_in_and_never_inferred(self):
+        self.assertEqual(PROBE.video_profile({}),0)
+        self.assertEqual(PROBE.video_profile({'diagnostic_video':{'kind':'virtual_vga','av_pack':6}}),6)
+        for profile in (False,6,{},[],{'kind':'hdmi','av_pack':6},
+                        {'kind':'virtual_vga','av_pack':True},
+                        {'kind':'virtual_vga','av_pack':8},
+                        {'kind':'virtual_vga','av_pack':6,'renderer_ready':True}):
+            with self.subTest(profile=profile),self.assertRaisesRegex(PROBE.ProbeError,'VIDEO_PROFILE'):
+                PROBE.video_profile({'diagnostic_video':profile})
+
+    def test_dynamic_tls_uses_xex_slot_count_and_checks_guest_bounds(self):
+        identity={'optional_headers':[{'key':'0x00020104','offset':4}]}
+        xex=b'own!'+(64).to_bytes(4,'big')+bytes(12)
+        config={'dynamic_tls':{'address':0x10000,'slots':64}}
+        self.assertEqual(PROBE.dynamic_tls_profile(config,identity,xex),config['dynamic_tls'])
+        with self.assertRaisesRegex(PROBE.ProbeError,'SLOT_COUNT_MISMATCH'):
+            PROBE.dynamic_tls_profile(config,{'optional_headers':[]},xex)
+        default={'dynamic_tls':{'address':0x10000,'slots':1024}}
+        self.assertEqual(PROBE.dynamic_tls_profile(default,{'optional_headers':[]},b''),default['dynamic_tls'])
+        self.assertEqual(PROBE.dynamic_tls_profile(default,identity,bytes(20)),default['dynamic_tls'])
+        with self.assertRaisesRegex(PROBE.ProbeError,'HEADER_RANGE'):
+            PROBE.dynamic_tls_profile(config,identity,xex[:-1])
+        for value in (None,False,{}, {'address':True,'slots':64},
+                      {'address':0xffffff04,'slots':64}, {'address':3,'slots':64},
+                      {'address':0x10000,'slots':0}, {'address':0x10000,'slots':2049}):
+            with self.subTest(value=value),self.assertRaisesRegex(PROBE.ProbeError,'DYNAMIC_TLS_LAYOUT'):
+                PROBE.dynamic_tls_profile({'dynamic_tls':value},identity,xex)
 
     def test_private_config_hash_and_schema(self):
         with patch.object(PROBE,'ROOT',self.root):

@@ -1,0 +1,373 @@
+{
+  "scope": "static_private_ipa_audit",
+  "size": 22800674,
+  "sha256": "99460421c87b32cf25da0254460071ff5ff5e7c2401a88f4a5ccae58e2f33327",
+  "bundle_identifier": "org.stormrevolution.native",
+  "bundle_version": "9",
+  "architecture": "arm64",
+  "main": {
+    "kind": 2,
+    "dependencies": [
+      "@rpath/MoltenVK.framework/MoltenVK",
+      "@rpath/SDL3.framework/SDL3",
+      "@rpath/rexapp.framework/rexapp",
+      "@rpath/rexapu-sdl3.framework/rexapu-sdl3",
+      "@rpath/rexapu.framework/rexapu",
+      "@rpath/rexbase.framework/rexbase",
+      "@rpath/rexfilesystem.framework/rexfilesystem",
+      "@rpath/rexgpu-xenos-vulkan.framework/rexgpu-xenos-vulkan",
+      "@rpath/rexgpu.framework/rexgpu",
+      "@rpath/rexhid-sdl3.framework/rexhid-sdl3",
+      "@rpath/rexhid.framework/rexhid",
+      "@rpath/rexkernel.framework/rexkernel",
+      "@rpath/rexppc.framework/rexppc",
+      "@rpath/rexui-sdl3.framework/rexui-sdl3",
+      "@rpath/rexui.framework/rexui",
+      "@rpath/rexxam.framework/rexxam",
+      "@rpath/rexxbdm.framework/rexxbdm",
+      "/usr/lib/libz.1.dylib",
+      "/System/Library/Frameworks/Foundation.framework/Foundation",
+      "/System/Library/Frameworks/UIKit.framework/UIKit",
+      "/System/Library/Frameworks/UniformTypeIdentifiers.framework/UniformTypeIdentifiers",
+      "/System/Library/Frameworks/GameController.framework/GameController",
+      "/System/Library/Frameworks/QuartzCore.framework/QuartzCore",
+      "/System/Library/Frameworks/CoreGraphics.framework/CoreGraphics",
+      "/usr/lib/libobjc.A.dylib",
+      "/usr/lib/libc++.1.dylib",
+      "/usr/lib/libSystem.B.dylib",
+      "/System/Library/Frameworks/CoreFoundation.framework/CoreFoundation"
+    ],
+    "rpaths": [
+      "@executable_path/Frameworks"
+    ],
+    "guest_code_bytes": 37256112,
+    "platform": 2,
+    "minimum_ios": "17.0.0"
+  },
+  "frameworks": {
+    "MoltenVK": {
+      "kind": 6,
+      "dependencies": [
+        "/System/Library/Frameworks/IOSurface.framework/IOSurface",
+        "/System/Library/Frameworks/UIKit.framework/UIKit",
+        "/System/Library/Frameworks/Foundation.framework/Foundation",
+        "/System/Library/Frameworks/CoreGraphics.framework/CoreGraphics",
+        "/System/Library/Frameworks/Metal.framework/Metal",
+        "/usr/lib/libc++.1.dylib",
+        "/System/Library/Frameworks/IOKit.framework/Versions/A/IOKit",
+        "/System/Library/Frameworks/QuartzCore.framework/QuartzCore",
+        "/usr/lib/libSystem.B.dylib",
+        "/System/Library/Frameworks/CoreFoundation.framework/CoreFoundation",
+        "/usr/lib/libobjc.A.dylib"
+      ],
+      "rpaths": [
+        "@loader_path/.."
+      ],
+      "guest_code_bytes": 0,
+      "platform": 2,
+      "minimum_ios": "15.0.0"
+    },
+    "SDL3": {
+      "kind": 6,
+      "dependencies": [
+        "/usr/lib/libSystem.B.dylib",
+        "/System/Library/Frameworks/CoreMedia.framework/CoreMedia",
+        "/System/Library/Frameworks/CoreVideo.framework/CoreVideo",
+        "/System/Library/Frameworks/CoreAudio.framework/CoreAudio",
+        "/System/Library/Frameworks/AudioToolbox.framework/AudioToolbox",
+        "/System/Library/Frameworks/AVFoundation.framework/AVFoundation",
+        "/System/Library/Frameworks/CoreBluetooth.framework/CoreBluetooth",
+        "/System/Library/Frameworks/CoreGraphics.framework/CoreGraphics",
+        "/System/Library/Frameworks/CoreMotion.framework/CoreMotion",
+        "/System/Library/Frameworks/Foundation.framework/Foundation",
+        "/System/Library/Frameworks/GameController.framework/GameController",
+        "/System/Library/Frameworks/Metal.framework/Metal",
+        "/System/Library/Frameworks/QuartzCore.framework/QuartzCore",
+        "/System/Library/Frameworks/UIKit.framework/UIKit",
+        "/System/Library/Frameworks/CoreHaptics.framework/CoreHaptics",
+        "/System/Library/Frameworks/AVFAudio.framework/AVFAudio",
+        "/System/Library/Frameworks/CoreFoundation.framework/CoreFoundation",
+        "/usr/lib/libobjc.A.dylib"
+      ],
+      "rpaths": [
+        "@loader_path/.."
+      ],
+      "guest_code_bytes": 0,
+      "platform": 2,
+      "minimum_ios": "17.0.0"
+    },
+    "rexapp": {
+      "kind": 6,
+      "dependencies": [
+        "@rpath/rexkernel.framework/rexkernel",
+        "@rpath/rexppc.framework/rexppc",
+        "@rpath/rexbase.framework/rexbase",
+        "/usr/lib/libiconv.2.dylib",
+        "/usr/lib/libc++.1.dylib",
+        "/usr/lib/libSystem.B.dylib"
+      ],
+      "rpaths": [
+        "@loader_path/.."
+      ],
+      "guest_code_bytes": 0,
+      "platform": 2,
+      "minimum_ios": "17.0.0"
+    },
+    "rexapu-sdl3": {
+      "kind": 6,
+      "dependencies": [
+        "@rpath/rexbase.framework/rexbase",
+        "@rpath/SDL3.framework/SDL3",
+        "/usr/lib/libiconv.2.dylib",
+        "/usr/lib/libc++.1.dylib",
+        "/usr/lib/libSystem.B.dylib"
+      ],
+      "rpaths": [
+        "@loader_path/.."
+      ],
+      "guest_code_bytes": 0,
+      "platform": 2,
+      "minimum_ios": "17.0.0"
+    },
+    "rexapu": {
+      "kind": 6,
+      "dependencies": [
+        "@rpath/rexbase.framework/rexbase",
+        "/usr/lib/libiconv.2.dylib",
+        "/usr/lib/libc++.1.dylib",
+        "/usr/lib/libSystem.B.dylib"
+      ],
+      "rpaths": [
+        "@loader_path/.."
+      ],
+      "guest_code_bytes": 0,
+      "platform": 2,
+      "minimum_ios": "17.0.0"
+    },
+    "rexbase": {
+      "kind": 6,
+      "dependencies": [
+        "/usr/lib/libSystem.B.dylib",
+        "/usr/lib/libiconv.2.dylib",
+        "/usr/lib/libc++.1.dylib"
+      ],
+      "rpaths": [
+        "@loader_path/.."
+      ],
+      "guest_code_bytes": 0,
+      "platform": 2,
+      "minimum_ios": "17.0.0"
+    },
+    "rexfilesystem": {
+      "kind": 6,
+      "dependencies": [
+        "@rpath/rexbase.framework/rexbase",
+        "/usr/lib/libiconv.2.dylib",
+        "/usr/lib/libc++.1.dylib",
+        "/usr/lib/libSystem.B.dylib"
+      ],
+      "rpaths": [
+        "@loader_path/.."
+      ],
+      "guest_code_bytes": 0,
+      "platform": 2,
+      "minimum_ios": "17.0.0"
+    },
+    "rexgpu-xenos-vulkan": {
+      "kind": 6,
+      "dependencies": [
+        "@rpath/rexgpu.framework/rexgpu",
+        "@rpath/rexbase.framework/rexbase",
+        "/usr/lib/libiconv.2.dylib",
+        "/usr/lib/libc++.1.dylib",
+        "/usr/lib/libSystem.B.dylib"
+      ],
+      "rpaths": [
+        "@loader_path/.."
+      ],
+      "guest_code_bytes": 0,
+      "platform": 2,
+      "minimum_ios": "17.0.0"
+    },
+    "rexgpu": {
+      "kind": 6,
+      "dependencies": [
+        "@rpath/rexbase.framework/rexbase",
+        "/usr/lib/libiconv.2.dylib",
+        "/usr/lib/libc++.1.dylib",
+        "/usr/lib/libSystem.B.dylib"
+      ],
+      "rpaths": [
+        "@loader_path/.."
+      ],
+      "guest_code_bytes": 0,
+      "platform": 2,
+      "minimum_ios": "17.0.0"
+    },
+    "rexhid-sdl3": {
+      "kind": 6,
+      "dependencies": [
+        "@rpath/rexbase.framework/rexbase",
+        "@rpath/SDL3.framework/SDL3",
+        "/usr/lib/libiconv.2.dylib",
+        "/usr/lib/libc++.1.dylib",
+        "/usr/lib/libSystem.B.dylib"
+      ],
+      "rpaths": [
+        "@loader_path/.."
+      ],
+      "guest_code_bytes": 0,
+      "platform": 2,
+      "minimum_ios": "17.0.0"
+    },
+    "rexhid": {
+      "kind": 6,
+      "dependencies": [
+        "@rpath/rexbase.framework/rexbase",
+        "/usr/lib/libiconv.2.dylib",
+        "/usr/lib/libc++.1.dylib",
+        "/usr/lib/libSystem.B.dylib"
+      ],
+      "rpaths": [
+        "@loader_path/.."
+      ],
+      "guest_code_bytes": 0,
+      "platform": 2,
+      "minimum_ios": "17.0.0"
+    },
+    "rexkernel": {
+      "kind": 6,
+      "dependencies": [
+        "@rpath/rexppc.framework/rexppc",
+        "@rpath/rexbase.framework/rexbase",
+        "/usr/lib/libiconv.2.dylib",
+        "/usr/lib/libc++.1.dylib",
+        "/usr/lib/libSystem.B.dylib"
+      ],
+      "rpaths": [
+        "@loader_path/.."
+      ],
+      "guest_code_bytes": 0,
+      "platform": 2,
+      "minimum_ios": "17.0.0"
+    },
+    "rexppc": {
+      "kind": 6,
+      "dependencies": [
+        "@rpath/rexbase.framework/rexbase",
+        "/usr/lib/libiconv.2.dylib",
+        "/usr/lib/libc++.1.dylib",
+        "/usr/lib/libSystem.B.dylib"
+      ],
+      "rpaths": [
+        "@loader_path/.."
+      ],
+      "guest_code_bytes": 0,
+      "platform": 2,
+      "minimum_ios": "17.0.0"
+    },
+    "rexui-sdl3": {
+      "kind": 6,
+      "dependencies": [
+        "@rpath/rexbase.framework/rexbase",
+        "@rpath/SDL3.framework/SDL3",
+        "/System/Library/Frameworks/CoreFoundation.framework/CoreFoundation",
+        "/usr/lib/libiconv.2.dylib",
+        "/usr/lib/libc++.1.dylib",
+        "/usr/lib/libSystem.B.dylib"
+      ],
+      "rpaths": [
+        "@loader_path/.."
+      ],
+      "guest_code_bytes": 0,
+      "platform": 2,
+      "minimum_ios": "17.0.0"
+    },
+    "rexui": {
+      "kind": 6,
+      "dependencies": [
+        "@rpath/rexbase.framework/rexbase",
+        "/usr/lib/libiconv.2.dylib",
+        "/usr/lib/libc++.1.dylib",
+        "/usr/lib/libSystem.B.dylib"
+      ],
+      "rpaths": [
+        "@loader_path/.."
+      ],
+      "guest_code_bytes": 0,
+      "platform": 2,
+      "minimum_ios": "17.0.0"
+    },
+    "rexxam": {
+      "kind": 6,
+      "dependencies": [
+        "@rpath/rexppc.framework/rexppc",
+        "@rpath/rexbase.framework/rexbase",
+        "/usr/lib/libiconv.2.dylib",
+        "/usr/lib/libc++.1.dylib",
+        "/usr/lib/libSystem.B.dylib"
+      ],
+      "rpaths": [
+        "@loader_path/.."
+      ],
+      "guest_code_bytes": 0,
+      "platform": 2,
+      "minimum_ios": "17.0.0"
+    },
+    "rexxbdm": {
+      "kind": 6,
+      "dependencies": [
+        "@rpath/rexppc.framework/rexppc",
+        "@rpath/rexbase.framework/rexbase",
+        "/usr/lib/libiconv.2.dylib",
+        "/usr/lib/libc++.1.dylib",
+        "/usr/lib/libSystem.B.dylib"
+      ],
+      "rpaths": [
+        "@loader_path/.."
+      ],
+      "guest_code_bytes": 0,
+      "platform": 2,
+      "minimum_ios": "17.0.0"
+    }
+  },
+  "device_executed": false,
+  "gameplay_verified": false,
+  "version": "0.7.0",
+  "native_run": 44189383485,
+  "native_source": "e8e08df",
+  "new_executable": true,
+  "unlock_hooks_strong": true,
+  "home_toggle_linked": true,
+  "separate_save_profiles_linked": true,
+  "performance_profile_linked": true,
+  "frameworks_identical_to_build8": [
+    "MoltenVK",
+    "SDL3"
+  ],
+  "frameworks_changed_from_build8": [
+    "rexbase",
+    "rexapp",
+    "rexapu-sdl3",
+    "rexfilesystem",
+    "rexui-sdl3",
+    "rexhid",
+    "rexkernel",
+    "rexppc",
+    "rexapu",
+    "rexxam",
+    "rexui",
+    "rexxbdm",
+    "rexgpu-xenos-vulkan",
+    "rexhid-sdl3",
+    "rexgpu"
+  ],
+  "framework_loadable_payloads_identical_to_sdk6": 17,
+  "real_game_mask_checks": 326896,
+  "fps_gain_verified": false,
+  "publish_run": 44190341006,
+  "controls_run": 44189829883,
+  "controls_checks": 273,
+  "runtime_run": 44164692810,
+  "notes": "Full title/frontend rebuild. Framework symbol metadata differs after embedding; all loadable code/data sections and dyld payloads match verified SDK6. Separate save profile and original game query hooks present. Device gain/appearance/unlocks pending."
+}

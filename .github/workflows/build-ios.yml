@@ -4,6 +4,12 @@ on:
     branches: [main]
   pull_request:
   workflow_dispatch:
+    inputs:
+      apple_runner:
+        description: 'Apple runner pool (select another if capacity is exhausted)'
+        type: choice
+        default: macos-15-intel
+        options: [macos-15-intel, macos-15, macos-latest]
 permissions:
   contents: read
 concurrency:
@@ -11,9 +17,9 @@ concurrency:
   cancel-in-progress: true
 jobs:
   build:
-    # The macos-15 ARM pool failed to allocate a runner in run 42083949119.
-    # Intel Xcode still cross-compiles the device application for ARM64.
-    runs-on: macos-15-intel
+    # ARM pool failed to acquire a runner in run 43910606674 (capacity).
+    # Retain manual pool selection; simulator architecture follows uname -m.
+    runs-on: ${{ inputs.apple_runner || 'macos-15-intel' }}
     timeout-minutes: 40
     steps:
       - uses: actions/checkout@v4

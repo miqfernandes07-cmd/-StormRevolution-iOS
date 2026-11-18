@@ -1,0 +1,41 @@
+{
+  "scope": "selected_patched_sdk_sources_compile_only",
+  "sdk_commit": "a3e1d82678ca20d68d4837a8e9ee4652ff073745",
+  "compiler": "Apple clang version 17.0.0 (clang-1700.6.4.2)\nTarget: x86_64-apple-darwin24.6.0\nThread model: posix\nInstalledDir: /Applications/Xcode_26.3.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin\n",
+  "target": "arm64-apple-ios17.0",
+  "sources": [
+    {
+      "source": "src/base/clock_posix.cpp",
+      "returncode": 0
+    },
+    {
+      "source": "src/base/fiber_posix.cpp",
+      "returncode": 0
+    },
+    {
+      "source": "src/base/memory_posix.cpp",
+      "returncode": 0
+    },
+    {
+      "source": "src/base/threading_posix.cpp",
+      "returncode": 0
+    },
+    {
+      "source": "src/base/process_resources_posix.cpp",
+      "returncode": 0
+    }
+  ],
+  "linked": false,
+  "device_executed": false,
+  "game_executed": false,
+  "ios_runtime_qualified": false,
+  "patch_sha256": "47b2af858dc4f76e689fef865534a2639fca4d64a1b0df8f58ae75094750abfa",
+  "all_selected_sources_compiled": true,
+  "workflow_url": "https://github.com/miqfernandes07-cmd/-StormRevolution-iOS/actions/runs/43983141070",
+  "upstream_baseline": {
+    "all_selected_sources_compiled": false,
+    "compiled_sources": 3,
+    "failed_sources": 2,
+    "reason": "mach/mach_vm.h and mach_vm_region are unavailable in the iPhone SDK"
+  }
+}

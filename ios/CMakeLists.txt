@@ -1,4 +1,8 @@
 enable_language(OBJCXX)
+option(STORM_BUILD_NATIVE "Build the private recompiled title with the iPhone SDK" OFF)
+if(STORM_BUILD_NATIVE)
+  add_subdirectory(Native)
+endif()
 if(NOT CMAKE_GENERATOR STREQUAL "Xcode")
   message(FATAL_ERROR "The iOS application currently requires the Xcode generator")
 endif()
@@ -20,7 +24,7 @@ set_source_files_properties("${STORM_METAL_LIBRARY}" PROPERTIES
 add_executable(StormRevolution MACOSX_BUNDLE
   App/main.mm App/StormViewController.mm Import/StormGameImporter.mm Import/StormImportSmoke.mm
   Assets.xcassets
-  Metal/StormMetalView.mm Controls/StormControls.mm
+  Metal/StormMetalView.mm Controls/StormControls.mm Localization/StormLocalization.mm
   "${STORM_METAL_LIBRARY}")
 target_compile_features(StormRevolution PRIVATE cxx_std_17)
 target_compile_options(StormRevolution PRIVATE -fobjc-arc)

@@ -63,6 +63,26 @@ int main() {
             const auto mask=width==8?UINT64_MAX:((UINT64_C(1)<<(width*8))-1);
             check(space.load(0x70000007,width)==(seed&mask));
         }
+        AddressSpace provided;
+        unsigned samples=0;std::uint32_t live=0x12345678;
+        provided.map(0x1000,2,Access::read,data.data(),2);
+        provided.map_reader(0x1002,4,[&](std::size_t offset,std::uint8_t* out,std::size_t count){
+            ++samples;for(std::size_t i=0;i<count;++i)out[i]=std::uint8_t(live>>((3-offset-i)*8));
+        });
+        provided.map(0x1006,2,Access::read,data.data()+2,2);
+        check(provided.load(0x1000,8)==UINT64_C(0x1234123456785678));check(samples==1);
+        live=0xaabbccdd;check(provided.load(0x1002,4)==0xaabbccdd);check(samples==2);
+        check(provided.load(0x1003,2)==0xbbcc);check(samples==3);
+        fault([&]{provided.store(0x1002,4,0);},MemoryFaultKind::read_only,0x1002);check(samples==3);
+        std::array<std::uint8_t,9> untouched;untouched.fill(0x77);
+        fault([&]{provided.copy_out(0x1000,untouched.data(),9);},MemoryFaultKind::unmapped,0x1008);
+        check(samples==3);for(auto b:untouched)check(b==0x77);
+        provided.map_reader(0x1008,1,[](std::size_t,std::uint8_t*,std::size_t){throw std::runtime_error("provider failure");});
+        bool failed=false;try{provided.copy_out(0x1000,untouched.data(),9);}catch(const std::runtime_error& e){failed=std::string(e.what())=="provider failure";}check(failed);
+        for(auto b:untouched)check(b==0x77);
+        fault([&]{provided.map_reader(0x2000,4,{});},MemoryFaultKind::invalid_buffer,0x2000);
+        fault([&]{provided.map_reader(0x1002,4,[](auto,auto*,auto){});},MemoryFaultKind::overlap,0x1002);
+        check(provided.mapped_bytes()==9);provided.unmap(0x1002);check(provided.mapped_bytes()==5);
         std::cout<<"address space: "<<checks<<" checks passed; sparse guest regions, no MMIO\n";
         return 0;
     }catch(const std::exception& error){std::cerr<<error.what()<<'\n';return 1;}

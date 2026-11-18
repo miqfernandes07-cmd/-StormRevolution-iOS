@@ -1,0 +1,93 @@
+--- a/src/base/memory_posix.cpp
++++ b/src/base/memory_posix.cpp
+@@ -37,7 +37,11 @@
+ 
+ #if REX_PLATFORM_MAC
+ #include <mach/mach.h>
++#if TARGET_OS_IPHONE
++#include <mach/vm_map.h>
++#else
+ #include <mach/mach_vm.h>
++#endif
+ #include <mach/vm_region.h>
+ #endif  // REX_PLATFORM_MAC
+ 
+@@ -279,24 +283,35 @@
+ 
+ bool QueryProtect(void* base_address, size_t& length, PageAccess& access_out) {
+ #if REX_PLATFORM_MAC
+-  mach_vm_address_t address = reinterpret_cast<mach_vm_address_t>(base_address);
+-  mach_vm_size_t region_size = 0;
++#if TARGET_OS_IPHONE
++  using RegionAddress = vm_address_t;
++  using RegionSize = vm_size_t;
++#else
++  using RegionAddress = mach_vm_address_t;
++  using RegionSize = mach_vm_size_t;
++#endif
++  RegionAddress address = reinterpret_cast<RegionAddress>(base_address);
++  RegionSize region_size = 0;
+   vm_region_basic_info_data_64_t info;
+   mach_msg_type_number_t info_count = VM_REGION_BASIC_INFO_COUNT_64;
+   mach_port_t object_name;
+ 
+   kern_return_t kr =
++#if TARGET_OS_IPHONE
++      vm_region_64(mach_task_self(), &address, &region_size, VM_REGION_BASIC_INFO_64,
++#else
+       mach_vm_region(mach_task_self(), &address, &region_size, VM_REGION_BASIC_INFO_64,
++#endif
+                      reinterpret_cast<vm_region_info_t>(&info), &info_count, &object_name);
+   if (kr != KERN_SUCCESS) {
+     return false;
+   }
+-  if (address > reinterpret_cast<mach_vm_address_t>(base_address)) {
++  if (address > reinterpret_cast<RegionAddress>(base_address)) {
+     return false;
+   }
+ 
+   length = static_cast<size_t>((address + region_size) -
+-                               reinterpret_cast<mach_vm_address_t>(base_address));
++                               reinterpret_cast<RegionAddress>(base_address));
+ 
+   if ((info.protection & (VM_PROT_READ | VM_PROT_WRITE | VM_PROT_EXECUTE)) ==
+       (VM_PROT_READ | VM_PROT_WRITE | VM_PROT_EXECUTE)) {
+--- a/src/base/process_resources_posix.cpp
++++ b/src/base/process_resources_posix.cpp
+@@ -24,7 +24,11 @@
+ 
+ #if defined(__APPLE__)
+ #include <mach/mach.h>
++#if TARGET_OS_IPHONE
++#include <mach/vm_map.h>
++#else
+ #include <mach/mach_vm.h>
++#endif
+ #include <mach/vm_region.h>
+ #endif
+ 
+@@ -60,15 +64,24 @@
+ #if defined(__APPLE__)
+ 
+ long CountMemoryRegions() {
++#if TARGET_OS_IPHONE
++  vm_address_t address = 0;
++  vm_size_t size = 0;
++#else
+   mach_vm_address_t address = 0;
+   mach_vm_size_t size = 0;
++#endif
+   long regions = 0;
+   vm_region_basic_info_data_64_t info;
+   while (true) {
+     mach_msg_type_number_t info_count = VM_REGION_BASIC_INFO_COUNT_64;
+     mach_port_t object_name = MACH_PORT_NULL;
+     const kern_return_t status =
++#if TARGET_OS_IPHONE
++        vm_region_64(mach_task_self(), &address, &size, VM_REGION_BASIC_INFO_64,
++#else
+         mach_vm_region(mach_task_self(), &address, &size, VM_REGION_BASIC_INFO_64,
++#endif
+                        reinterpret_cast<vm_region_info_t>(&info), &info_count, &object_name);
+     if (status != KERN_SUCCESS) {
+       break;

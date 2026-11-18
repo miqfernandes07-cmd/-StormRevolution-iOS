@@ -1,0 +1,11 @@
+{
+  "passed": true,
+  "scope": "Actual UIKit controls and settings; programmatic input events",
+  "failures": [],
+  "checks": 255,
+  "game_executed": false,
+  "physical_touch_tested": false,
+  "workflow_run": 44079857507,
+  "tested_source": "872228e",
+  "additional_label_assertions": "Added in 49065bc; later hosted runners were cancelled before executing steps, not test assertion failures."
+}

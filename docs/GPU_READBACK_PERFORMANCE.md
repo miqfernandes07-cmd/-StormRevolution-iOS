@@ -1,0 +1,34 @@
+# Full GPU readback reuse and diagnostics
+
+## Build 9 device results
+
+The owner confirmed higher FPS and continued to report stutters and occasional exits when loading a fight. The 480p Performance session has a 26 FPS median and a 25.88 FPS mean across 60 samples covering menus and gameplay. The reported instantaneous minimum was 2 FPS. Frame-count deltas show a minimum of 10.5 FPS over a two-second interval and four intervals below 20 FPS. The 33 GPU timing windows span 165 seconds and record zero waits in the instrumented readback paths. Twelve thermal samples were nominal and 48 were fair, with zero memory warnings. There is no crash report in the submitted log.
+
+Build 10 retains the reduced readbacks and disables anisotropic filtering within Performance, reducing texture sampling cost at a possible loss of sharpness on angled surfaces. It records frame-count deltas and monotonic sample intervals alongside the existing presentation rate. The new measurements can distinguish a brief dip from a slower interval. The effect of the texture setting remains to be measured on the iPhone.
+
+## Build 8 device results and build 9 experiment
+
+The owner's subsequent two sessions confirm build 8, Safe rendering, full resolve readback, synchronous memexport, 1×, 30 FPS, FXAA off and expanded memory. At 720p, the 60-sample FPS median is 17 (mean 13.53); at 480p it is 12 (mean 14.28). These include different menu/gameplay intervals and are not a controlled resolution comparison. All 60 thermal samples in each session report `serious`. Available memory is approximately 1.8–1.9 GiB, with zero memory warnings.
+
+The timing summaries account for 180,249 and 190,096 ms respectively. GPU waits take 135,307 and 139,529 ms: **75.1% and 73.4%** of those intervals. There are 51,221 and 73,424 resolve operations and **zero memexport calls**. Thus the previous memexport allocation optimization does not address these measured sessions; its instrumentation identifies the resolve synchronization cost instead. Inclusive resolve durations and wait durations overlap and must not be added.
+
+Build 9 introduces an opt-in **Performance / Desempenho** profile. It retains Safe's host render targets, traditional render passes, disabled direct-host resolve and synchronous memexport. It changes `gpu.xenos.readback_resolve` to `none` and the legacy Vulkan resolve-readback flag to `false`, avoiding the CPU resolve copies and their waits. This requires restarting the app. GPU resolve/rendering operations themselves remain enabled. CPU consumers of resolved textures may require these copies, so effects can regress; restore Safe if artifacts appear. This is an explicit compatibility tradeoff, not proof that a required synchronization can safely be removed in all scenes. No physical FPS gain has been measured for this candidate.
+
+The home screen also gains a default-on unlock toggle, backed by a separate save profile. See [save profile behavior](UNLOCK_PROFILES.md). It is independent of graphics settings.
+
+## Earlier instrumentation work
+
+The owner reports at most 18 FPS in the menu and stuttering gameplay on iPhone 15 Pro. Device log 005 confirms A17 Pro Vulkan/MoltenVK, UIKit at 2556×1179, the previous optional thread-name workaround, and a full 512 MiB shared GPU buffer. It has no CPU/GPU timing or active-preference snapshot. The primitive-restart and integer-blending warnings do not by themselves identify the performance bottleneck. More RAM alone has not established a speedup.
+
+The pinned SDK's full memexport path creates, maps, unmaps and destroys a dedicated allocation for every nonempty readback. Patch 0006 retains one mapped buffer, growing only when required and releasing it after queue completion during shutdown. It uses a dedicated private field, separate from the address-keyed fast-path cache, so reclamation during a fence wait cannot evict this storage. No public SDK header or guest mapping ABI changes.
+
+Every copy still waits for the current GPU submission and invalidates mapped memory before reading it. There is no previous-frame result, skipped draw, removed readback or fabricated guest allocation. Growth waits before destroying the old buffer. Failed allocation/map/growth wait preserves existing storage; a failed GPU wait or invalidation does not copy stale data into guest memory.
+
+The patched command processor writes a `Native GPU timing` summary at intervals of at least five seconds. It records draw, resolve and full-memexport wall times, wait counts/times, readback bytes and allocation attempts. Draw/resolve/memexport scopes can nest and are explicitly inclusive; their totals must not be added as separate CPU/GPU utilization. These counters measure host call duration, not GPU timestamp queries or CPU hardware utilization. Fast memexport's internal waits are not included in the full-path timer except when it falls back to full. Real FPS remains the SDK's existing presentation counter.
+
+`tools/recompilation/test_full_readback.py --sdk-source <patched-sdk>` extracts the actual patched full method, profiling scope and cleanup into a deterministic Vulkan/fence model. Under UBSan, the macOS build ran 20,109 checks; a later aligned-copy harness ran 22,115 checks locally. They cover 1,000 changing payloads with one allocation, multiple ranges, current-data copies, queue/invalidation order, growth, allocation/map/wait/invalidation failures and shutdown. This executes no game and no physical GPU. The iPhone framework must also compile/link and pass packaging/ABI checks. FPS improvement needs a new device session; none is claimed from these model tests.
+
+
+Delivered candidate: **0.6.1 / build 8**. Runtime build 44164692810 succeeded on macOS 15 ARM64, renderer refresh 44165837354 and publication 44165928216 succeeded. The final IPA has SHA-256 `157a57b769403c90f883fc1c058c40109891e202149f2d02f75ead9f5366cb86`, 22,795,253 bytes. All 924 public SDK headers are identical to the prior package and required renderer exports are preserved. Independent inspection confirms only the Vulkan renderer binary and Info.plist changed; the other 79 payload entries, including the main executable, icons and other 16 frameworks, are byte-identical to build 7. No FPS gain is claimed until the owner tests this build.
+
+The standard Apple Silicon runner was used after the Intel job remained queued. Target remains arm64 iPhone, minimum iOS 17. Future full native builds use the patched SDK run; automatic title recompilation on a runtime-only build was removed to avoid unnecessary work. Renderer-only packaging tests verify that a changed public header, removed exported symbol, incorrect digest or unpatched SDK is rejected before producing an IPA.

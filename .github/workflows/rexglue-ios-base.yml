@@ -1,0 +1,226 @@
+name: ReXGlue iPhone runtime libraries (experimental)
+on:
+  push:
+    branches: [codex/rexglue-ios-feasibility]
+    paths:
+      - '.github/workflows/rexglue-ios-base.yml'
+      - 'tools/recompilation/rexglue_patches/**'
+      - 'config/rexglue_reference.json'
+      - 'ios/Native/**'
+  workflow_dispatch:
+    inputs:
+      stage:
+        type: choice
+        default: drivers
+        options: [base, core, drivers]
+permissions:
+  contents: read
+jobs:
+  base-library:
+    runs-on: macos-15-intel
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/checkout@v4
+        with:
+          repository: rexglue/rexglue-sdk
+          ref: a3e1d82678ca20d68d4837a8e9ee4652ff073745
+          path: sdk-source
+          submodules: recursive
+          persist-credentials: false
+      - name: Select newest installed Xcode
+        run: |
+          mkdir -p out/ios-base
+          python3 - <<'PY'
+          import glob,os,plistlib
+          candidates=[]
+          for app in glob.glob('/Applications/Xcode*.app'):
+              with open(app+'/Contents/Info.plist','rb') as f:
+                  version=plistlib.load(f)['CFBundleShortVersionString']
+              candidates.append((tuple(int(x) for x in version.split('.')),app))
+          _,app=max(candidates)
+          with open(os.environ['GITHUB_ENV'],'a') as f:
+              f.write('DEVELOPER_DIR='+app+'/Contents/Developer\n')
+          print('Selected',app)
+          PY
+      - name: Install configuration dependencies
+        run: |
+          brew install vulkan-loader molten-vk
+          brew list --versions > out/ios-base/packages.txt
+          xcodebuild -version | tee out/ios-base/xcode.txt
+          python3 - <<'PY'
+          import hashlib,json,pathlib,urllib.request
+          ref=json.loads(pathlib.Path('config/rexglue_reference.json').read_text())['vma']
+          url='https://raw.githubusercontent.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator/'+ref['commit']+'/include/vk_mem_alloc.h'
+          with urllib.request.urlopen(url,timeout=60) as response:
+              data=response.read(2*1024*1024)
+          assert hashlib.sha256(data).hexdigest()==ref['header_sha256'],'VMA digest mismatch'
+          dest=pathlib.Path('out/vma');dest.mkdir(parents=True,exist_ok=True)
+          (dest/'vk_mem_alloc.h').write_bytes(data)
+          print('Verified pinned VMA header:',ref['header_sha256'])
+          PY
+      - name: Apply and verify the iOS adapter
+        run: |
+          python3 tools/recompilation/rexglue_ios_probe.py \
+            --sdk-source sdk-source --output out/ios-base/preflight \
+            --experimental-ios-patch
+      - name: Verify private sparse mapping aliases on the build host
+        run: |
+          xcrun clang++ -std=c++17 -Wall -Wextra -Werror -I sdk-source/src \
+            tests/integration/rexglue_private_mapping.cpp -o out/private-mapping-test
+          out/private-mapping-test
+      - name: Exercise actual pooled readback with deterministic GPU failures
+        run: python3 tools/recompilation/test_full_readback.py --sdk-source sdk-source
+      - name: Configure upstream for iPhone ARM64
+        run: |
+          set -o pipefail
+          cmake -S sdk-source -B build-rex-ios \
+            -DCMAKE_SYSTEM_NAME=iOS -DCMAKE_OSX_SYSROOT=iphoneos \
+            -DCMAKE_PROJECT_TOP_LEVEL_INCLUDES="$PWD/tools/recompilation/rexglue_ios_artifacts.cmake" \
+            -DCMAKE_OSX_ARCHITECTURES=arm64 -DCMAKE_OSX_DEPLOYMENT_TARGET=17.0 \
+            -DCMAKE_MACOSX_BUNDLE=OFF \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_SHARED_LINKER_FLAGS=-Wl,-headerpad_max_install_names \
+            -DCMAKE_C_COMPILER="$(xcrun --sdk iphoneos --find clang)" \
+            -DCMAKE_CXX_COMPILER="$(xcrun --sdk iphoneos --find clang++)" \
+            -DCMAKE_XCODE_ATTRIBUTE_CODE_SIGNING_ALLOWED=NO \
+            -DREXGLUE_BUILD_TESTS=OFF -DREXGLUE_ENABLE_TRACY=OFF \
+            -DREXGLUE_ENABLE_PERF_COUNTERS=ON \
+            -DVulkan_INCLUDE_DIR="$(brew --prefix vulkan-headers)/include" \
+            -DVulkan_LIBRARY="$(brew --prefix vulkan-loader)/lib/libvulkan.dylib" \
+            -DVulkan_MoltenVK_INCLUDE_DIR="$(brew --prefix molten-vk)/include" \
+            -DVulkan_MoltenVK_LIBRARY="$(brew --prefix molten-vk)/lib/libMoltenVK.dylib" \
+            -DREXGLUE_VMA_INCLUDE_DIR="$PWD/out/vma" \
+            2>&1 | tee out/ios-base/configure.txt
+      - name: Compile and link base library only
+        run: |
+          set -o pipefail
+          cmake --build build-rex-ios --target rexbase --parallel 3 \
+            2>&1 | tee out/ios-base/build.txt
+          find sdk-source/out -name 'librexbase*.dylib' -exec file {} \; \
+            | tee out/ios-base/mach-o.txt
+          python3 - <<'PY'
+          import json,pathlib,subprocess
+          libraries=list(pathlib.Path('sdk-source/out').rglob('librexbase*.dylib'))
+          assert libraries,'No base library produced'
+          for library in libraries:
+              info=subprocess.check_output(['xcrun','vtool','-show-build',str(library)],text=True)
+              assert 'platform IOS' in info,info
+              print(info)
+          report={'scope':'base_library_only','platform':'iOS','linked':True,
+                  'gpu_linked':False,'device_executed':False,'game_executed':False,
+                  'ios_runtime_qualified':False}
+          pathlib.Path('out/ios-base/report.json').write_text(json.dumps(report,indent=2)+'\n')
+          PY
+      - name: Compile and link Xbox runtime modules
+        if: github.event_name == 'push' || inputs.stage == 'core' || inputs.stage == 'drivers'
+        run: |
+          set -o pipefail
+          cmake --build build-rex-ios --target rexppc rexkernel rexxam rexxbdm rexxenos \
+            --parallel 3 2>&1 | tee out/ios-base/core-build.txt
+          python3 - <<'PY'
+          import json,pathlib,subprocess
+          root=pathlib.Path('sdk-source/out')
+          targets=['rexppc','rexkernel','rexxam','rexxbdm']
+          for target in targets:
+              libraries=list(root.rglob('lib'+target+'.dylib'))
+              assert len(libraries)==1,(target,libraries)
+              info=subprocess.check_output(['xcrun','vtool','-show-build',str(libraries[0])],text=True)
+              assert 'platform IOS' in info,info
+              print(info)
+          report={'scope':'core_runtime_modules_only','linked_iOS_modules':targets,
+                  'static_xenos_built':True,'gpu_driver_linked':False,
+                  'device_executed':False,'game_executed':False,'ios_runtime_qualified':False}
+          pathlib.Path('out/ios-base/core-report.json').write_text(json.dumps(report,indent=2)+'\n')
+          PY
+      - name: Compile SDL UIKit and Vulkan runtime drivers
+        if: github.event_name == 'push' || inputs.stage == 'drivers'
+        run: |
+          set -o pipefail
+          cmake --build build-rex-ios --target rexapp rexfilesystem rexui rexhid rexapu rexgpu rexui-sdl3 rexhid-sdl3 \
+            rexapu-sdl3 rexgpu-xenos-vulkan --parallel 3 \
+            2>&1 | tee out/ios-base/drivers-build.txt
+          python3 - <<'PY'
+          import json,pathlib,subprocess
+          root=pathlib.Path('sdk-source/out')
+          targets=['rexapp','rexui-sdl3','rexhid-sdl3','rexapu-sdl3','rexgpu-xenos-vulkan']
+          for target in targets:
+              libraries=list(root.rglob('lib'+target+'.dylib'))
+              assert len(libraries)==1,(target,libraries)
+              info=subprocess.check_output(['xcrun','vtool','-show-build',str(libraries[0])],text=True)
+              assert 'platform IOS' in info,info
+              print(info)
+          report={'scope':'runtime_driver_libraries_only','linked_iOS_modules':targets,
+                  'application_linked':False,'device_executed':False,'game_executed':False,
+                  'ios_runtime_qualified':False}
+          pathlib.Path('out/ios-base/drivers-report.json').write_text(json.dumps(report,indent=2)+'\n')
+          PY
+      - name: Package unsigned open source iPhone frameworks
+        if: github.event_name == 'push' || inputs.stage == 'drivers'
+        run: |
+          python3 - <<'PY'
+          import hashlib,json,pathlib,urllib.request
+          ref=json.loads(pathlib.Path('config/rexglue_reference.json').read_text())['moltenvk_ios']
+          dest=pathlib.Path('out/MoltenVK-ios.tar')
+          with urllib.request.urlopen(ref['archive_url'],timeout=60) as source,dest.open('wb') as target:
+              while block:=source.read(1024*1024):
+                  target.write(block)
+          assert dest.stat().st_size==ref['archive_size'],'MoltenVK size mismatch'
+          with dest.open('rb') as stream:
+              assert hashlib.file_digest(stream,'sha256').hexdigest()==ref['archive_sha256'],'MoltenVK digest mismatch'
+          PY
+          python3 tools/recompilation/package_rexglue_ios.py \
+            --sdk-source sdk-source --build build-rex-ios \
+            --moltenvk-archive out/MoltenVK-ios.tar --output out/ios-runtime-package
+      - name: Link own fixture against packaged iPhone frameworks
+        if: github.event_name == 'push' || inputs.stage == 'drivers'
+        run: |
+          set -o pipefail
+          rex_offset=$(python3 -c "import json; print(json.load(open('out/ios-runtime-package/runtime/manifest.json'))['physical_offset_in_code'])")
+          xcrun --sdk iphoneos clang++ -target arm64-apple-ios17.0 \
+            -isysroot "$(xcrun --sdk iphoneos --show-sdk-path)" \
+            -std=c++23 -fexperimental-library -fno-char8_t \
+            -DREX_PHYSICAL_OFFSET_IN_CODE="$rex_offset" \
+            -I out/ios-runtime-package/runtime/include \
+            -F out/ios-runtime-package/runtime/Frameworks \
+            tests/integration/rexglue_ios_link.cpp \
+            -framework rexapp -framework rexbase -framework rexppc -framework rexkernel \
+            -Wl,-rpath,@executable_path/Frameworks \
+            -o out/ios-base/SDKLinkProbe 2>&1 | tee out/ios-base/link-fixture.txt
+          xcrun vtool -show-build out/ios-base/SDKLinkProbe | tee out/ios-base/link-fixture-platform.txt
+      - name: Compile the native UIKit frontend without title sources
+        if: github.event_name == 'push' || inputs.stage == 'drivers'
+        run: |
+          set -o pipefail
+          xcrun --sdk iphoneos clang++ -target arm64-apple-ios17.0 \
+            -isysroot "$(xcrun --sdk iphoneos --show-sdk-path)" \
+            -std=c++23 -fexperimental-library -fno-char8_t -fobjc-arc \
+            -DREX_PHYSICAL_OFFSET_IN_CODE=1 -DSTORM_NATIVE_INTERFACE_CHECK=1 \
+            -I out/ios-runtime-package/runtime/include -I ios -I runtime \
+            -fsyntax-only ios/Native/StormNativeMain.mm ios/Native/StormNativeSession.mm \
+            ios/Import/StormGameImporter.mm ios/Controls/StormControls.mm ios/Localization/StormLocalization.mm \
+            2>&1 | tee out/ios-base/native-frontend-compile.txt
+      - name: Preserve rebuildable open source runtime package
+        if: success() && (github.event_name == 'push' || inputs.stage == 'drivers')
+        uses: actions/upload-artifact@v4
+        with:
+          name: experimental-iphone-runtime-no-game
+          path: |
+            out/ios-runtime-package/*.zip
+            out/ios-runtime-package/*.tar
+            out/ios-runtime-package/*.tar.gz
+            out/ios-runtime-package/SHA256SUMS.txt
+          retention-days: 7
+      - name: Upload compilation diagnostics only
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: rexglue-ios-base-diagnostics
+          path: |
+            out/ios-base/**/*.txt
+            out/ios-base/**/*.json
+            out/ios-base/*.txt
+          retention-days: 7

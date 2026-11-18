@@ -40,7 +40,7 @@ AotFunction* AotFunctionTable::lookup(std::uint32_t address) const {
     return found->second;
 }
 AotBinding::AotBinding(const AotFunctionTable& table,PPCContext& context,std::uint8_t* memory,memory::AddressSpace* address_space)
-    :frame_{&table,&context,memory,address_space},previous_(current_) {
+    :frame_{&table,&context,memory,address_space,{}},previous_(current_) {
     if(!table.sealed())throw DispatchFault(DispatchFaultKind::unsealed_table,0);
     if(memory==nullptr)throw DispatchFault(DispatchFaultKind::memory_mismatch,0);
     current_=&frame_;
@@ -52,6 +52,16 @@ AotBinding::Frame& AotBinding::require(PPCContext& context,std::uint8_t* memory,
     if(frame->context!=&context)throw DispatchFault(DispatchFaultKind::context_mismatch,address);
     if(frame->memory!=memory)throw DispatchFault(DispatchFaultKind::memory_mismatch,address);
     return *frame;
+}
+std::uint32_t load_reserve_guest32(PPCContext& context,std::uint8_t* base,std::uint32_t address) {
+    auto& frame=AotBinding::require(context,base,address);
+    if(!frame.address_space)throw DispatchFault(DispatchFaultKind::memory_not_bound,address);
+    return frame.address_space->reserve_load32(address,frame.reservation);
+}
+bool store_conditional_guest32(PPCContext& context,std::uint8_t* base,std::uint32_t address,std::uint32_t value) {
+    auto& frame=AotBinding::require(context,base,address);
+    if(!frame.address_space)throw DispatchFault(DispatchFaultKind::memory_not_bound,address);
+    return frame.address_space->conditional_store32(address,value,frame.reservation);
 }
 void dispatch(PPCContext& context,std::uint8_t* memory,std::uint32_t address) {
     auto& frame=AotBinding::require(context,memory,address);

@@ -1,7 +1,138 @@
-# Progresso — atualização em 2026-11-13
+# Progresso — atualização em 2026-11-18
+
+A versão **0.7.1 / build 10** está disponível no [repositório privado](https://github.com/miqfernandes07-cmd/StormRevolution-iPhone-Private/releases/tag/native-iphone-run-44363376825).
+
+O teste do build 9 em 480p registrou mediana de 26 FPS entre menus e lutas e
+quatro intervalos abaixo de 20 FPS. O log enviado não contém a falha fatal
+relatada durante o carregamento das lutas. O build 10 protege as duas passagens
+pela tabela de recursos envolvida num crash anterior e registra entradas ausentes.
+
+O perfil Desempenho conserva as cópias reduzidas e usa filtragem de texturas
+mais leve. O novo relatório registra a taxa efetiva entre amostras. O Modo
+trapaça aplica os dois indicadores que liberam seis entradas adicionais no
+elenco e reaplica as máscaras após restaurar o save. As modificações são
+gravadas no perfil separado de trapaça. [Detalhes e limites](UNLOCK_PROFILES.md).
+
+Atualize pelo AltStore sem apagar o app. Testes de lógica e interface passaram
+em 326.914 e 273 verificações, respectivamente. A validação do ganho de FPS,
+da estabilidade e dos desbloqueios no iPhone continua pendente.
+[Auditoria ARM64 do IPA](validation/native-iphone-ipa-v10-2026-11-18.json).
+
+## Histórico do build 9
+
+Versão anterior: **0.7.0 / build 9**, [download privado](https://github.com/miqfernandes07-cmd/StormRevolution-iPhone-Private/releases/tag/native-iphone-run-44189383485).
+
+Os novos logs do build 8 identificaram 73–75% do intervalo medido em esperas
+nas cópias de resolve, com nenhuma chamada de memexport. As duas sessões
+estavam em estado térmico elevado; a resolução menor não eliminou a lentidão.
+A otimização anterior de memexport não foi usada nessas sessões.
+
+O novo perfil **Desempenho**, em Ajustes → Perfil gráfico, desativa as cópias
+de resolve para CPU e mantém o renderizador clássico do Seguro e memexport
+síncrono. Selecione-o e feche/reabra o aplicativo. É experimental: efeitos que
+leem essas cópias podem apresentar artefatos; nesse caso, volte a Seguro.
+Use 1×, 30 FPS e FXAA desligado, com o aparelho frio, para comparar a mesma luta.
+O resultado físico posterior consta no diagnóstico de desempenho.
+
+A tela inicial oferece **Modo trapaça**, ligado por padrão, para personagens,
+variações e coleções presentes nos arquivos importados. Usa um perfil separado:
+a primeira ativação copia o progresso normal; desligar antes de Jogar retorna
+ao save original. Cada perfil mantém seu progresso. Não fornece DLC ausente
+nem completa automaticamente todas as missões. [Comportamento dos saves e limites](UNLOCK_PROFILES.md).
+
+Compilação nativa 44189383485 e publicação 44190341006 aprovadas. O IPA tem
+22.800.674 bytes e SHA-256
+`99460421c87b32cf25da0254460071ff5ff5e7c2401a88f4a5ccae58e2f33327`.
+A auditoria independente confirma ARM64/iOS, os hooks de desbloqueio ligados,
+o novo frontend e os conteúdos carregáveis dos 17 frameworks iguais ao SDK
+verificado do run 44164692810. O teste UIKit passou em 273 verificações, incluindo
+isolamento de saves; as máscaras passaram em 326.896 verificações com métodos
+originais e memória sintética. Esses testes não executam gameplay física.
+Preserva idiomas, ícone, controles, memória ampliada, Modo Jogo e créditos
+MiquéiasF07. **Atualize pelo AltStore sem apagar o aplicativo.**
+
+[Diagnóstico de desempenho e limitações](GPU_READBACK_PERFORMANCE.md).
+[Testes UIKit e máscaras](validation/native-controls-unlock-v9-2026-11-17.json).
+[Auditoria do IPA](validation/native-iphone-ipa-v9-2026-11-17.json).
+
+## Histórico — idiomas, Arquivos e memória ampliada 0.6.0
+
+Versão atual publicada: **0.6.0 / build 7**, [download privado](https://github.com/miqfernandes07-cmd/StormRevolution-iPhone-Private/releases/tag/native-iphone-run-44082240260).
+O build nativo 44079853215, a configuração final 44082240260 e a publicação
+44082291246 passaram. O IPA tem 22.794.234 bytes e SHA-256
+`6a49c23f688eef6e7075d8f6237e3b43947ba6b5606e8acef50cc61660d290c6`.
+
+A interface oferece português, inglês, espanhol, francês, alemão, italiano e
+japonês sem alterar o idioma do jogo. A instalação migra para Documents/Game,
+visível no Arquivos, por uma renomeação atômica sem duplicar os arquivos.
+Memória ampliada remove o teto de alocação do runtime e amplia o cache;
+o iOS mantém seus limites. O pacote declara as chaves atual e antiga do Modo
+Jogo. A configuração final altera só Info.plist; outros 80 itens do pacote
+permanecem idênticos ao build ligado, inclusive executável, frameworks e ícone.
+
+Há um contorno específico para o abort na notificação opcional de renomear
+threads. Uma segunda falha por recurso nulo continua em investigação, com
+novos logs. Os dados enviados eram do perfil Seguro e registravam média de
+14,12 FPS; não há medição física de ganho ou confirmação de estabilidade do
+build 7. Não atribuir o crash ao Rápido com base nesses dados.
+
+Validação: [255 checks UIKit](validation/native-app-ui-build7-2026-11-17.json),
+15 casos do wrapper real com contexto sintético, frontend ARM64, link completo
+e [auditoria do IPA](validation/native-iphone-ipa-v7-2026-11-17.json).
+[Idiomas, Arquivos e memória](APP_LANGUAGES_AND_FILES.md).
+[Controles e perfis](MOBILE_CONTROLS.md).
+
+## Histórico — controles por ações e perfil Rápido 0.5.0
+
+O proprietário confirmou que consegue jogar no build 5, mas relatou 11 FPS.
+O arquivo da sessão mostra Seguro, 720p, 1×, sem FXAA, sem avisos de memória.
+O tempo gasto individualmente em CPU/GPU ainda não foi medido.
+
+0.5.0 acrescenta ações móveis e atalhos temporizados de Jutsu/Supremo/Dash,
+preservando PlayStation/Xbox e suas posições. O perfil Rápido optativo usa
+leituras GPU em buffers alternados; Seguro mantém a configuração anterior.
+Há até 60 amostras de FPS/tempo de quadro do SDK, estado térmico e pouca energia
+no relatório, com valores configurados e solicitados do runtime.
+
+Build nativo 44071616081 e publicação privada 44073868217 passaram. O pacote
+foi auditado independentemente, incluindo ícone e classes da interface.
+Os 224 checks UIKit passaram no run 44073315091. O primeiro autoteste entrava
+por um bloco da fila principal e bloqueava os passos GCD ao bombear o run loop;
+a correção de agendamento ficou restrita ao harness. O teste não executa o jogo.
+Ganho de FPS, efeitos visuais e execução dos golpes dependem de teste físico.
+[Guia de controles e perfis](MOBILE_CONTROLS.md).
+
+## Histórico: nova tela inicial, ícone e perfis gráficos 0.4.1
+
+O teste do build 3 apresentou artefatos desde a abertura e os menus. A versão
+0.4.1 retira a solicitação de FSI dos dois perfis; Seguro usa render passes
+clássicos, resolve completo e a conversão automática de primitivas. O cache
+gráfico é limpo uma vez, preservando arquivos importados, saves e controles.
+
+A tela inicial ganhou destaque para Jogar, cartão de biblioteca/importação,
+acesso a controles e gráficos e crédito para MiquéiasF07. A arte própria do
+ícone usa uma shuriken com energia laranja e azul, compilada em asset catalog.
+As 127 verificações UIKit passaram e a captura da tela foi inspecionada.
+O build nativo 44057527412 passou; o pacote com ícone 44060974749 preservou
+exatamente o executável e os frameworks e foi publicado privadamente.
+A correção visual e o gameplay estável exigem teste físico.
+
+## Histórico: execução física e atualização nativa 0.4.0
+
+O proprietário instalou o build 2 no iPhone 15 Pro, selecionou personagens e
+chegou à luta, mas relatou crashes no carregamento e tela preta. Três logs
+confirmam execução real no A17 Pro e dois erros de escrita na cópia de recursos.
+O perfil gráfico anterior também produziu avisos de render targets e shaders.
+
+O build 3 / 0.4.0 foi compilado, ligado, auditado e publicado privadamente com
+controles PlayStation/celular, ajustes gráficos/de toque, tela preenchida e
+crédito para MiquéiasF07. O perfil Compatível e os diagnósticos precisam de
+novo teste físico. Os controles/ajustes UIKit passaram por 116 verificações
+no simulador, com eventos programáticos; gameplay não foi testado ali.
+[Build e limites atuais](NATIVE_IPA.md).
 
 
-## Marco atual: serviços do processo e retomada do boot
+## Histórico: serviços do processo e retomada do boot
 
 Implementados KeGet/SetCurrentProcessType no modelo de memória guest (PIB+0x2f)
 e inicializadores de critical section, sem simular locks/threads completos.

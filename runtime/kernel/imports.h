@@ -18,4 +18,10 @@ private:
     std::map<std::pair<std::string,std::uint16_t>, Handler> handlers_;
 };
 std::uint64_t monotonic_nanoseconds();
+// Windows FILETIME: 100 ns ticks since 1601-01-01 UTC. Negative sub-tick Unix
+// timestamps round down, rather than towards zero, across the epoch boundary.
+std::uint64_t filetime_from_unix_nanoseconds(std::int64_t nanoseconds);
+std::uint64_t system_time_filetime();
+// Xbox 360 timebase: 50 MHz, independent of the host cycle-counter frequency.
+std::uint64_t timebase_from_nanoseconds(std::uint64_t elapsed);
 } // namespace storm::kernel

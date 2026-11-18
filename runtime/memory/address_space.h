@@ -1,13 +1,14 @@
 #pragma once
 #include <cstddef>
 #include <cstdint>
+#include <functional>
 #include <map>
 #include <stdexcept>
 #include <vector>
 
 namespace storm::memory {
 enum class Access : unsigned { read = 1, read_write = 3 };
-enum class MemoryFaultKind { invalid_range, overlap, unmapped, read_only, invalid_buffer };
+enum class MemoryFaultKind { invalid_range, overlap, unmapped, read_only, invalid_buffer, unsupported_atomic };
 class MemoryFault : public std::runtime_error {
 public:
     MemoryFault(MemoryFaultKind, std::uint32_t address, std::size_t length);
@@ -25,8 +26,25 @@ private:
 // data accesses; these copies do not implement Xbox interlocked operations.
 class AddressSpace {
 public:
+    // Serialized guest32 reservation model; writes to the tracked 128-byte
+    // granule invalidate all earlier tokens, including same-value/ABA writes.
+    class Reservation {
+        friend class AddressSpace;
+        const AddressSpace* owner_=nullptr;
+        std::uint32_t address_=0;
+        std::uint64_t version_=0;
+    public:
+        void clear() noexcept {owner_=nullptr;}
+    };
+    std::uint32_t reserve_load32(std::uint32_t address,Reservation&);
+    bool conditional_store32(std::uint32_t address,std::uint32_t value,Reservation&);
     void map(std::uint32_t address, std::size_t size, Access,
              const std::uint8_t* initial = nullptr, std::size_t initial_size = 0);
+    // Serialized read-only field provider. Called with region-relative offsets.
+    // Providers must fill every requested byte and must not mutate/remap this
+    // AddressSpace. Exceptions leave copy_out destinations unchanged.
+    using ReadProvider=std::function<void(std::size_t,std::uint8_t*,std::size_t)>;
+    void map_reader(std::uint32_t address,std::size_t size,ReadProvider);
     void require_access(std::uint32_t address, std::size_t size, Access) const;
     bool available(std::uint32_t address, std::size_t size) const;
     void unmap(std::uint32_t region_start);
@@ -36,10 +54,13 @@ public:
     void store(std::uint32_t address, unsigned width, std::uint64_t value);
     std::size_t mapped_bytes() const noexcept { return mapped_bytes_; }
 private:
-    struct Region { Access access; std::vector<std::uint8_t> bytes; };
+    struct Region { Access access; std::vector<std::uint8_t> bytes; ReadProvider reader; };
     using Regions = std::map<std::uint32_t, Region>;
     Regions regions_;
     std::size_t mapped_bytes_ = 0;
+    std::map<std::uint32_t,std::uint64_t> reservation_versions_;
+    void invalidate_reservations(std::uint32_t,std::size_t);
+    void require_reservable(std::uint32_t,bool write) const;
     static void range(std::uint32_t, std::size_t);
     Regions::const_iterator containing(std::uint32_t) const;
     void validate(std::uint32_t address, std::size_t size, bool write) const;

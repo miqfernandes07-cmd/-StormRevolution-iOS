@@ -1,0 +1,12 @@
+{
+  "scope": "base_library_only",
+  "platform": "iOS",
+  "linked": true,
+  "gpu_linked": false,
+  "device_executed": false,
+  "game_executed": false,
+  "ios_runtime_qualified": false,
+  "workflow_url": "https://github.com/miqfernandes07-cmd/-StormRevolution-iOS/actions/runs/43986089874",
+  "sdk_commit": "a3e1d82678ca20d68d4837a8e9ee4652ff073745",
+  "patch_sha256": "47b2af858dc4f76e689fef865534a2639fca4d64a1b0df8f58ae75094750abfa"
+}

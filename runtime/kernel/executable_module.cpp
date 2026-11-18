@@ -62,6 +62,10 @@ ExecutableModule::ExecutableModule(memory::AddressSpace& memory,const XexHeader&
         throw;
     }
 }
+bool ExecutableModule::check_privilege(std::uint32_t bit) const {
+    if(bit>=32)throw std::invalid_argument("KERNEL_XEX_PRIVILEGE_RANGE");
+    return (header_.field(layout_.header,0x30000)&(std::uint32_t(1)<<bit))!=0;
+}
 void ExecutableModule::bind_handle_slot(std::uint32_t address,std::uint32_t expected) {
     if((expected>>24)!=0||(expected&65535)!=0x193||memory_.load(address,4)!=expected)
         throw std::invalid_argument("KERNEL_EXECUTABLE_HANDLE_IMPORT_MISMATCH");

@@ -1,5 +1,99 @@
 # Retomada direta do boot comercial
 
+A versão **0.7.1 / build 10** está disponível no [repositório privado](https://github.com/miqfernandes07-cmd/StormRevolution-iPhone-Private/releases/tag/native-iphone-run-44363376825).
+
+O teste do build 9 em 480p registrou mediana de 26 FPS entre menus e lutas e
+quatro intervalos abaixo de 20 FPS. O log enviado não contém a falha fatal
+relatada durante o carregamento das lutas. O build 10 protege as duas passagens
+pela tabela de recursos envolvida num crash anterior e registra entradas ausentes.
+
+O perfil Desempenho conserva as cópias reduzidas e usa filtragem de texturas
+mais leve. O novo relatório registra a taxa efetiva entre amostras. O Modo
+trapaça aplica os dois indicadores que liberam seis entradas adicionais no
+elenco e reaplica as máscaras após restaurar o save. As modificações são
+gravadas no perfil separado de trapaça. [Detalhes e limites](UNLOCK_PROFILES.md).
+
+Atualize pelo AltStore sem apagar o app. Testes de lógica e interface passaram
+em 326.914 e 273 verificações, respectivamente. A validação do ganho de FPS,
+da estabilidade e dos desbloqueios no iPhone continua pendente.
+[Auditoria ARM64 do IPA](validation/native-iphone-ipa-v10-2026-11-18.json).
+
+## Histórico do build 9
+
+Versão anterior: **0.7.0 / build 9**, [download privado](https://github.com/miqfernandes07-cmd/StormRevolution-iPhone-Private/releases/tag/native-iphone-run-44189383485).
+
+Os novos logs do build 8 identificaram 73–75% do intervalo medido em esperas
+nas cópias de resolve, com nenhuma chamada de memexport. As duas sessões
+estavam em estado térmico elevado; a resolução menor não eliminou a lentidão.
+A otimização anterior de memexport não foi usada nessas sessões.
+
+O novo perfil **Desempenho**, em Ajustes → Perfil gráfico, desativa as cópias
+de resolve para CPU e mantém o renderizador clássico do Seguro e memexport
+síncrono. Selecione-o e feche/reabra o aplicativo. É experimental: efeitos que
+leem essas cópias podem apresentar artefatos; nesse caso, volte a Seguro.
+Use 1×, 30 FPS e FXAA desligado, com o aparelho frio, para comparar a mesma luta.
+O resultado físico posterior consta no diagnóstico de desempenho.
+
+A tela inicial oferece **Modo trapaça**, ligado por padrão, para personagens,
+variações e coleções presentes nos arquivos importados. Usa um perfil separado:
+a primeira ativação copia o progresso normal; desligar antes de Jogar retorna
+ao save original. Cada perfil mantém seu progresso. Não fornece DLC ausente
+nem completa automaticamente todas as missões. [Comportamento dos saves e limites](UNLOCK_PROFILES.md).
+
+Compilação nativa 44189383485 e publicação 44190341006 aprovadas. O IPA tem
+22.800.674 bytes e SHA-256
+`99460421c87b32cf25da0254460071ff5ff5e7c2401a88f4a5ccae58e2f33327`.
+A auditoria independente confirma ARM64/iOS, os hooks de desbloqueio ligados,
+o novo frontend e os conteúdos carregáveis dos 17 frameworks iguais ao SDK
+verificado do run 44164692810. O teste UIKit passou em 273 verificações, incluindo
+isolamento de saves; as máscaras passaram em 326.896 verificações com métodos
+originais e memória sintética. Esses testes não executam gameplay física.
+Preserva idiomas, ícone, controles, memória ampliada, Modo Jogo e créditos
+MiquéiasF07. **Atualize pelo AltStore sem apagar o aplicativo.**
+
+[Diagnóstico de desempenho e limitações](GPU_READBACK_PERFORMANCE.md).
+[Testes UIKit e máscaras](validation/native-controls-unlock-v9-2026-11-17.json).
+[Auditoria do IPA](validation/native-iphone-ipa-v9-2026-11-17.json).
+
+O estado operacional detalhado está em `private/NATIVE_IPA_STATE.json`. Não solicitar novo login nem uma nova importação quando a instalação já existe. Os arquivos e executáveis comerciais continuam privados.
+
+Atualização após o teste do build 3: o proprietário relatou corrupção da imagem
+desde a abertura e os menus, enviando captura, logs 005/006 e native-session.
+Versão de iOS informada pelo diagnóstico: 27.2; o perfil solicitava FSI. O
+build nativo 4 / 0.4.1 passou no run privado 44057527412 com dois perfis host,
+opção Seguro com render passes clássicos, migração de cache e nova tela inicial.
+O build 5 adicionou o ícone no run privado 44060974749, mantendo executável e
+frameworks idênticos. O IPA foi publicado e auditado; falta novo teste físico.
+O estado operacional atualizado permanece em `private/NATIVE_IPA_STATE.json`.
+
+O IPA nativo experimental build 3 / 0.4.0 está publicado e auditado:
+`native-iphone-run-44029386428`. O proprietário executou o build 2 em iPhone
+15 Pro, selecionou personagens e chegou à luta, mas relatou crashes e tela preta
+e enviou três logs. O build 3 inclui controles PlayStation/celular, ajustes,
+perfil Compatível e diagnóstico de alocação/cópia. Falta testar essa atualização
+no aparelho, preservando a instalação e seus dados. Não repetir a
+geração/extração comercial ou substituir o executável por um diagnóstico.
+Estado operacional: `private/NATIVE_IPA_STATE.json`; guia: [IPA nativo](NATIVE_IPA.md).
+
+Histórico anterior ao teste físico: [boot privado completo com ReXGlue](REXGLUE_BOOT_2026_11_16.md).
+O protótipo Linux chegou ao menu de modos e criou um save real; ainda não há
+combate comprovado ou execução do runtime ReXGlue no aplicativo iOS.
+A integração atual está em `ios/Native/`; o build privado preparado está em
+`private/iphone-build/`. O proprietário criou e liberou
+`miqfernandes07-cmd/StormRevolution-iPhone-Private`; a compilação privada está
+em andamento. Não enviar o título à CI pública. Os recursos completos
+foram extraídos privadamente. O importador iOS recebeu uma correção de lifetime
+do callback de progresso após crash comprovado no simulador.
+
+Atualização de 2026-11-16: [relógios e reservas guest32](BOOT_CLOCK_RESERVATIONS_2026_11_16.md).
+O diagnóstico passou pelo export KeTimeStampBundle e por lwarx/stwcx de 32 bits.
+Agora explora inicializadores do título, mantendo campos/variantes ausentes com
+falha explícita. O jogo continua sem abrir. O perfil VGA é experimental.
+Config: `private/entry-prefix-qualified.json`; checkpoints: `private/probectors-*/`.
+A compilação privada alternativa está em `private/rexglue/`, sem integração iOS.
+Conferir existência e hashes desses arquivos antes de retomar. O estado abaixo é
+histórico.
+
 Prioridade: execução do título. Não refazer interface, importação ou layout de
 controles para tentar resolver a ausência de gameplay. O IPA 0.2.1 é infraestrutura.
 

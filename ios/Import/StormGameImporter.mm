@@ -1,3 +1,4 @@
+#import "Localization/StormLocalization.h"
 #import "Import/StormGameImporter.h"
 #import <CommonCrypto/CommonDigest.h>
 #include "filesystem/zip_archive.h"
@@ -6,6 +7,8 @@
 #include <filesystem>
 #include <memory>
 #include <chrono>
+#include <cerrno>
+#include <cstdio>
 
 static NSString *const ExpectedSHA1 = @"c9c1cf1fc4d7a535542edb1aae19751d4ed7e090";
 static uint32_t ReadBE32(const uint8_t *p) {
@@ -15,8 +18,8 @@ static NSError *ImportError(NSString *message) {
   return [NSError errorWithDomain:@"StormImport" code:1 userInfo:@{NSLocalizedDescriptionKey:message}];
 }
 static NSURL *GameURL(void) {
-  NSURL *support = [NSFileManager.defaultManager URLsForDirectory:NSApplicationSupportDirectory inDomains:NSUserDomainMask].firstObject;
-  return [support URLByAppendingPathComponent:@"Game" isDirectory:YES];
+  NSURL *documents = [NSFileManager.defaultManager URLsForDirectory:NSDocumentDirectory inDomains:NSUserDomainMask].firstObject;
+  return [documents URLByAppendingPathComponent:@"Game" isDirectory:YES];
 }
 // This check identifies the documented XEX revision; it is not a game compatibility claim.
 static NSDictionary *ValidateXEX(NSURL *url, NSError **error) {
@@ -79,19 +82,26 @@ static NSDictionary *ValidateXEX(NSURL *url, NSError **error) {
 
 namespace {
 NSString *ArchiveMessage(const std::string& code) {
-  if (code == "ZIP_CANCELLED") return @"Importação cancelada. Sua instalação anterior foi preservada.";
+  if (code == "ZIP_CANCELLED") return SL(@"Importação cancelada. Sua instalação anterior foi preservada.");
   if (code.find("CRC") != std::string::npos || code.find("TRUNCATED") != std::string::npos)
-    return @"O ZIP parece incompleto ou corrompido. Verifique sua cópia e tente novamente.";
+    return SL(@"O ZIP parece incompleto ou corrompido. Verifique sua cópia e tente novamente.");
   if (code.find("ENCRYPT") != std::string::npos)
-    return @"Este ZIP está protegido por senha. Use uma cópia sem senha.";
+    return SL(@"Este ZIP está protegido por senha. Use uma cópia sem senha.");
   if (code.find("COMPRESSION") != std::string::npos)
-    return @"Este método de compressão não é compatível. Use ZIP com Deflate ou sem compressão.";
+    return SL(@"Este método de compressão não é compatível. Use ZIP com Deflate ou sem compressão.");
   if (code == "ZIP_NON_ASCII_PATH_UNSUPPORTED")
-    return @"Esta versão aceita somente nomes de arquivos sem acentos no ZIP. Preserve os nomes originais dos recursos do jogo.";
-  return @"Não foi possível preparar este ZIP. Verifique o arquivo e o espaço livre.";
+    return SL(@"Esta versão aceita somente nomes de arquivos sem acentos no ZIP. Preserve os nomes originais dos recursos do jogo.");
+  return SL(@"Não foi possível preparar este ZIP. Verifique o arquivo e o espaço livre.");
 }
 void CheckCancelled(const std::shared_ptr<std::atomic<bool>>& cancelled) {
   if (cancelled->load()) throw std::runtime_error("ZIP_CANCELLED");
+}
+void ReportExtractionProgress(void (^progress)(double, NSString *), double fraction,
+                              NSString *message) {
+  // Copy the callback and values into an Objective-C block outside the C++
+  // extraction lambda. A block created inside that lambda can capture its
+  // temporary closure through `this` and outlive it on the main queue.
+  dispatch_async(dispatch_get_main_queue(), ^{ progress(fraction, message); });
 }
 }
 
@@ -100,10 +110,33 @@ void CheckCancelled(const std::shared_ptr<std::atomic<bool>>& cancelled) {
   BOOL _busy;
 }
 + (NSURL *)gameURL { return GameURL(); }
++ (BOOL)prepareGameDirectory:(NSError **)error {
+  @synchronized(self) {
+    NSFileManager *fm = NSFileManager.defaultManager;
+    NSURL *support = [fm URLsForDirectory:NSApplicationSupportDirectory inDomains:NSUserDomainMask].firstObject;
+    NSURL *legacy = [support URLByAppendingPathComponent:@"Game" isDirectory:YES];
+    NSURL *destination = GameURL();
+    if (![fm createDirectoryAtURL:destination.URLByDeletingLastPathComponent withIntermediateDirectories:YES attributes:nil error:error]) return NO;
+    if ([fm fileExistsAtPath:legacy.path]) {
+      if ([fm fileExistsAtPath:destination.path]) {
+        if (error) *error = ImportError(SL(@"Existem duas pastas Game. Preserve suas cópias antes de escolher a instalação."));
+        return NO;
+      }
+      // rename is atomic on the app's data volume and fails instead of falling
+      // back to an expensive copy. Destination is absent under this lock.
+      if (renamex_np(legacy.fileSystemRepresentation, destination.fileSystemRepresentation, RENAME_EXCL) != 0) {
+        if (error) *error = [NSError errorWithDomain:NSPOSIXErrorDomain code:errno userInfo:nil];
+        return NO;
+      }
+    }
+    if ([fm fileExistsAtPath:destination.path]) [destination setResourceValue:@YES forKey:NSURLIsExcludedFromBackupKey error:nil];
+    return YES;
+  }
+}
 + (void)validateInstalledWithCompletion:(void (^)(NSDictionary *, NSError *))completion {
   dispatch_async(dispatch_get_global_queue(QOS_CLASS_UTILITY, 0), ^{
     NSError *error = nil;
-    NSDictionary *validation = ValidateXEX([GameURL() URLByAppendingPathComponent:@"default.xex"], &error);
+    NSDictionary *validation = [self prepareGameDirectory:&error] ? ValidateXEX([GameURL() URLByAppendingPathComponent:@"default.xex"], &error) : nil;
     dispatch_async(dispatch_get_main_queue(), ^{ completion(validation, error); });
   });
 }
@@ -112,19 +145,21 @@ void CheckCancelled(const std::shared_ptr<std::atomic<bool>>& cancelled) {
              progress:(void (^)(double, NSString *))progress
            completion:(void (^)(NSDictionary *, NSError *))completion {
   NSAssert(NSThread.isMainThread, @"Import requests must originate on the main queue");
-  if (_busy) { completion(nil, ImportError(@"Já existe uma importação em andamento.")); return; }
+  if (_busy) { completion(nil, ImportError(SL(@"Já existe uma importação em andamento."))); return; }
+  NSError *directoryError = nil;
+  if (![StormGameImporter prepareGameDirectory:&directoryError]) { completion(nil, directoryError); return; }
   _busy = YES;
   _cancelled = std::make_shared<std::atomic<bool>>(false);
   const auto cancelled = _cancelled;
   __block UIBackgroundTaskIdentifier background = UIBackgroundTaskInvalid;
-  background = [UIApplication.sharedApplication beginBackgroundTaskWithName:@"Preparar jogo" expirationHandler:^{
+  background = [UIApplication.sharedApplication beginBackgroundTaskWithName:SL(@"Preparar jogo") expirationHandler:^{
     cancelled->store(true);
     if (background != UIBackgroundTaskInvalid) {
       [UIApplication.sharedApplication endBackgroundTask:background];
       background = UIBackgroundTaskInvalid;
     }
   }];
-  progress(0, @"Acessando o ZIP…");
+  progress(0, SL(@"Acessando o ZIP…"));
   dispatch_async(dispatch_get_global_queue(QOS_CLASS_USER_INITIATED, 0), ^{
     const BOOL scoped = [source startAccessingSecurityScopedResource];
     NSFileManager *manager = NSFileManager.defaultManager;
@@ -152,28 +187,28 @@ void CheckCancelled(const std::shared_ptr<std::atomic<bool>>& cancelled) {
         NSNumber *regular = nil, *link = nil;
         if (![readURL getResourceValue:&regular forKey:NSURLIsRegularFileKey error:&error] ||
             ![readURL getResourceValue:&link forKey:NSURLIsSymbolicLinkKey error:&error]) return;
-        if (!regular.boolValue || link.boolValue) { error = ImportError(@"Selecione um arquivo ZIP regular pelo aplicativo Arquivos."); return; }
+        if (!regular.boolValue || link.boolValue) { error = ImportError(SL(@"Selecione um arquivo ZIP regular pelo aplicativo Arquivos.")); return; }
         storm::filesystem::ZipArchive archive(readURL.fileSystemRepresentation);
         const auto capacity = std::filesystem::space(parent.fileSystemRepresentation);
         constexpr uint64_t reserve = 256ull * 1024 * 1024;
         if (capacity.available < reserve || archive.total_uncompressed() > capacity.available - reserve) {
           NSString *needed = [NSByteCountFormatter stringFromByteCount:(long long)(archive.total_uncompressed()+reserve) countStyle:NSByteCountFormatterCountStyleFile];
-          error = ImportError([NSString stringWithFormat:@"Libere pelo menos %@ para preparar esta cópia. A instalação anterior será mantida durante a extração.", needed]);
+          error = ImportError([NSString stringWithFormat:SL(@"Libere pelo menos %@ para preparar esta cópia. A instalação anterior será mantida durante a extração."), needed]);
           return;
         }
         NSString *executable = nil;
         for (const auto& entry : archive.entries()) {
           if (entry.directory) continue;
           NSString *name = [[NSString alloc] initWithBytes:entry.name.data() length:entry.name.size() encoding:NSUTF8StringEncoding];
-          if (!name) { error = ImportError(@"O ZIP contém um nome de arquivo com codificação incompatível."); return; }
+          if (!name) { error = ImportError(SL(@"O ZIP contém um nome de arquivo com codificação incompatível.")); return; }
           if ([name.lastPathComponent caseInsensitiveCompare:@"default.xex"] == NSOrderedSame) {
-            if (executable) { error = ImportError(@"O ZIP contém mais de um default.xex. Use uma única cópia extraída do jogo."); return; }
+            if (executable) { error = ImportError(SL(@"O ZIP contém mais de um default.xex. Use uma única cópia extraída do jogo.")); return; }
             executable = name;
           }
         }
-        if (!executable) { error = ImportError(@"Não encontramos default.xex no ZIP. Use os arquivos extraídos da versão Xbox 360, não uma ISO ou APK."); return; }
+        if (!executable) { error = ImportError(SL(@"Não encontramos default.xex no ZIP. Use os arquivos extraídos da versão Xbox 360, não uma ISO ou APK.")); return; }
         auto lastUpdate = std::chrono::steady_clock::now();
-        archive.extract(staging.fileSystemRepresentation, [&](const storm::filesystem::ZipProgress& state) {
+        archive.extract(staging.fileSystemRepresentation, [cancelled, &lastUpdate, progress](const storm::filesystem::ZipProgress& state) {
           if (cancelled->load()) return false;
           const auto now = std::chrono::steady_clock::now();
           if (now-lastUpdate < std::chrono::milliseconds(150) && state.bytes_written < state.total_bytes) return true;
@@ -181,16 +216,16 @@ void CheckCancelled(const std::shared_ptr<std::atomic<bool>>& cancelled) {
           const double fraction = state.total_bytes ? double(state.bytes_written)/double(state.total_bytes) : 1.0;
           NSString *done = [NSByteCountFormatter stringFromByteCount:(long long)state.bytes_written countStyle:NSByteCountFormatterCountStyleFile];
           NSString *total = [NSByteCountFormatter stringFromByteCount:(long long)state.total_bytes countStyle:NSByteCountFormatterCountStyleFile];
-          NSString *message = [NSString stringWithFormat:@"Extraindo %@ de %@", done, total];
-          dispatch_async(dispatch_get_main_queue(), ^{ progress(.02+.88*fraction, message); });
+          NSString *message = [NSString stringWithFormat:SL(@"Extraindo %@ de %@"), done, total];
+          ReportExtractionProgress(progress, .02+.88*fraction, message);
           return true;
         });
         CheckCancelled(cancelled);
-        dispatch_async(dispatch_get_main_queue(), ^{ progress(.93, @"Verificando a versão do jogo…"); });
+        dispatch_async(dispatch_get_main_queue(), ^{ progress(.93, SL(@"Verificando a versão do jogo…")); });
         NSURL *xex = [staging URLByAppendingPathComponent:executable];
         validation = ValidateXEX(xex, &error);
         if (!validation || ![validation[@"reference_matches"] boolValue]) {
-          if (!error) error = ImportError(@"O executável não corresponde à versão Xbox 360 compatível com este projeto. Sua instalação anterior foi preservada.");
+          if (!error) error = ImportError(SL(@"O executável não corresponde à versão Xbox 360 compatível com este projeto. Sua instalação anterior foi preservada."));
           return;
         }
         CheckCancelled(cancelled);
@@ -203,7 +238,7 @@ void CheckCancelled(const std::shared_ptr<std::atomic<bool>>& cancelled) {
         }
         CheckCancelled(cancelled);
         [gameRoot setResourceValue:@YES forKey:NSURLIsExcludedFromBackupKey error:nil];
-        dispatch_async(dispatch_get_main_queue(), ^{ progress(.98, @"Concluindo a preparação…"); });
+        dispatch_async(dispatch_get_main_queue(), ^{ progress(.98, SL(@"Concluindo a preparação…")); });
         // Commit is deliberately not cancellable: preserve the previous import until validation passes.
         if ([manager fileExistsAtPath:destination.path]) {
           [manager replaceItemAtURL:destination withItemAtURL:gameRoot backupItemName:nil options:0 resultingItemURL:nil error:&error];
@@ -225,7 +260,7 @@ void CheckCancelled(const std::shared_ptr<std::atomic<bool>>& cancelled) {
         [UIApplication.sharedApplication endBackgroundTask:background];
         background = UIBackgroundTaskInvalid;
       }
-      if (!error) progress(1, @"Arquivos preparados. A execução do jogo aguarda a versão AOT.");
+      if (!error) progress(1, SL(@"Arquivos preparados. A execução do jogo aguarda a versão AOT."));
       completion(error ? nil : validation, error);
     });
   });

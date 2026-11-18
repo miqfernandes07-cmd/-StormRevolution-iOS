@@ -1,0 +1,17 @@
+{
+  "scope": "private_commercial_application_compile_and_link_only",
+  "private_workflow_url": "https://github.com/miqfernandes07-cmd/StormRevolution-iPhone-Private/actions/runs/44007706307",
+  "compile_and_link_step_passed": true,
+  "target_platform": "iOS",
+  "target_architecture": "arm64",
+  "sdk_commit": "a3e1d82678ca20d68d4837a8e9ee4652ff073745",
+  "physical_offset_in_code": 1,
+  "application_mach_o_inspected": false,
+  "embedded_frameworks_verified": false,
+  "ipa_archive_passed": false,
+  "archive_failure": "The script found the real app and an Xcode placeholder app directory; final bundle selection and framework embedding were corrected afterward.",
+  "device_executed": false,
+  "game_executed_on_ios": false,
+  "gameplay_verified": false,
+  "ios_runtime_qualified": false
+}
