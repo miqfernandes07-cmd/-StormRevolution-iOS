@@ -1,5 +1,11 @@
 # Full GPU readback reuse and diagnostics
 
+## Build 9 device results
+
+The owner confirmed higher FPS and continued to report stutters and occasional exits when loading a fight. The 480p Performance session has a 26 FPS median and a 25.88 FPS mean across 60 samples covering menus and gameplay. The reported instantaneous minimum was 2 FPS. Frame-count deltas show a minimum of 10.5 FPS over a two-second interval and four intervals below 20 FPS. The 33 GPU timing windows span 165 seconds and record zero waits in the instrumented readback paths. Twelve thermal samples were nominal and 48 were fair, with zero memory warnings. There is no crash report in the submitted log.
+
+Build 10 retains the reduced readbacks and disables anisotropic filtering within Performance, reducing texture sampling cost at a possible loss of sharpness on angled surfaces. It records frame-count deltas and monotonic sample intervals alongside the existing presentation rate. The new measurements can distinguish a brief dip from a slower interval. The effect of the texture setting remains to be measured on the iPhone.
+
 ## Build 8 device results and build 9 experiment
 
 The owner's subsequent two sessions confirm build 8, Safe rendering, full resolve readback, synchronous memexport, 1×, 30 FPS, FXAA off and expanded memory. At 720p, the 60-sample FPS median is 17 (mean 13.53); at 480p it is 12 (mean 14.28). These include different menu/gameplay intervals and are not a controlled resolution comparison. All 60 thermal samples in each session report `serious`. Available memory is approximately 1.8–1.9 GiB, with zero memory warnings.

@@ -1,6 +1,26 @@
 # Retomada direta do boot comercial
 
-Versão atual publicada: **0.7.0 / build 9**, [download privado](https://github.com/miqfernandes07-cmd/StormRevolution-iPhone-Private/releases/tag/native-iphone-run-44189383485).
+A versão **0.7.1 / build 10** está disponível no [repositório privado](https://github.com/miqfernandes07-cmd/StormRevolution-iPhone-Private/releases/tag/native-iphone-run-44363376825).
+
+O teste do build 9 em 480p registrou mediana de 26 FPS entre menus e lutas e
+quatro intervalos abaixo de 20 FPS. O log enviado não contém a falha fatal
+relatada durante o carregamento das lutas. O build 10 protege as duas passagens
+pela tabela de recursos envolvida num crash anterior e registra entradas ausentes.
+
+O perfil Desempenho conserva as cópias reduzidas e usa filtragem de texturas
+mais leve. O novo relatório registra a taxa efetiva entre amostras. O Modo
+trapaça aplica os dois indicadores que liberam seis entradas adicionais no
+elenco e reaplica as máscaras após restaurar o save. As modificações são
+gravadas no perfil separado de trapaça. [Detalhes e limites](UNLOCK_PROFILES.md).
+
+Atualize pelo AltStore sem apagar o app. Testes de lógica e interface passaram
+em 326.914 e 273 verificações, respectivamente. A validação do ganho de FPS,
+da estabilidade e dos desbloqueios no iPhone continua pendente.
+[Auditoria ARM64 do IPA](validation/native-iphone-ipa-v10-2026-11-18.json).
+
+## Histórico do build 9
+
+Versão anterior: **0.7.0 / build 9**, [download privado](https://github.com/miqfernandes07-cmd/StormRevolution-iPhone-Private/releases/tag/native-iphone-run-44189383485).
 
 Os novos logs do build 8 identificaram 73–75% do intervalo medido em esperas
 nas cópias de resolve, com nenhuma chamada de memexport. As duas sessões
@@ -12,7 +32,7 @@ de resolve para CPU e mantém o renderizador clássico do Seguro e memexport
 síncrono. Selecione-o e feche/reabra o aplicativo. É experimental: efeitos que
 leem essas cópias podem apresentar artefatos; nesse caso, volte a Seguro.
 Use 1×, 30 FPS e FXAA desligado, com o aparelho frio, para comparar a mesma luta.
-Ainda não há ganho de FPS medido no aparelho para o build 9.
+O resultado físico posterior consta no diagnóstico de desempenho.
 
 A tela inicial oferece **Modo trapaça**, ligado por padrão, para personagens,
 variações e coleções presentes nos arquivos importados. Usa um perfil separado:
