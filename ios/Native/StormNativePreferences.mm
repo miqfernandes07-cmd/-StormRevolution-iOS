@@ -42,6 +42,7 @@
   NSInteger fps = [v[@"fps"] integerValue] == 60 ? 60 : 30;
   NSInteger anisotropy = [v[@"anisotropy"] integerValue];
   if (anisotropy != 0 && anisotropy != 2 && anisotropy != 3) anisotropy = 2;
+  if (reduced) anisotropy = 0;
   NSString *resolution = [v[@"resolution"] isEqual:@"640x480"] ? @"640x480" : @"1280x720";
   return @{
     @"gpu.xenos.present_letterbox": [v[@"fill"] boolValue] ? @"false" : @"true",

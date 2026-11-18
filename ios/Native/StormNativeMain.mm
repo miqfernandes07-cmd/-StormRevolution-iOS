@@ -20,6 +20,9 @@ class StormNativeApp final : public rex::app::TitleApp {
  public:
   StormNativeApp() : TitleApp("StormNative", kPPCImageConfig) {}
  protected:
+  rex::platform::CrashReporterOptions GetCrashOptions() override {
+    return {.app_name = "StormNative", .show_dialog = false};
+  }
   rex::Result<void> OnConfigure(rex::SettingsRegistry& settings) override {
     [StormNativePreferences prepareForLaunch];
     NSError *profileError = nil;
@@ -43,7 +46,7 @@ class StormNativeApp final : public rex::app::TitleApp {
       NSError *error = nil;
       if (![NSFileManager.defaultManager createDirectoryAtURL:url withIntermediateDirectories:YES attributes:nil error:&error])
         return rex::Err(rex::ErrorCategory::kIO, error.localizedDescription.UTF8String);
-      return settings.SetText(rex::SettingLayer::kTitle, name, url.path.UTF8String);
+      return settings.SetText(rex::SettingLayer::kRuntime, name, url.path.UTF8String);
     };
     REX_TRY_VOID(path("app.log_root", [documents URLByAppendingPathComponent:@"Logs"]));
     REX_TRY_VOID(settings.SetText(rex::SettingLayer::kRuntime, "app.user_root", StormNativeSaveProfiles.activeURL.path.UTF8String));
